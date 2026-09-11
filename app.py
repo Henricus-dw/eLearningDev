@@ -20869,6 +20869,12 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
     norm_key = (course_key or "").strip().lower()
     # normalize once so counting/saving is consistent
     norm_key = (course_key or "").strip().lower()
+    assessment_cfg = next(
+        (item for item in load_assessments_cfg()
+         if normalize_course_key(item.get("key")) == norm_key),
+        {},
+    )
+    question_count = assessment_cfg.get("question_count")
 
     # ----- NEW: Idempotency guard -----
     take_ep = f"{course_key}_take"
@@ -21010,7 +21016,24 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             # ---- Student confirmed ready — proceed to assessment ----
             if not attempt:
                 try:
-                    qs = load_questions(course_key)
+                    question_bank = load_questions(course_key)
+                    if question_count is None:
+                        qs = question_bank
+                    else:
+                        if (isinstance(question_count, bool)
+                                or not isinstance(question_count, int)
+                                or question_count <= 0):
+                            raise ValueError(
+                                f"Invalid question_count for {course_key}: {question_count}"
+                            )
+                        if len(question_bank) < question_count:
+                            raise ValueError(
+                                f"Assessment has {len(question_bank)} questions; "
+                                f"at least {question_count} are required."
+                            )
+                        rng = secrets.SystemRandom()
+                        qs = rng.sample(question_bank, question_count)
+                        rng.shuffle(qs)
                     attempt = AssessmentAttempt(
                         course_key=norm_key,
                         student_id=str(stu["student_id"]),
@@ -21045,9 +21068,9 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             except Exception:
                 db.session.rollback()
 
-            if len(qs) != 50:
+            if question_count is not None and len(qs) != question_count:
                 flash(
-                    f"⚠️ {title} not ready. Expected 50 Qs, found {len(qs)}.", "warning")
+                    f"⚠️ {title} not ready. Expected {question_count} Qs, found {len(qs)}.", "warning")
 
             # Get detailed student info from database
             student_first_name = student_obj.name if student_obj else ""
