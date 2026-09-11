@@ -1,0 +1,138 @@
+[
+  {
+    "key": "asat_gen",
+    "title": "ASAT General",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "asat_gen_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "level_3_cargo",
+    "title": "Level 3 Cargo",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "level_3_cargo_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "rpas_final",
+    "title": "RPAS - Final Exam",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "rpas_final_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "dggf1",
+    "title": "DG Group F Assessment 1",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "dggf1_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "Test 1",
+    "title": "ASAT Cargo",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "Test 1_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "asat2",
+    "title": "ASAT_Cargo_2",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "asat2_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "d",
+    "title": "Dangerous Goods Group D & E",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "d_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "z",
+    "title": "Dangerous Goods Group C",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "z_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "DGGE",
+    "title": "Dangerous Goods Group E",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "DGGE_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "tvfa",
+    "title": "Test Virtual Final Assessment",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "tvfa_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "l",
+    "title": "l",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "l_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "virtual_tester",
+    "title": "Virtual Tester",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "virtual_tester_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "level_3_airport_and_airlines_air_carrier",
+    "title": "Level 3 Airport and Airlines (Air Carrier)",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "level_3_airport_and_airlines_air_carrier_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "dangerous_goods_group_a_f_virtual",
+    "title": "Dangerous Goods Group A/F (Virtual)",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "dangerous_goods_group_a_f_virtual_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "virtual_test_50",
+    "title": "Virtual Test 50",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "virtual_test_50_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "30",
+    "title": "Aviation Security Awareness Catering Personnel",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "30_final_questions.json",
+    "pdf_endpoint": null
+  },
+  {
+    "key": "battery_shipping_awareness",
+    "title": "Battery Shipping Awareness",
+    "pass_mark": 80,
+    "icon": "fa-file-alt",
+    "qfile": "battery_shipping_awareness_final_questions.json",
+    "pdf_endpoint": null
+  }
+]

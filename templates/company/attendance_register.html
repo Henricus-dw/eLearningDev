@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Attendance Register — Professional Aviation Training</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' },
+        keyframes: { dash: { to:{ strokeDashoffset:-700 } } },
+        animation: { dash: 'dash 20s linear infinite' }
+      }
+    }
+  }
+</script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+<style>
+  .bg-board {
+    background:
+      radial-gradient(900px 500px at 70% 15%, rgba(199,164,52,.08), transparent 60%),
+      radial-gradient(1000px 600px at 10% 90%, rgba(23,48,107,.10), transparent 60%),
+      radial-gradient(1200px 700px at 50% 50%, rgba(23,48,107,.06), transparent 65%),
+      radial-gradient(circle at center, rgba(255,255,255,.6), rgba(255,255,255,.4) 40%, rgba(255,255,255,.2) 70%, transparent 80%),
+      radial-gradient(circle at 50% 110%, rgba(0,0,0,.05), transparent 40%);
+    position: relative;
+  }
+  .dotfield {
+    background-image: radial-gradient(rgba(23,48,107,.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+    -webkit-mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+  }
+  .pill { border-radius: 9999px; }
+</style>
+</head>
+
+<body class="min-h-screen bg-slate-50 bg-board overflow-x-hidden">
+  <div class="dotfield absolute inset-0 pointer-events-none"></div>
+  <svg class="pointer-events-none absolute inset-0 w-full h-full opacity-60" viewBox="0 0 1440 900" fill="none">
+    <g stroke="#17306B" stroke-opacity=".15" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 10" class="animate-dash">
+      <path d="M140,580 C420,420 740,520 960,340 C1120,220 1240,240 1320,300"/>
+      <path d="M220,260 C460,240 680,360 880,410 C1100,470 1250,400 1340,340"/>
+      <path d="M160,500 C380,520 600,440 760,300 C900,180 1120,200 1260,260"/>
+    </g>
+    <g fill="#C7A434" opacity=".65">
+      <circle cx="220" cy="260" r="3"/><circle cx="160" cy="500" r="3"/><circle cx="140" cy="580" r="3"/>
+      <circle cx="760" cy="300" r="3"/><circle cx="960" cy="340" r="3"/><circle cx="1260" cy="260" r="3"/>
+    </g>
+  </svg>
+
+  <!-- Top bar -->
+  <header class="relative z-10 max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/PAS_Training_Logo.png') }}" class="h-10 w-auto" alt="Logo">
+      <div>
+        <div class="text-sm uppercase tracking-widest text-slate-400">Company Portal</div>
+        <h1 class="text-2xl font-semibold text-brand-blue leading-tight">{{ company.name }}</h1>
+      </div>
+    </div>
+    <nav class="flex items-center gap-3">
+      <a href="{{ url_for('company_dashboard') }}" class="pill bg-white/80 text-slate-600 px-3 py-1.5 text-sm ring-1 ring-slate-200 shadow-sm hover:bg-white">
+        <i class="fa-solid fa-gauge mr-1"></i> Dashboard
+      </a>
+      <button onclick="document.getElementById('settingsDialog') && document.getElementById('settingsDialog').showModal()" class="pill bg-white/80 text-slate-600 px-3 py-1.5 text-sm ring-1 ring-slate-200 shadow-sm hover:bg-white">
+        <i class="fa-solid fa-gear mr-1"></i> Settings
+      </button>
+      <a href="{{ url_for('company_logout') }}" class="pill bg-slate-900 text-white px-3 py-1.5 text-sm shadow-soft hover:bg-slate-800">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+      </a>
+    </nav>
+  </header>
+
+  <!-- Page content -->
+  <main class="relative z-10 max-w-7xl mx-auto px-6 pb-14">
+    <div class="h-1.5 w-full rounded-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold shadow-soft mb-6"></div>
+
+    <!-- Title -->
+    <h2 class="text-lg font-semibold text-brand-blue mb-4">
+      <i class="fa-solid fa-clipboard-list mr-2 text-brand-gold"></i>Attendance Register
+    </h2>
+
+    <!-- Filter card -->
+    <section class="bg-white/95 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200 shadow-soft p-5 mb-6 relative z-10">
+      <form method="GET" action="" class="flex flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-[220px]">
+          <label class="block text-xs font-medium text-slate-500 mb-1">Course</label>
+          <select name="course_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue">
+            <option value="">— Select a course —</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}" {{ 'selected' if course_id == c.id }}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="pill bg-brand-blue text-white px-5 py-2 text-sm shadow-soft hover:brightness-95">
+          <i class="fa-solid fa-filter mr-1"></i> Filter
+        </button>
+      </form>
+    </section>
+
+    <!-- Students table -->
+    {% if selected_course %}
+    <section class="bg-white/95 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200 shadow-soft p-5 mb-6 relative z-10">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h3 class="text-sm font-semibold text-slate-600">
+          {{ selected_course.title }}
+          <span class="ml-2 pill text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">{{ students|length }} student{{ 's' if students|length != 1 }}</span>
+        </h3>
+        {% if students %}
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <i class="fa-solid fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="studentSearch" placeholder="Search by name, student ID, national ID, or email..."
+                   class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue w-64">
+          </div>
+          <select id="perPage" class="rounded-lg border-slate-200 text-xs px-2 py-1.5">
+            <option value="25">25/page</option>
+            <option value="50" selected>50/page</option>
+            <option value="100">100/page</option>
+            <option value="999999">All</option>
+          </select>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if students %}
+      <form method="POST" action="{{ url_for('company_attendance_register_pdf') }}" id="pdfForm">
+        <input type="hidden" name="course_id" value="{{ selected_course.id }}">
+
+        <div class="flex items-center gap-2 mb-2">
+          <input type="checkbox" id="selectAll" class="rounded">
+          <label for="selectAll" class="text-xs text-slate-500 cursor-pointer">Select all visible</label>
+          <span class="text-xs text-slate-400 ml-2" id="selectedCount"></span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs uppercase text-slate-400">
+                <th class="py-2 px-2 w-8"></th>
+                <th class="py-2 px-2">Name</th>
+                <th class="py-2 px-2">Surname</th>
+                <th class="py-2 px-2">ID Number</th>
+                <th class="py-2 px-2">Email</th>
+                <th class="py-2 px-2">Enrolled</th>
+                <th class="py-2 px-2">Completed</th>
+                <th class="py-2 px-2">Score</th>
+                <th class="py-2 px-2">Certificate</th>
+              </tr>
+            </thead>
+            <tbody id="studentBody">
+              {% for student, enrollment, cert in students %}
+              <tr class="border-b border-slate-100 hover:bg-slate-50/60 student-row"
+                  data-search="{{ student.name|lower }} {{ student.surname|lower }} {{ student.student_id|lower if student.student_id else '' }} {{ student.national_id|lower if student.national_id else '' }} {{ student.email|lower }}">
+                <td class="py-2 px-2"><input type="checkbox" name="student_ids" value="{{ student.id }}" class="student-cb rounded" checked></td>
+                <td class="py-2 px-2 text-slate-700">{{ student.name }}</td>
+                <td class="py-2 px-2 text-slate-700">{{ student.surname }}</td>
+                <td class="py-2 px-2 text-slate-500 font-mono text-xs">{{ student.national_id or '—' }}</td>
+                <td class="py-2 px-2 text-slate-500">{{ student.email }}</td>
+                <td class="py-2 px-2 text-slate-500">{{ enrollment.enrolled_at.strftime('%d %b %Y') if enrollment.enrolled_at else '—' }}</td>
+                <td class="py-2 px-2 text-slate-500">{{ cert.passed_at.strftime('%d %b %Y') if cert and cert.passed_at else '—' }}</td>
+                <td class="py-2 px-2 text-slate-700 font-medium">{{ '%.0f%%' % cert.score if cert and cert.score else '—' }}</td>
+                <td class="py-2 px-2">
+                  {% if cert and cert.status == 'done' %}
+                    <span class="pill text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">Issued</span>
+                  {% elif cert and cert.status == 'pending' %}
+                    <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">Pending</span>
+                  {% elif cert %}
+                    <span class="pill text-xs px-2 py-0.5 bg-slate-50 text-slate-500 ring-1 ring-slate-200">{{ cert.status|capitalize }}</span>
+                  {% else %}
+                    <span class="text-slate-400">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
+          <span class="text-xs text-slate-500" id="pageInfo"></span>
+          <div class="flex items-center gap-1" id="pageButtons"></div>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <button type="submit" class="pill bg-brand-gold text-white px-5 py-2 text-sm shadow-soft hover:brightness-95">
+            <i class="fa-solid fa-file-pdf mr-1"></i> Generate PDF
+          </button>
+        </div>
+      </form>
+
+      {% else %}
+      <p class="text-sm text-slate-500 py-4 text-center">No completed students found for this course.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+  </main>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md z-50">
+    {% for c,m in messages %}
+      <div class="mb-2 text-sm px-3 py-2 rounded ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else 'bg-amber-50 text-amber-900 ring-amber-200' }}">{{ m }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('studentSearch');
+    const selectAll = document.getElementById('selectAll');
+    const perPageSelect = document.getElementById('perPage');
+    const rows = Array.from(document.querySelectorAll('.student-row'));
+    const pageInfo = document.getElementById('pageInfo');
+    const pageButtons = document.getElementById('pageButtons');
+    const selectedCount = document.getElementById('selectedCount');
+    let currentPage = 1;
+
+    if (!rows.length) return;
+
+    function getVisibleRows() {
+      const q = (searchInput?.value || '').toLowerCase().trim();
+      return rows.filter(r => !q || r.dataset.search.includes(q));
+    }
+    function getPerPage() { return parseInt(perPageSelect?.value || 50); }
+
+    function render() {
+      const visible = getVisibleRows();
+      const perPage = getPerPage();
+      const totalPages = Math.max(1, Math.ceil(visible.length / perPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * perPage;
+      const end = start + perPage;
+      rows.forEach(r => r.style.display = 'none');
+      visible.forEach((r, i) => { r.style.display = (i >= start && i < end) ? '' : 'none'; });
+      if (pageInfo) {
+        pageInfo.textContent = `Showing ${start + 1}–${Math.min(end, visible.length)} of ${visible.length}` +
+          (visible.length < rows.length ? ` (filtered from ${rows.length})` : '');
+      }
+      if (pageButtons) {
+        pageButtons.innerHTML = '';
+        if (totalPages > 1) {
+          for (let p = 1; p <= totalPages; p++) {
+            const btn = document.createElement('button');
+            btn.type = 'button'; btn.textContent = p;
+            btn.className = p === currentPage
+              ? 'px-2.5 py-1 rounded text-xs font-bold text-white bg-brand-blue'
+              : 'px-2.5 py-1 rounded text-xs font-semibold text-slate-600 bg-white ring-1 ring-slate-200 hover:bg-slate-50';
+            btn.addEventListener('click', () => { currentPage = p; render(); });
+            pageButtons.appendChild(btn);
+          }
+        }
+      }
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.student-cb:checked').length;
+      if (selectedCount) selectedCount.textContent = `${checked} selected`;
+    }
+
+    if (searchInput) searchInput.addEventListener('input', () => { currentPage = 1; render(); });
+    if (perPageSelect) perPageSelect.addEventListener('change', () => { currentPage = 1; render(); });
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        const visible = getVisibleRows();
+        const perPage = getPerPage();
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        visible.forEach((r, i) => {
+          if (i >= start && i < end) {
+            const cb = r.querySelector('.student-cb');
+            if (cb) cb.checked = selectAll.checked;
+          }
+        });
+        updateSelectedCount();
+      });
+    }
+    document.addEventListener('change', function (e) {
+      if (e.target.classList.contains('student-cb')) updateSelectedCount();
+    });
+
+    // Validate form
+    const pdfForm = document.getElementById('pdfForm');
+    if (pdfForm) {
+      pdfForm.addEventListener('submit', function(e) {
+        if (!document.querySelectorAll('.student-cb:checked').length) {
+          e.preventDefault(); alert('Please select at least one student.');
+        }
+      });
+    }
+
+    render();
+  });
+</script>
+</body>
+</html>

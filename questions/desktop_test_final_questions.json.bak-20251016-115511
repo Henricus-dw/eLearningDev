@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {
+      "question": "Placeholder Q49 for desktop_test",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q50 for desktop_test",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

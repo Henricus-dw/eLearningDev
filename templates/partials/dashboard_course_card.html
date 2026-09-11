@@ -1,0 +1,277 @@
+{#
+  Dashboard course card partial.
+  Used by both the Learn tab (normal courses) and the Virtual tab (virtual courses).
+  Requires `progress` in the caller's context with all the fields the dashboard() route
+  populates, including the v1.1.0 virtual-aware fields:
+    - is_virtual
+    - teams_link, virtual_session_date
+    - assessment_unlocked (virtual courses only — combines course + enrollment flags)
+    - final_url  (pre-resolved URL for starting the final assessment)
+    - has_assessment  (False if a virtual course has no assessment linked yet)
+#}
+<div class="beveled-box-wrapper">
+  <div class="imgtest" style="background-image: url('{{ progress.image_url }}');">
+  </div>
+  <div class="beveled-box-content">{{ progress.course_title }}</div>
+
+  {% if progress.is_virtual and not (progress.passed_final and not progress.can_retake_final) %}
+  {# Virtual-only metadata row: Teams link + session date.
+     Hidden once the student has passed and is in the certified / renewable state —
+     there's nothing left to do in Teams at that point. #}
+  <div class="beveled-box-content-2" style="font-size: 0.75rem; line-height: 1.4;">
+    {% if progress.virtual_session_date %}
+      <div><i class="fa-solid fa-calendar" style="color:#C7A434; margin-right:4px;"></i>{{ progress.virtual_session_date.strftime('%a, %d %b %Y &middot; %H:%M')|safe }}</div>
+    {% else %}
+      <div><i class="fa-solid fa-calendar" style="color:#C7A434; margin-right:4px;"></i><span style="opacity:0.7;">Session date pending</span></div>
+    {% endif %}
+    {% if progress.teams_link %}
+      <div><a href="{{ progress.teams_link }}" target="_blank" rel="noopener" style="color:#C7A434; text-decoration:underline;"><i class="fa-brands fa-microsoft" style="margin-right:4px;"></i>Join Teams class</a></div>
+    {% else %}
+      <div><i class="fa-brands fa-microsoft" style="color:#C7A434; margin-right:4px;"></i><span style="opacity:0.7;">Meeting link pending</span></div>
+    {% endif %}
+    {% if progress.handbook_url %}
+      <div><a href="{{ progress.handbook_url }}" target="_blank" rel="noopener" style="color:#C7A434; text-decoration:underline;"><i class="fa-solid fa-book" style="margin-right:4px;"></i>Open handbook</a></div>
+    {% endif %}
+  </div>
+
+  {# Pre-final quizzes (v1.1.0 Phase 3e). Visible while the student is still
+     working toward the final; hidden once they've passed and are certified. #}
+  {% if progress.quizzes_info %}
+  <div class="beveled-box-content-2" style="font-size: 0.75rem; line-height: 1.5; padding-top: 4px;">
+    <div style="font-weight: 600; opacity: 0.85; margin-bottom: 4px;">
+      <i class="fa-solid fa-clipboard-question" style="color:#C7A434; margin-right:4px;"></i>Pre-final quizzes
+    </div>
+    {% for qi in progress.quizzes_info %}
+      <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
+        {% if qi.state == 'passed' %}
+          <i class="fa-solid fa-circle-check" style="color:#10b981; flex-shrink:0;"></i>
+          <span style="flex:1;">{{ qi.quiz.title }}</span>
+          <span style="opacity:0.7; font-size:0.7rem;">Passed</span>
+        {% elif qi.state == 'available' %}
+          <i class="fa-solid fa-circle-play" style="color:#C7A434; flex-shrink:0;"></i>
+          <a href="{{ qi.take_url }}" style="color:#C7A434; text-decoration:underline; flex:1;">{{ qi.quiz.title }}</a>
+          {% if qi.quiz.required %}<span style="opacity:0.7; font-size:0.65rem;">Required</span>{% else %}<span style="opacity:0.7; font-size:0.65rem;">Optional</span>{% endif %}
+        {% else %}{# locked #}
+          <i class="fa-solid fa-lock" style="color:#94a3b8; flex-shrink:0;"></i>
+          <span style="flex:1; opacity:0.7;">{{ qi.quiz.title }}</span>
+          <span style="opacity:0.5; font-size:0.65rem;">Locked</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {# === CERTIFICATION-AWARE PROGRESS DISPLAY === #}
+  {% if progress.passed_final and not progress.can_retake_final and progress.feedback_required %}
+  {# Student passed but hasn't submitted feedback yet — gate certificate behind feedback #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem; color: #b45309;">Feedback required for certificate</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);"></div>
+  </div>
+  <a href="{{ url_for('course_feedback_page', course_id=progress.course_id) }}">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+      GIVE FEEDBACK
+    </div>
+  </a>
+
+  {% elif progress.passed_final and not progress.can_retake_final %}
+  {# Student passed and feedback submitted - show certified state with renewable countdown.
+     The green "COMPLETE" bar was removed as redundant — the status line above already
+     tells the student they're done, and the download certificate button is the only
+     action they actually want here. #}
+  <div class="beveled-box-content-2" style="display:flex; align-items:center; gap:6px;">
+    <i class="fa-solid fa-circle-check" style="color:#10b981; font-size:0.95rem;"></i>
+    {% if progress.cert_time_remaining %}
+    <span style="font-weight: 600; font-size: 0.9rem; color:#10b981;">Renewable in {{ progress.cert_time_remaining }}</span>
+    {% else %}
+    <span style="font-weight: 600; font-size: 0.9rem; color:#10b981;">Certified</span>
+    {% endif %}
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #10b981 0%, #059669 100%);"></div>
+  </div>
+  {% if progress.cert_pdf_url %}
+  <a href="{{ progress.cert_pdf_url }}" target="_blank" style="text-decoration: none; display:block;">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); display:block; width:100%; box-sizing:border-box;">
+      <i class="fa-solid fa-file-pdf" style="margin-right: 0.4rem;"></i> DOWNLOAD CERTIFICATE
+    </div>
+  </a>
+  {% else %}
+  <div class="button-beveled" style="opacity:0.7; cursor:default; background:linear-gradient(135deg, #10b981 0%, #059669 100%); display:block; width:100%; box-sizing:border-box;">
+    <i class="fa-solid fa-circle-check" style="margin-right:0.4rem;"></i> COMPLETE
+  </div>
+  {% endif %}
+
+  {% elif progress.progress == 100 and progress.has_submitted_final and not progress.passed_final %}
+  {# NOT PASSED - check if they have attempts remaining #}
+  {% if progress.final_attempts_left and progress.final_attempts_left > 0 %}
+  {# Has retry available (scored 75-79%) #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">1 attempt remaining</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);"></div>
+  </div>
+  <a href="{{ progress.final_url }}">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+      RETRY
+    </div>
+  </a>
+  {% elif progress.can_request_retry %}
+  {# Eligible to request 3rd attempt (scored 75-79.99% on 2nd attempt) #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">Score: {{ progress.latest_score|round(1) }}% - Request retry</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);"></div>
+  </div>
+  <a href="{{ url_for('request_retry', course_id=progress.course_id) }}">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+      REQUEST RETRY
+    </div>
+  </a>
+
+  {% elif progress.has_pending_retry_request %}
+  {# Retry request pending admin approval #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">Score: {{ progress.latest_score|round(1) }}% - Awaiting review</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);"></div>
+  </div>
+  <div class="button-beveled" style="opacity: 0.7; cursor: default; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+    PENDING REVIEW
+  </div>
+
+  {% elif progress.retry_request_status == 'approved' %}
+  {# Retry request was APPROVED - show RETRY button #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">3rd attempt approved</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #10b981 0%, #059669 100%);"></div>
+  </div>
+  <a href="{{ progress.final_url }}">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+      RETRY
+    </div>
+  </a>
+
+  {% elif progress.retry_request_status == 'rejected' %}
+  {# Retry request was rejected #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">Retry request denied</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);"></div>
+  </div>
+  <div class="button-beveled" style="opacity: 0.6; cursor: default; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+    NOT PASSED
+  </div>
+
+  {% else %}
+  {# No attempts left and not eligible for retry request (score < 75%) #}
+  <div class="beveled-box-content-2">
+    <span style="font-weight: 600; font-size: 0.9rem;">Contact admin for retry</span>
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);"></div>
+  </div>
+  <div class="button-beveled" style="opacity: 0.6; cursor: default; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+    NOT PASSED
+  </div>
+  {% endif %}
+
+  {% elif progress.is_virtual and not progress.assessment_unlocked %}
+  {# Virtual course whose final assessment is locked. Distinguish between
+     the admin not having unlocked it yet and the student still owing
+     required quizzes — the message and the implied action differ. #}
+  {% set _pending_q = progress.required_quizzes_pending or 0 %}
+  <div class="beveled-box-content-2">
+    {% if not progress.admin_assessment_unlocked %}
+      <span style="font-weight: 600; font-size: 0.9rem;">Awaiting instructor unlock</span>
+    {% elif _pending_q %}
+      <span style="font-weight: 600; font-size: 0.9rem; color:#b45309;">
+        Complete {{ _pending_q }} required quiz{{ '' if _pending_q == 1 else 'zes' }} first
+      </span>
+    {% else %}
+      <span style="font-weight: 600; font-size: 0.9rem;">Awaiting instructor unlock</span>
+    {% endif %}
+  </div>
+  <div class="progress-bar" style="--progress: 100%;">
+    <div class="progress-bar-fill" style="background: linear-gradient(90deg, #64748b 0%, #475569 100%);"></div>
+  </div>
+  <div class="button-beveled" style="opacity: 0.6; cursor: not-allowed; background: linear-gradient(135deg, #64748b 0%, #475569 100%);">
+    <i class="fa-solid fa-lock" style="margin-right: 0.3rem;"></i>LOCKED
+  </div>
+
+  {% else %}
+  {# Normal progress display #}
+  <div class="beveled-box-content-2">
+    {% if progress.is_virtual %}
+    <span style="font-weight: 600; font-size: 0.9rem;">Ready for final assessment</span>
+    {% else %}
+    <span style="font-family: Orbitron; font-weight: bold;">{{ progress.progress|round(1) }}%</span>&nbsp;Completed
+    {% endif %}
+  </div>
+  <div class="progress-bar" style="--progress: {{ progress.progress }}%;">
+    <div class="progress-bar-fill"></div>
+  </div>
+  {% endif %}
+
+  {# === BUTTON LOGIC (only for non-complete, non-failed, non-locked states) === #}
+  {% if not (progress.passed_final and not progress.can_retake_final)
+        and not (progress.progress == 100 and progress.has_submitted_final and not progress.passed_final)
+        and not (progress.is_virtual and not progress.assessment_unlocked) %}
+
+  {% if progress.passed_final and progress.can_retake_final %}
+  {# Certification expired - allow retake #}
+  <a href="{{ progress.final_url }}">
+    <div class="button-beveled" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+      🔄 RETAKE FINAL
+    </div>
+  </a>
+  <div class="beveled-box-content-2" style="font-size: 0.75rem; color: #f59e0b; margin-top: 4px;">
+    ⚠️ Certification expired
+  </div>
+
+  {% elif progress.is_completed %}
+  {# Legacy completed status #}
+  <div class="button-beveled" style="opacity: 0.5; cursor: default;">COMPLETE</div>
+
+  {% elif progress.next_chapter %}
+  {# Still has chapters to complete #}
+  <a href="{{ url_for('unit_content', course_id=progress.course_id, chapter_id=progress.next_chapter.id) }}">
+    <div class="button-beveled">RESUME</div>
+  </a>
+
+  {% elif progress.progress == 100 and not progress.has_submitted_final %}
+  {# Ready to take final #}
+  {% if progress.is_virtual and not progress.has_assessment %}
+  <div class="button-beveled" style="opacity: 0.6; cursor: not-allowed; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); font-size: 0.75rem;">
+    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 0.3rem;"></i>No assessment linked
+  </div>
+  {% elif progress.final_wait_seconds and progress.final_wait_seconds > 0 %}
+  {# Civil Aviation Authority rule: a minimum number of hours on the course
+     before its final assessment. Show the wait here rather than letting the
+     student click through and get bounced back to the dashboard. #}
+  <div class="button-beveled"
+       style="opacity: 0.75; cursor: not-allowed; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 0.7rem;"
+       title="Civil Aviation Authority rules require at least 5 hours on a course before its final assessment.{% if progress.final_unlock_at %} Yours unlocks at {{ progress.final_unlock_at.strftime('%H:%M on %d %b %Y') }}.{% endif %}">
+    <i class="fa-solid fa-clock" style="margin-right: 0.3rem;"></i>FINAL IN {{ progress.final_wait_human }}
+  </div>
+  {% else %}
+  <a href="{{ progress.final_url }}">
+    <div class="button-beveled">🎯 FINAL</div>
+  </a>
+  {% endif %}
+
+  {% else %}
+  <div class="text-muted small unknown-progress">⚠️ Progress unknown.</div>
+  {% endif %}
+  {% endif %}{# Close non-complete button logic #}
+
+</div> <!-- Close beveled-box-wrapper -->

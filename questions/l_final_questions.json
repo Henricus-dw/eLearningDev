@@ -1,0 +1,459 @@
+{
+  "questions": [
+    {
+      "question": "As an AVSEC Manager, the most accurate description of Aviation Security is:",
+      "options": [
+        "Passenger service enhancement",
+        "A coordinated system of preventive measures, procedures, and resources to protect civil aviation against unlawful interference",
+        "Airline operational efficiency management",
+        "Airport commercial development"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Your airport experiences an increased threat level. Your primary responsibility as AVSEC Manager is to:",
+      "options": [
+        "Maintain normal operations without changes",
+        "Implement enhanced security measures in accordance with the NASP and threat assessment",
+        "Delay all flights",
+        "Reduce staff deployment"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "In ensuring compliance with Annex 17, your key focus is to:",
+      "options": [
+        "Increase passenger flow",
+        "Improve retail operations",
+        "Reduce operational costs",
+        "Ensure security measures meet ICAO Standards and national requirements"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "A security breach occurs at an access control point. Your immediate managerial action is to:",
+      "options": [
+        "Wait for a full report before acting",
+        "Continue normal operations",
+        "Activate contingency procedures and secure the affected area",
+        "Inform the media immediately"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "The regulatory authority responsible for oversight of aviation security in South Africa is:",
+      "options": [
+        "IATA",
+        "ICAO",
+        "SACAA",
+        "Airport Company only"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "As a manager, unlawful interference is best understood as:",
+      "options": [
+        "Acts that threaten civil aviation safety such as sabotage, hijacking, or violence",
+        "Operational delays",
+        "Passenger dissatisfaction",
+        "Staff absenteeism"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "You are responsible for ensuring your airport has a National Aviation Security Programme. This programme is primarily:",
+      "options": [
+        "A marketing tool",
+        "A financial plan",
+        "A customer service guide",
+        "A regulatory framework for aviation security compliance"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What is the primary purpose of contingency planning within an airport security environment?",
+      "options": [
+        "To ensure normal operations continue without any changes during disruptions",
+        "To ensure only airline operators manage emergency response activities",
+        "To ensure the organisation is prepared to respond effectively to security incidents or emergencies",
+        "To suspend all security functions during incidents"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "A contingency plan must clearly define command structures, roles, responsibilities, and communication lines to ensure effective coordination during emergencies.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the primary objective of a Quality Control Programme within an aviation security environment?",
+      "options": [
+        "To monitor and verify compliance with approved aviation security procedures",
+        "To ensure security operations function without supervision",
+        "To allow staff to operate independently without oversight",
+        "To reduce operational costs within the security department"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The findings of a Quality Control inspection should be used to:",
+      "options": [
+        "Discipline staff only",
+        "Reduce security staffing levels",
+        "Increase passenger processing speed only",
+        "Improve compliance, performance, and system effectiveness"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "All personnel performing aviation security control functions must be subjected to background checks and appropriate selection procedures.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the primary purpose of Human Resource Planning within an aviation security environment?",
+      "options": [
+        "To ensure adequate and competent personnel are available according to operational risk and demand",
+        "To allocate staff based only on availability",
+        "To assign security duties randomly across all shifts",
+        "To make security training optional for operational personnel"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "In the event of X-ray equipment failure, the correct managerial response is to:",
+      "options": [
+        "Suspend all airport operations indefinitely",
+        "Ignore the malfunction until end of shift",
+        "Implement manual screening procedures and deploy additional security resources",
+        "Allow passengers to proceed without screening"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What is the primary focus of Human Resource Development within an aviation security environment?",
+      "options": [
+        "Continuously improving staff knowledge, skills, and performance",
+        "Reducing training requirements for security personnel",
+        "Eliminating supervision and management structures",
+        "Implementing temporary staffing solutions only"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "ICAO ANNEX 17, STANDARD 3.2.1:                                                                                \n“Each Contracting State shall require each airport serving civil aviation to establish, implement and maintain a written airport security programme appropriate to meet the requirements of the national aviation security programme.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The purpose of a job description is to:",
+      "options": [
+        "Define duties, responsibilities, and reporting lines for a specific role",
+        "Replace operational procedures",
+        "Reduce management oversight",
+        "Increase workload without structure"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of Standard Operating Procedures (SOPs)?",
+      "options": [
+        "Security tasks are performed inconsistently across shifts",
+        "Security tasks are executed in a standardised and controlled manner",
+        "Staff determine their own procedures",
+        "Procedures are optional"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Standard Operating Procedures may be adjusted informally by individual security officers depending on operational preference.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What does a Quality Control Programme include?",
+      "options": [
+        "Audits, inspections, and compliance monitoring activities",
+        "Passenger surveys only",
+        "Airline marketing reviews",
+        "None of the above"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "How is a crisis situation best defined?",
+      "options": [
+        "A planned operational delay",
+        "An unexpected event requiring immediate managerial intervention and decision-making",
+        "Routine operational disruption"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is meant by “behaviour detection” in an aviation security environment?",
+      "options": [
+        "Behaviour detection is a system used to track aircraft flight paths and weather patterns.",
+        "Behaviour detection refers to the process of checking luggage weight and cargo balance on aircraft.",
+        "Behaviour detection is the application of techniques to recognise behavioural characteristics, including physiological or gestural signs of anomalous behaviour, in order to identify persons who may pose a threat to civil aviation.",
+        "Behaviour detection is a method used to manage airline ticket sales and passenger bookings."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Phase 3 incidents are incidents that can be dealt with only by the relevant fire service and do not require emergency procedures or assistance from other organisations.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "In case of X-Ray machine failure, what must be done?\nDetermine availability and provide additional search benches and provide additional security personnel for hand searching",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the primary role of an Emergency Operations Centre (EOC) during an act of unlawful interference?",
+      "options": [
+        "The EOC is used mainly for airline ticket reservations and passenger information services.",
+        "The EOC is responsible only for aircraft maintenance and refuelling operations during emergencies.",
+        "The EOC functions primarily as a storage facility for airport equipment and supplies.",
+        "The EOC acts as a focal point for the control and coordination of all responding agencies during an act of unlawful interference."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "ANNEX 17, STANDARD 3.4.1                                                                                                     \n“Each Contracting State shall ensure that the persons implementing security controls are subject to background checks and selection procedures.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "ANNEX 17, STANDARD 3.4.2                                                                                                      \n“Each Contracting State shall ensure that the persons implementing security controls are appropriately trained and possess all competencies required to perform their duties and appropriate records are maintained. Relevant standards of performance shall be established and initial and periodic assessments shall be introduced to maintain those standards.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What are the three key components aviation depends on for protecting critical aviation information and communication technology systems?",
+      "options": [
+        "Communication, Transportation, and Maintenance.",
+        "Confidentiality, Integrity, and Availability.",
+        "Privacy, Marketing, and Administration.",
+        "Planning, Recruitment, and Budget Control."
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Why are cyber systems considered a major security concern in the aviation industry?",
+      "options": [
+        "Hackers can target aviation computer networks and systems to disrupt operations, interfere with ATC systems, access booking and passport control systems, and steal sensitive information.",
+        "Aviation systems are no longer dependent on computer networks or digital technology.",
+        "Cyber-attacks only affect entertainment and communication systems unrelated to aviation security.",
+        "Hackers are only interested in targeting financial institutions and not aviation systems."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is an insider threat in aviation?",
+      "options": [
+        "Refers only to external hackers attempting to gain unauthorised access to airport systems.",
+        "Involves passengers accidentally violating airport security procedures without harmful intent.",
+        "The risk posed by an employee, contractor, or other trusted individual who uses their authorised access and knowledge of the system to cause harm, such as sabotage, smuggling, theft, or terrorist acts.",
+        "Limited to mechanical failures that disrupt aviation operations."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "How should security be applied across aviation systems according to cyber requirements in aviation?",
+      "options": [
+        "Security should only be applied after systems are fully operational to avoid delays in development.",
+        "Security is only required during the design phase and can be ignored during maintenance and upgrades.",
+        "Data governance rules apply only to physical records and not to digital aviation systems.",
+        "Security must be built into aviation systems from the beginning and maintained throughout operation, maintenance, upgrades, and disposal, while also ensuring data follows governance rules for protection, retention, and destruction."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Definition of “Crisis”       \n“A decisive moment, time of danger or great success”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Some characteristics of a crisis:\nSurprise, Insufficient information when you need it most, Loss of Control",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "47.\tOnce a strategy has been acted upon other than that of hostage negotiation, it is virtually impossible to return to the strategy of negotiation because the hostage takers will more likely be agitated and uncooperative.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "ICAO ANNEX 14 RECOMMENDED PRACTICE 9.1.7                                                                             \n“A fixed operations emergency center and a mobile command post should be available during an emergency.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The Definition for “Passenger area” is:\n“All the ground space and facilities provided for passenger processing, including aprons, passenger buildings, vehicle parks and roads.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the Consideration for an Emergency Centre?",
+      "options": [
+        "Exit points.",
+        "Design and Location.",
+        "Landside",
+        "None of the above"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What do Annex 14 emergency centres support?",
+      "options": [
+        "Emergency coordination and command functions",
+        "Commercial operations",
+        "Airline marketing",
+        "Catering services"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Contingency planning is only activated during actual emergency events.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The following are all examples of Aviation Security Conventions\nTokyo – 1963    The Hague – 1970    Montreal – 1971    IATA - 1962",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The reason for terrorist attack on Civil Aviation is to gain international attention and publicity for their cause.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What best describes the meaning of Human Factors in aviation?",
+      "options": [
+        "Refers only to technical aircraft systems and mechanical performance.",
+        "Describes only financial and administrative processes within aviation organisations.",
+        "Refers to the human element in aviation, which is the most flexible, adaptable, and valuable part of the system, but also the most vulnerable to influences that can negatively affect performance.",
+        "Refers to weather conditions that affect flight operations."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What is the key idea regarding “human error” in accident investigation and prevention?",
+      "options": [
+        "Human error should be seen as the starting point for investigation to identify underlying factors and prevent accidents, rather than being used as the final explanation.",
+        "Human error only occurs due to mechanical failures and not human involvement.",
+        "Human error should be ignored completely in accident investigations.",
+        "Human error should be used as the final conclusion, as it fully explains the cause of all accidents."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Human Factors must be taken into account because if something has gone wrong once, it is likely to happen again.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following is an example of a “Dirty Dozen” Human Factors concept in aviation safety?",
+      "options": [
+        "Stress",
+        "Humor",
+        "Teamwork",
+        "Training"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Profiling is the use of personal characteristics or behaviour patterns to make generalisations about a person.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "There are a total of 17 Annexes to the Chicago Convention on International Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "National AVSEC Program (NASP)                                                                                         \nComprehensive set of standards, regulations and safeguards that implement regional policy objectives within the region to protect international civil aviation against acts of unlawful interference.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "AVSEC Managers must maintain coordination with relevant regulatory authorities at all times.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Aviation security programmes operate independently of ICAO standards.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    }
+  ]
+}

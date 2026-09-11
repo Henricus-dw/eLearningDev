@@ -1,0 +1,367 @@
+[
+  {
+    "question": "correct1Which of the following are the basic strategies of a crisis?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "correct2Which of the following are Acts of Unlawful Interference?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "Please fill in the missing words of the following statement.",
+    "marks": 6,
+    "type": "fitb",
+    "answers": [
+      "application",
+      "recognition",
+      "characteristics",
+      "physiological",
+      "anomalous",
+      "threat"
+    ]
+  },
+  {
+    "question": "4 out of 4",
+    "marks": 4,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "Please fill in the missing words of the following statement.",
+    "marks": 4,
+    "type": "fitb",
+    "answers": [
+      "Educate",
+      "refresher",
+      "expect",
+      "practices",
+      "threat",
+      "employee",
+      "vulnerable",
+      "restricted"
+    ]
+  },
+  {
+    "question": "19:46Attempt finished Correct 2Which of the following describe what contingency planning is?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "1 out of 1Response histor y",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "correct2Which of the following are Human R esource Planning tasks?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Incorr ect 0Which of the following are the requirements of an Airport Security Manager?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 2Which of the following are objectives of a quality control program?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "Please fill in the missing words of the following statement.",
+    "marks": 3,
+    "type": "fitb",
+    "answers": [
+      "security equipment",
+      "maintenance",
+      "efficiency"
+    ]
+  },
+  {
+    "question": "19:46Attempt finished Correct 2Which of the following are part of quality control?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 3Which of the following are behavioural indicators?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "2 out of 2",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 1Which of the following are contained in the quality control program?",
+    "marks": 1,
+    "type": "boolean",
+    "multiple": true
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Partially corr ect 2Which of the following are the principles of a crisis?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "1 out of 1Response histor y",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "0 out of 3",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 1Which of the following are aviation security training objectives?",
+    "marks": 1,
+    "type": "boolean",
+    "multiple": true
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Partially corr ect 1What are performance appraisals used for?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 2Which of the following should be considered when planning an Emergency Centre?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "Please fill in the missing words of the following statement.",
+    "marks": 4,
+    "type": "fitb",
+    "answers": [
+      "measures",
+      "behaviours",
+      "behaviour",
+      "potential"
+    ]
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Partially corr ect 2Which of the following are the responsibilities of the the A VSEC Manger?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following are the benefits of creating an effective security culture?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "1 out of 1Response histor y",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "19:46Attempt finished Correct 2Which of the following are relevant to aviation operations?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "1 out of 1Response histor y",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "19:46Attempt finished Correct 2Which of the following are the responsibilities of Human R esource planning?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 2Which of the following are part of the Dirty Dozen list?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following procedures require SOPs?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 1How many chapters are there in a security manual?",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "Please fill in the missing words of the following statement.",
+    "marks": 4,
+    "type": "fitb",
+    "answers": [
+      "social",
+      "personal",
+      "communication",
+      "technical"
+    ]
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following are desirable attributes of an A VSEC Manger?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "0 out of 1Response histor y",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  },
+  {
+    "question": "correct1Which of the following are the objectives of a hostage negotiation?",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following methods can be used to mitigate cybersecurity threats?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following questions are determined by Human R esource Management?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "correct1Which of the following must be defined in the relevant documentation?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "19:46Attempt finished Correct 3Which of the following must an A VSEC Manger have technical knowledge of?",
+    "marks": 3,
+    "type": "mcq",
+    "multiple": true,
+    "options": []
+  },
+  {
+    "question": "2 out of 2",
+    "marks": 2,
+    "type": "mcq",
+    "multiple": false,
+    "options": []
+  },
+  {
+    "question": "3 15/07/21, 19:46 Attempt finished Correct 1Which of the following would require incident reporting?",
+    "marks": 1,
+    "type": "boolean",
+    "multiple": true
+  },
+  {
+    "question": "1 out of 1",
+    "marks": 1,
+    "type": "boolean",
+    "correct": false
+  }
+]

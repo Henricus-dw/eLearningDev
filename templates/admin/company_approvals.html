@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Company Approvals — Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' }
+      }
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="min-h-screen" style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
+
+  <!-- Header bar (matches admin dashboard) -->
+  <header class="bg-brand-blue w-full">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="flex items-center gap-2 border-2 border-white text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-white hover:text-brand-blue transition">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-brand-blue">Company Approvals</h1>
+      <span class="rounded-full text-sm px-3 py-1 bg-amber-50 text-amber-700 ring-1 ring-amber-200 font-medium">
+        {{ pending_companies|length }} pending
+      </span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-6 space-y-2">
+        {% for c,m in messages %}<div class="text-sm px-4 py-3 rounded-xl ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+      </div>
+    {% endif %}{% endwith %}
+
+    {% if not pending_companies %}
+      <div class="text-center py-16 text-slate-400">
+        <i class="fa-solid fa-circle-check text-4xl mb-3"></i>
+        <p>No pending company registrations.</p>
+      </div>
+    {% else %}
+      <div class="space-y-6">
+        {% for company in pending_companies %}
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200 shadow-soft overflow-hidden">
+          <!-- Company header -->
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-semibold text-brand-blue">{{ company.name }}</h2>
+              <div class="text-xs text-slate-500 mt-0.5">Registered {{ company.created_at.strftime('%d %b %Y at %H:%M') if company.created_at else 'Unknown' }}</div>
+            </div>
+            <span class="rounded-full text-xs px-3 py-1 bg-amber-50 text-amber-700 ring-1 ring-amber-200">Pending Review</span>
+          </div>
+
+          <!-- Company details grid -->
+          <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div class="text-xs text-slate-500 font-medium mb-1">Registration Details</div>
+              <div class="space-y-1 text-slate-700">
+                {% if company.reg_no %}<div><span class="text-slate-400">Reg No:</span> {{ company.reg_no }}</div>{% endif %}
+                {% if company.vat_number %}<div><span class="text-slate-400">VAT:</span> {{ company.vat_number }}</div>{% endif %}
+                {% if company.entity_responsible %}<div><span class="text-slate-400">Responsible Entity:</span> {{ company.entity_responsible }}</div>{% endif %}
+                {% if company.purchase_order_number %}<div><span class="text-slate-400">PO Number:</span> {{ company.purchase_order_number }}</div>{% endif %}
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 font-medium mb-1">Address</div>
+              <div class="space-y-1 text-slate-700">
+                {% if company.postal_address %}<div><span class="text-slate-400">Postal:</span> {{ company.postal_address }}{% if company.postal_code %}, {{ company.postal_code }}{% endif %}</div>{% endif %}
+                {% if company.street_address %}<div><span class="text-slate-400">Street:</span> {{ company.street_address }}{% if company.street_postal_code %}, {{ company.street_postal_code }}{% endif %}</div>{% endif %}
+                {% if company.address %}<div><span class="text-slate-400">Address:</span> {{ company.address }}</div>{% endif %}
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 font-medium mb-1">Contact</div>
+              <div class="space-y-1 text-slate-700">
+                {% if company.contact_name %}<div><span class="text-slate-400">Name:</span> {{ company.contact_name }}</div>{% endif %}
+                {% if company.contact_email %}<div><span class="text-slate-400">Email:</span> {{ company.contact_email }}</div>{% endif %}
+                {% if company.contact_phone %}<div><span class="text-slate-400">Tel:</span> {{ company.contact_phone }}</div>{% endif %}
+                {% if company.cellphone %}<div><span class="text-slate-400">Cell:</span> {{ company.cellphone }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center gap-3">
+            <form method="post" action="{{ url_for('admin_approve_company', company_id=company.id) }}">
+              <button class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold hover:bg-emerald-700 transition">
+                <i class="fa-solid fa-check mr-1"></i> Approve
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('admin_reject_company', company_id=company.id) }}" class="flex items-center gap-2 flex-1">
+              <input name="rejection_reason" placeholder="Reason for rejection..." class="flex-1 rounded-lg border-slate-300 px-3 py-2 text-sm">
+              <button class="rounded-lg bg-rose-600 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-700 transition">
+                <i class="fa-solid fa-xmark mr-1"></i> Reject
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>

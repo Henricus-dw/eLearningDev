@@ -1,0 +1,666 @@
+[
+  {
+    "id": 1,
+    "type": "mcq",
+    "question": "Which statement best describes the primary objective of introducing countermeasures in civil aviation security?",
+    "points": 1,
+    "options": {
+      "A": "To improve airline profitability",
+      "B": "To protect citizens and civil aviation against Acts of Unlawful Interference",
+      "C": "To increase passenger capacity at airports",
+      "D": "To reduce aircraft maintenance costs"
+    },
+    "correct": "B",
+    "position": 1
+  },
+  {
+    "id": 2,
+    "type": "tf",
+    "question": "The purpose of an Aviation Security Airports and Airlines Manager is to ensure the implementation, maintenance, and compliance of aviation security measures in accordance with SACAA regulations to protect civil aviation against acts of unlawful interference",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 2
+  },
+  {
+    "id": 3,
+    "type": "mcq",
+    "question": "Which ONE of the following is NOT an ICAO AVSEC Convention related to aviation security?",
+    "points": 1,
+    "hint": "One of the options is not an aviation security convention recognized under ICAO frameworks and does not relate to unlawful interference in civil aviation.",
+    "options": {
+      "A": "Tokyo Convention (1963)",
+      "B": "Hague Convention (1970)",
+      "C": "Montreal Convention (1971)",
+      "D": "Geneva Convention on Airport Retail Operations (1985)"
+    },
+    "correct": "D",
+    "position": 3
+  },
+  {
+    "id": 4,
+    "type": "mcq",
+    "question": "How many ICAO Annexes are currently published under the Chicago Convention?",
+    "points": 1,
+    "options": {
+      "A": "15",
+      "B": "17",
+      "C": "19",
+      "D": "21"
+    },
+    "correct": "C",
+    "position": 4
+  },
+  {
+    "id": 5,
+    "type": "mcq",
+    "question": "Which ICAO document provides comprehensive guidance for the implementation of security measures related to Annex 17 and focuses on preventing unlawful interference with civil aviation?",
+    "points": 1,
+    "hint": "This ICAO document is commonly known as the Aviation Security Manual and supports the implementation of Annex 17.",
+    "options": {
+      "A": "DOC 8973",
+      "B": "DOC 8873",
+      "C": "DOC 8000",
+      "D": "DOC 8100"
+    },
+    "correct": "A",
+    "position": 5
+  },
+  {
+    "id": 6,
+    "type": "mcq",
+    "question": "Why is civil aviation considered a high-risk and attractive target for unlawful interference, and what critical security measure supports mitigation of this risk?",
+    "points": 1,
+    "options": {
+      "A": "Aviation has low media coverage and weak government response, making it less visible",
+      "B": "Aviation guarantees low financial loss for attackers and minimal operational disruption",
+      "C": "Attacks generate strong governmental and media reaction, while perpetrators face a relatively low risk of capture, and risk is mitigated through mandatory passenger and cabin baggage screening before access to aircraft or restricted areas",
+      "D": "Aviation security relies mainly on random inspections and does not require passenger screening at all",
+      "E": "Civil aviation targets are difficult to access and therefore not subject to international security regulations"
+    },
+    "correct": "C",
+    "position": 6
+  },
+  {
+    "id": 7,
+    "type": "tf",
+    "question": "In terms of ICAO Annex 17 Standard 3.2.1, airlines are required to establish, implement, and maintain an approved aviation security programme.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 7
+  },
+  {
+    "id": 8,
+    "type": "mcq",
+    "question": "Which of the following is part of the role of an Aviation Security Manager?",
+    "points": 1,
+    "options": {
+      "A": "Only handling passenger ticket sales",
+      "B": "Overall supervision of staff and ensuring adequate training",
+      "C": "Designing aircraft engines",
+      "D": "Managing airline catering services",
+      "E": "Controlling air traffic communications"
+    },
+    "correct": "B",
+    "position": 8
+  },
+  {
+    "id": 9,
+    "type": "tf",
+    "question": "An Aviation Security Manager is responsible for taking control in threat or emergency situations and ensuring proper implementation of security procedures.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 9
+  },
+  {
+    "id": 10,
+    "type": "mcq",
+    "question": "What is Cost Control?",
+    "points": 1,
+    "options": {
+      "A": "The process of increasing company expenses to improve service quality",
+      "B": "The process of ignoring budgets to allow flexible spending",
+      "C": "The method of only tracking income without monitoring expenses",
+      "D": "The maintenance of costs by preventing or limiting their increase through budgeting"
+    },
+    "correct": "D",
+    "position": 10
+  },
+  {
+    "id": 11,
+    "type": "mcq",
+    "question": "Give the name of the type of Cost:\r\nThose expenses that remain unchanged despite increases and decreases in production. These include rental, interest, insurance, research, and indirect labour costs.",
+    "points": 1,
+    "hint": "Think about whether the expense changes when production or activity levels increase or decrease, or whether it stays the same regardless of output.",
+    "options": {
+      "A": "Fixed Cost",
+      "B": "Variable Cost",
+      "C": "Direct Cost",
+      "D": "Marginal Cost"
+    },
+    "correct": "A",
+    "position": 11
+  },
+  {
+    "id": 12,
+    "type": "tf",
+    "question": "A budget is a plan expressed in financial terms. It also has an objective and covers a specified full-time period. There are various types of budgets e.g. the sales budget, the production budget, the administration budget and the capital budget.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 12
+  },
+  {
+    "id": 13,
+    "type": "mcq",
+    "question": "Which of the following best describes an advantage of a budget?",
+    "points": 1,
+    "options": {
+      "A": "It eliminates the need for financial planning in an organisation",
+      "B": "It improves financial control, supports decision-making, and provides early warning of financial issues",
+      "C": "It focuses only on increasing employee salaries",
+      "D": "It removes accountability from departments"
+    },
+    "correct": "B",
+    "position": 13
+  },
+  {
+    "id": 14,
+    "type": "mcq",
+    "question": "What is the role of Human Resource Development in an organisation?",
+    "points": 1,
+    "options": {
+      "A": "To support organisational objectives through a comprehensive HR strategy",
+      "B": "To focus only on hiring staff without supporting organisational goals",
+      "C": "To ensure employees work independently without any strategic direction",
+      "D": "To replace management decision-making processes"
+    },
+    "correct": "A",
+    "position": 14
+  },
+  {
+    "id": 15,
+    "type": "tf",
+    "question": "An HR strategy adds value by helping an organisation plan for changes in the wider environment, such as employment market shifts, legal changes, and new workplace practices in other organisations.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 15
+  },
+  {
+    "id": 16,
+    "type": "tf",
+    "question": "The human resources practitioner should ensure that the HR Strategy is developed separately from organisational objectives and does not need acceptance from the rest of the organisation.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 16
+  },
+  {
+    "id": 17,
+    "type": "tf",
+    "question": "Motivation in the workplace is the process leaders use to encourage employees to deliver high-performing results and maintain strong performance and morale.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 17
+  },
+  {
+    "id": 18,
+    "type": "mcq",
+    "question": "Which of the following is a security function performed at an airport?",
+    "points": 1,
+    "options": {
+      "A": "Developing airline commercial strategies and managing route profitability",
+      "B": "Overseeing airport infrastructure expansion projects and construction planning",
+      "C": "Controlling access to restricted areas, screening passengers and maintaining airport security procedures",
+      "D": "Managing airline marketing campaigns and customer loyalty programmes"
+    },
+    "correct": "C",
+    "position": 18
+  },
+  {
+    "id": 19,
+    "type": "mcq",
+    "question": "Why are pre-employment background checks conducted?",
+    "points": 1,
+    "options": {
+      "A": "To evaluate a candidate’s salary expectations and negotiate pay levels",
+      "B": "To ensure applicants meet minimum academic qualifications only",
+      "C": "To determine how quickly a candidate can be promoted",
+      "D": "To assess honesty, reliability, and integrity to reduce risk to the organisation"
+    },
+    "correct": "D",
+    "position": 19
+  },
+  {
+    "id": 20,
+    "type": "mcq",
+    "question": "Why is Aviation Security Awareness Training important?",
+    "points": 1,
+    "hint": "Think about who the training is intended for, is it only security staff, or everyone working in aviation, and what behaviour it aims to encourage.",
+    "options": {
+      "A": "It is only important for pilots and security officers.",
+      "B": "It helps reduce fuel costs and improve flight schedules.",
+      "C": "It ensures all employees understand their role in preventing security threats and unlawful interference.",
+      "D": "It is mainly used to teach passengers about airport facilities."
+    },
+    "correct": "C",
+    "position": 20
+  },
+  {
+    "id": 21,
+    "type": "mcq",
+    "question": "Which of the following is an example of a material resource used in aviation security screening?",
+    "points": 1,
+    "options": {
+      "A": "Airport Emergency Response Plan",
+      "B": "Aviation Security Training Manual",
+      "C": "Passenger Risk Assessment Procedure",
+      "D": "X-Ray machine"
+    },
+    "correct": "D",
+    "position": 21
+  },
+  {
+    "id": 22,
+    "type": "tf",
+    "question": "The evaluation of security equipment is not important, as long as employees are properly trained to use the equipment.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 22
+  },
+  {
+    "id": 24,
+    "type": "mcq",
+    "question": "What is the main purpose of Standard Operating Procedures (SOPs) in aviation security management?",
+    "points": 1,
+    "options": {
+      "A": "To replace national aviation security legislation and airport security programmes",
+      "B": "To reduce the responsibility of the airport security unit in implementing security measures",
+      "C": "To ensure a consistent application of aviation security measures by all security staff and shift teams",
+      "D": "To allow each security officer to decide independently how security measures should be applied"
+    },
+    "correct": "C",
+    "position": 23
+  },
+  {
+    "id": 25,
+    "type": "tf",
+    "question": "SOP's may be defined as: \r\n\"A rule or instruction issued by a person in authority to ensure that a specific security task is performed in accordance with the prescribed requirements necessary for the achievement of the task objective.\"",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 24
+  },
+  {
+    "id": 26,
+    "type": "tf",
+    "question": "ICAO Annex 17, standard 3.4.4 \"Each Contracting State shall require the appropriate authority to develop, implement and maintain a National Civil Aviation Security Quality Control Programme to determine compliance with and validate the effectiveness of the national civil aviation security programme.\"",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 25
+  },
+  {
+    "id": 27,
+    "type": "tf",
+    "question": "A security audit is a Low/basic check of selected airport security procedures to ensure basic compliance with aviation security requirements.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 26
+  },
+  {
+    "id": 28,
+    "type": "mcq",
+    "question": "Which of the following is an objective of a national aviation security quality control programme?",
+    "points": 1,
+    "options": {
+      "A": "To verify the effective implementation of security measures, monitor compliance, ensure training of AVSEC personnel, and review measures after unlawful interference",
+      "B": "To reduce the need for aviation security legislation by replacing it with airport-based rules",
+      "C": "To focus only on screening passengers at airports without reviewing national compliance systems",
+      "D": "To delegate all aviation security responsibilities exclusively to airlines without state oversight"
+    },
+    "correct": "A",
+    "position": 27
+  },
+  {
+    "id": 29,
+    "type": "tf",
+    "question": "The following is an extract from ICAO Annex 17 Standard 3.2.4: \r\n“Each Contracting State shall ensure that contingency plans are developed and resources made available to safeguard civil aviation, against acts of unlawful interference. The contingency plans shall be practised and exercised on a regular basis.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 28
+  },
+  {
+    "id": 30,
+    "type": "mcq",
+    "question": "According to airport emergency procedures, who is responsible for grading incidents occurring at the airport or airline operational areas?",
+    "points": 1,
+    "options": {
+      "A": "The Airport Manager on duty",
+      "B": "The Aviation Security Supervisor",
+      "C": "Senior Fire Officer of the area concerned in liaison with the officer in charge of Civil Defence of the Police Services.",
+      "D": "The Airline Operations Manager"
+    },
+    "correct": "C",
+    "position": 29
+  },
+  {
+    "id": 31,
+    "type": "short_answer",
+    "question": "What does the abbreviation EOC stand for?",
+    "points": 1,
+    "hint": "Think of the central coordination point that is activated during emergencies to manage and control response operations at an airport or similar facility.",
+    "accepted": [
+      "Emergency Operations Centre"
+    ],
+    "case_sensitive": false,
+    "position": 30
+  },
+  {
+    "id": 32,
+    "type": "tf",
+    "question": "The definition of a bomb threat\r\n“A communicated threat, anonymous or otherwise, which suggests or infers, whether true or false, that the safety of an aircraft in flight or on the ground, or any airport or civil aviation facility or any person may be in danger from an explosive or other item or device.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 31
+  },
+  {
+    "id": 33,
+    "type": "mcq",
+    "question": "In the event of an accident, what actions should the first responder take at the scene?",
+    "points": 1,
+    "options": {
+      "A": "Leave the scene immediately and wait for emergency services to take control",
+      "B": "Only report the accident to management and avoid interacting with the incident site",
+      "C": "Secure the area and wait for police instruction without reporting or assisting",
+      "D": "Report to the control room, give particulars of the accident, render assistance to the injured if able, and assist emergency services"
+    },
+    "correct": "D",
+    "position": 32
+  },
+  {
+    "id": 34,
+    "type": "tf",
+    "question": "There are two types of evacuation: Partial and General Evacuation.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 33
+  },
+  {
+    "id": 35,
+    "type": "mcq",
+    "question": "Under what circumstances would a practical evacuation be ordered at an airport?",
+    "points": 1,
+    "options": {
+      "A": "When a suspicious object is found",
+      "B": "When normal operations are running smoothly",
+      "C": "Only when the entire airport has to be closed",
+      "D": "When passengers request evacuation for convenience or comfort reasons"
+    },
+    "correct": "A",
+    "position": 34
+  },
+  {
+    "id": 36,
+    "type": "mcq",
+    "question": "What is the purpose of a Crisis Management Team (CMT) in airport security management?",
+    "points": 1,
+    "hint": "Think about what the team is responsible for achieving during an emergency situation; especially how they control the incident and reduce its impact on people and property.",
+    "options": {
+      "A": "To coordinate aircraft refuelling schedules and ground handling operations during normal airport activities.",
+      "B": "To ensure the successful termination of an incident with minimum loss of life or damage to property.",
+      "C": "To manage airline baggage loading procedures and passenger seat allocations before departure.",
+      "D": "To oversee runway maintenance planning and airport expansion projects for future operations."
+    },
+    "correct": "B",
+    "position": 35
+  },
+  {
+    "id": 37,
+    "type": "tf",
+    "question": "The aviation industry is increasingly dependent on digital systems, automated processes, and interconnected technologies rather than manual operations.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 36
+  },
+  {
+    "id": 38,
+    "type": "mcq",
+    "question": "Which of the following correctly describes cyber threats in aviation security?",
+    "points": 1,
+    "options": {
+      "A": "Cyber-attacks only aim to slow down internet usage at airports without causing any damage to systems or information",
+      "B": "Cyber-attacks are growing and may involve stealing or destroying information, disrupting flights or operations, or causing damage for political, financial, or personal reasons",
+      "C": "Cyber-attacks are rare and only target entertainment systems on aircraft, and they do not affect operations or data security",
+      "D": "Cyber threats are limited to physical break-ins at airports and do not involve digital systems or networks"
+    },
+    "correct": "B",
+    "position": 37
+  },
+  {
+    "id": 39,
+    "type": "mcq",
+    "question": "What key collaborative actions should governments, industry, and aviation partners take to strengthen aviation cybersecurity?",
+    "points": 1,
+    "options": {
+      "A": "Work as a team by coordinating strategies, policies, and plans, and sharing information on vulnerabilities that must be addressed",
+      "B": "Focus only on internal airport security systems and limit communication with external partners",
+      "C": "Work independently without sharing sensitive information to avoid data exposure",
+      "D": "Assign cybersecurity responsibility only to government authorities without industry involvement"
+    },
+    "correct": "A",
+    "position": 38
+  },
+  {
+    "id": 40,
+    "type": "mcq",
+    "question": "Which approach should be used to strengthen aviation cybersecurity against different types of risks?",
+    "points": 1,
+    "options": {
+      "A": "Apply a fixed security system that does not change regardless of the threat level",
+      "B": "Use a risk-based approach with flexible cybersecurity management systems that adjust to different risks",
+      "C": "Focus only on physical security measures at airports rather than digital systems",
+      "D": "Respond to cyber threats only after incidents occur without prior planning"
+    },
+    "correct": "B",
+    "position": 39
+  },
+  {
+    "id": 41,
+    "type": "tf",
+    "question": "Systems and data must always support confidentiality, integrity, and availability.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 40
+  },
+  {
+    "id": 42,
+    "type": "tf",
+    "question": "It is the responsibility of the Aviation Security Manager to implement proper security controls for all areas of the screening checkpoints.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 41
+  },
+  {
+    "id": 43,
+    "type": "mcq",
+    "question": "What is the meaning of Human Factors Principles in aviation?",
+    "points": 1,
+    "options": {
+      "A": "Principles that focus only on aircraft maintenance procedures without considering human involvement in operations",
+      "B": "Principles that apply only to pilot training and exclude aircraft design and certification processes",
+      "C": "Principles that apply to aeronautical design, certification, training, operations, and maintenance, ensuring a safe interface between humans and system components by considering human performance",
+      "D": "Principles that replace technical systems with human decision-making to improve operational speed"
+    },
+    "correct": "C",
+    "position": 42
+  },
+  {
+    "id": 44,
+    "type": "tf",
+    "question": "The result of Human Error\r\n“Human error” allows concealment of the underlying factors which must be brought to the fore if accidents are to be prevented. In fact, contemporary safety-thinking argues that human error should be the starting point rather than the stop-rule in accident investigation and prevention.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 43
+  },
+  {
+    "id": 45,
+    "type": "mcq",
+    "question": "Which of the following correctly represents the “Dirty Dozen” in human factors?",
+    "points": 1,
+    "options": {
+      "A": "A set of aircraft maintenance tools used in aviation engineering",
+      "B": "Twelve common human error factors that can lead to accidents in aviation operations",
+      "C": "Twelve technical aircraft systems that require regular inspection",
+      "D": "A list of international aviation regulations for airline operations"
+    },
+    "correct": "B",
+    "position": 44
+  },
+  {
+    "id": 46,
+    "type": "tf",
+    "question": "“Behaviour Detection” means within an aviation security environment, the application of techniques involving the recognition of behavioural characteristics, including but not limited to physiological or gestural signs indicative of anomalous behaviour, to identify persons who may pose a threat to civil aviation.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 45
+  },
+  {
+    "id": 47,
+    "type": "short_answer",
+    "question": "Which authority is responsible for civil aviation regulation in South Africa?",
+    "points": 1,
+    "hint": "Think of the official national authority that regulates and oversees all civil aviation safety, security, and compliance in South Africa.",
+    "accepted": [
+      "South African Civil Aviation Authority",
+      "SACAA"
+    ],
+    "case_sensitive": false,
+    "position": 46
+  },
+  {
+    "id": 48,
+    "type": "mcq",
+    "question": "What is the key idea regarding “human error” in accident investigation and prevention?",
+    "points": 1,
+    "options": {
+      "A": "Human error should be seen as the starting point for investigation to identify underlying factors and prevent accidents, rather than being used as the final explanation.",
+      "B": "Human error should be used as the final conclusion, as it fully explains the cause of all accidents.",
+      "C": "Human error should be ignored completely in accident investigations.",
+      "D": "Human error only occurs due to mechanical failures and not human involvement."
+    },
+    "correct": "A",
+    "position": 47
+  },
+  {
+    "id": 49,
+    "type": "tf",
+    "question": "Human Factors must be taken into account because if something has gone wrong once, it is unlikely to happen again.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 48
+  },
+  {
+    "id": 50,
+    "type": "mcq",
+    "question": "What determines the quality and effectiveness of communication in aviation Human Factors?",
+    "points": 1,
+    "options": {
+      "A": "The speed at which the message is delivered, regardless of whether it is understood.",
+      "B": "The number of communication tools used, even if the message is unclear.",
+      "C": "The intelligibility of the message, meaning the degree to which the intended message is understood by the receiver.",
+      "D": "The seniority of the person sending the message, rather than how well it is understood."
+    },
+    "correct": "C",
+    "position": 49
+  },
+  {
+    "id": 51,
+    "type": "mcq",
+    "question": "What is meant by “behaviour detection” in an aviation security environment?",
+    "points": 1,
+    "options": {
+      "A": "Behaviour detection is the application of techniques to recognise behavioural characteristics, including physiological or gestural signs of anomalous behaviour, in order to identify persons who may pose a threat to civil aviation.",
+      "B": "Behaviour detection is a system used to track aircraft flight paths and weather patterns.",
+      "C": "Behaviour detection refers to the process of checking luggage weight and cargo balance on aircraft.",
+      "D": "Behaviour detection is a method used to manage airline ticket sales and passenger bookings."
+    },
+    "correct": "A",
+    "position": 50
+  }
+]

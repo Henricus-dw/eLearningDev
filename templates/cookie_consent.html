@@ -1,0 +1,121 @@
+<!-- Cookie Consent Banner -->
+<style>
+:root{
+  --cc-bg:#E53E3E; --cc-ink:#E7F0FF; --cc-line:#ec5959;
+  --cc-btn:#ffffff; --cc-btn-ink:#E53E3E; --cc-ghost:#E53E3E; --cc-ghost-ink:#E7F0FF;
+}
+#cc-banner{
+  position:fixed; left:0; right:0; bottom:0; z-index:9999;
+  background:var(--cc-bg); color:var(--cc-ink);
+  border-top:1px solid var(--cc-line); box-shadow:0 -12px 40px rgba(0,0,0,.25);
+  padding:14px;
+}
+#cc-banner[hidden]{ display:none !important; }
+#cc-banner .cc-wrap{
+  display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+}
+#cc-banner .cc-text{ max-width:800px; line-height:1.4 }
+.cc-actions{ display:flex; gap:10px; }
+.cc-btn{
+  appearance:none; border:0; padding:10px 14px; border-radius:10px; cursor:pointer;
+  background:var(--cc-btn); color:var(--cc-btn-ink); font-weight:700;
+}
+.cc-btn.ghost{
+  background:transparent; color:var(--cc-ghost-ink); border:1px solid rgba(255,255,255,.25);
+}
+.cc-link{ background:none; border:0; color:#CFE3FF; text-decoration:underline; cursor:pointer; padding:0 }
+.cc-prefs{
+  margin-top:10px; padding:12px; border:1px solid var(--cc-line); border-radius:10px;
+  background:rgba(255,255,255,.06)
+}
+.cc-row{ display:flex; align-items:center; gap:10px; margin:6px 0 }
+@media (max-width:600px){ #cc-banner{ padding:12px } }
+</style>
+
+<div id="cc-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+  <div class="cc-wrap">
+    <div class="cc-text">
+      We use cookies to make this site work and to improve it.
+      Non-essential cookies (like analytics) are off until you allow them.
+      <button id="cc-open-prefs" class="cc-link" type="button">Manage choices</button>
+    </div>
+    <div class="cc-actions">
+      <button id="cc-reject" class="cc-btn ghost" type="button">Reject non-essential</button>
+      <button id="cc-accept" class="cc-btn" type="button">Accept all</button>
+    </div>
+  </div>
+
+  <div id="cc-prefs" class="cc-prefs" hidden>
+    <label class="cc-row">
+      <input type="checkbox" checked disabled>
+      <span>Strictly necessary</span>
+    </label>
+    <label class="cc-row">
+      <input id="cc-analytics" type="checkbox">
+      <span>Analytics (helps us improve)</span>
+    </label>
+    <div class="cc-actions">
+      <button id="cc-save" class="cc-btn" type="button">Save choices</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reopen link (put in your footer if you prefer it visible) -->
+
+
+<script>
+(function(){
+  const KEY = "cookie-consent:v1";
+  const $ = sel => document.querySelector(sel);
+  const banner   = $('#cc-banner');
+  const prefsUI  = $('#cc-prefs');
+  const btnAccept= $('#cc-accept');
+  const btnReject= $('#cc-reject');
+  const btnOpen  = $('#cc-open-prefs');
+  const btnSave  = $('#cc-save');
+  const chkGA    = $('#cc-analytics');
+  const reopen   = $('#open-cookie-prefs');
+
+  const getConsent = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
+  const setConsent = (obj) => {
+    const withMeta = { ...obj, ts: new Date().toISOString() };
+    localStorage.setItem(KEY, JSON.stringify(withMeta));
+    applyConsent(withMeta);
+  };
+
+  const loadScript = (src, attrs={}) => {
+    if (document.querySelector(`script[src="${src}"]`)) return;
+    const s = document.createElement('script');
+    s.src = src; Object.entries(attrs).forEach(([k,v]) => s.setAttribute(k, v));
+    document.head.appendChild(s);
+  };
+
+  // Gate non-essential scripts here
+  function applyConsent(c){
+    // Example: Google Analytics (GA4) — replace G-XXXXXXX with your property
+    if (c?.analytics) {
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      window.gtag = gtag; gtag('js', new Date());
+      gtag('config', 'G-XXXXXXX', { anonymize_ip: true });
+      loadScript('https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX', { async: '' });
+    }
+    // Show reopen link if a decision exists
+    if (reopen) reopen.style.display = 'inline-block';
+  }
+
+  function showBanner(){ banner.hidden = false; setTimeout(()=>btnAccept?.focus(), 0); }
+
+  // Events
+  btnAccept?.addEventListener('click', ()=> { setConsent({ necessary:true, analytics:true  }); banner.hidden = true; });
+  btnReject?.addEventListener('click', ()=> { setConsent({ necessary:true, analytics:false }); banner.hidden = true; });
+  btnOpen  ?.addEventListener('click', ()=> { prefsUI.hidden = !prefsUI.hidden; });
+  btnSave  ?.addEventListener('click', ()=> { setConsent({ necessary:true, analytics:!!chkGA.checked }); banner.hidden = true; });
+  reopen   ?.addEventListener('click', ()=> { const c = getConsent(); if (chkGA) chkGA.checked = !!c?.analytics; prefsUI.hidden = false; showBanner(); });
+
+  // Init
+  const existing = getConsent();
+  if (existing) { applyConsent(existing); }
+  else { showBanner(); }
+})();
+</script>

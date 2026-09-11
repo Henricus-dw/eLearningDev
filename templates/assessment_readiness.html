@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prepare for Assessment — {{ title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { blue: '#17306B', gold: '#C7A434' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-10">
+      <span class="text-sm font-medium opacity-80">Assessment Preparation</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-4 py-8">
+    <div class="max-w-2xl mx-auto space-y-6">
+
+      <!-- Title Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="bg-brand-blue px-6 py-5 text-center">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-clipboard-check text-white text-3xl"></i>
+          </div>
+          <h1 class="text-xl font-bold text-white">{{ title }}</h1>
+          <p class="text-blue-200 text-sm mt-1">
+            Welcome, {{ student_name }}. Please read the rules below before starting.
+          </p>
+        </div>
+      </div>
+
+      <!-- Disclaimer / Rules Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="bg-amber-500 px-6 py-3">
+          <h2 class="text-white font-bold text-lg flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            Assessment Rules &amp; Disclaimer
+          </h2>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+
+          <div class="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-4">
+            <p class="font-semibold text-red-800 mb-2">
+              <i class="fas fa-video mr-1"></i> Proctoring Notice
+            </p>
+            <p class="text-sm text-red-700">
+              This assessment is <strong>video-proctored</strong>. Your camera
+              and microphone will be active for the entire duration. The session
+              will be recorded for verification and moderation purposes.
+            </p>
+          </div>
+
+          <ul class="space-y-3 text-slate-700 text-sm">
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">1</span>
+              <span>You have <strong>60 minutes</strong> to complete 50 multiple-choice
+              questions. The timer starts once you click <em>Start Assessment</em>.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">2</span>
+              <span>Your <strong>face must remain visible</strong> to the camera at all
+              times. If your face is not detected for an extended period, your
+              assessment will be terminated.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">3</span>
+              <span><strong>Do not switch tabs</strong>, minimise the browser, or navigate
+              away. Tab-switching is logged as a proctoring violation.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">4</span>
+              <span>Ensure you are in a <strong>quiet, well-lit environment</strong>.
+              A camera that is too dark will trigger a violation warning.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">5</span>
+              <span><strong>Do not close or refresh</strong> your browser until after
+              submission. Doing so may result in a lost attempt.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold">6</span>
+              <span>Accumulated proctoring violations will lead to
+              <strong>automatic removal</strong> from the assessment and your
+              attempt may be forfeited with a score of 0%.</span>
+            </li>
+          </ul>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p class="text-sm text-blue-800">
+              <i class="fas fa-info-circle mr-1"></i>
+              You have <strong>{{ attempts_left }}</strong> attempt(s) remaining.
+              The pass mark is <strong>80%</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Check Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+          <h2 class="font-semibold text-slate-800 flex items-center gap-2">
+            <i class="fas fa-camera text-brand-blue"></i>
+            Camera &amp; Face Detection Check
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">
+            Your webcam must be working and your face must be detected before you can start.
+          </p>
+        </div>
+        <div class="px-6 py-5">
+          <!-- Camera preview -->
+          <div class="mx-auto max-w-sm rounded-xl overflow-hidden bg-slate-900 ring-2 ring-slate-300 relative">
+            <video id="cameraPreview" autoplay playsinline muted class="w-full block"></video>
+            <div id="cameraError" class="hidden p-6 text-center text-red-400">
+              <i class="fas fa-video-slash text-3xl mb-2"></i>
+              <p id="cameraErrorTitle" class="font-semibold">Camera and microphone access needed</p>
+              <p id="cameraErrorHelp" class="text-sm text-slate-400 mt-1">
+                This assessment records video and audio, so both must be allowed.
+                Click the camera icon in your browser address bar, set Camera and
+                Microphone to Allow, then reload this page.
+              </p>
+            </div>
+          </div>
+
+          <!-- Face detection status -->
+          <div class="mt-4 text-center">
+            <div id="faceLoading" class="text-slate-500 text-sm">
+              <i class="fas fa-spinner fa-spin mr-1"></i>
+              Initialising face detection...
+            </div>
+            <div id="faceDetected" class="hidden text-emerald-600 font-semibold">
+              <i class="fas fa-check-circle mr-1"></i>
+              Face detected — you are ready to start
+            </div>
+            <div id="faceNotDetected" class="hidden text-red-600 font-semibold">
+              <i class="fas fa-times-circle mr-1"></i>
+              No face detected — please position yourself in front of the camera
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a href="{{ url_for('dashboard') }}"
+           class="flex-1 text-center px-5 py-3 rounded-xl border border-slate-300
+                  text-slate-600 font-semibold hover:bg-slate-50 transition">
+          <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+        <a id="startBtn"
+           href="/{{ course_key }}?ready=1"
+           class="flex-1 text-center px-5 py-3 rounded-xl bg-brand-gold
+                  text-white font-bold shadow-md transition
+                  pointer-events-none opacity-50 cursor-not-allowed"
+           aria-disabled="true">
+          <i class="fas fa-play mr-2"></i>Start Assessment
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4">
+    <p class="text-sm">Professional Training &copy; 2026</p>
+  </footer>
+
+  <!-- Face Detection Scripts (same stack as proctored_assessment.html) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js"></script>
+
+  <script>
+    const MODEL_BASE = './static/model/';
+    const video = document.getElementById('cameraPreview');
+    const startBtn = document.getElementById('startBtn');
+    const faceLoading = document.getElementById('faceLoading');
+    const faceDetectedEl = document.getElementById('faceDetected');
+    const faceNotDetectedEl = document.getElementById('faceNotDetected');
+    const cameraError = document.getElementById('cameraError');
+
+    let detector = null;
+    let faceCheckInterval = null;
+
+    function enableStart() {
+      startBtn.classList.remove('pointer-events-none', 'opacity-50', 'cursor-not-allowed');
+      startBtn.classList.add('hover:opacity-90');
+      startBtn.setAttribute('aria-disabled', 'false');
+    }
+
+    function disableStart() {
+      startBtn.classList.add('pointer-events-none', 'opacity-50', 'cursor-not-allowed');
+      startBtn.classList.remove('hover:opacity-90');
+      startBtn.setAttribute('aria-disabled', 'true');
+    }
+
+    function showStatus(id) {
+      faceLoading.classList.add('hidden');
+      faceDetectedEl.classList.add('hidden');
+      faceNotDetectedEl.classList.add('hidden');
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    async function initCamera() {
+      try {
+        // Ask for BOTH camera and microphone, exactly what the assessment page
+        // itself requests. Camera and microphone are separate permissions in
+        // Chromium/Edge. Requesting video only here meant a student could be
+        // told "you are ready to start", then be hit with a second prompt for
+        // the microphone the instant the assessment loaded. Denying or
+        // dismissing that prompt booted them, and the browser remembered the
+        // denial per site, so every later attempt failed immediately with
+        // "Permission denied" and no prompt at all.
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: true
+        });
+        video.srcObject = stream;
+        return true;
+      } catch (err) {
+        console.error('Camera/microphone error:', err);
+        video.style.display = 'none';
+        showDeviceError(err);
+        faceLoading.classList.add('hidden');
+        return false;
+      }
+    }
+
+    // Explain what actually went wrong and how to recover. "Permission denied"
+    // is sticky in Edge/Chrome, so telling the student to "refresh the page"
+    // alone would loop them forever.
+    function showDeviceError(err) {
+      const name = (err && err.name) || '';
+      const msg = (err && err.message) || '';
+      let title = 'Camera and microphone access needed';
+      let help =
+        'This assessment records video and audio, so both must be allowed. ' +
+        'Click the camera icon in your browser address bar, set Camera and ' +
+        'Microphone to Allow, then reload this page.';
+
+      if (name === 'NotAllowedError' || /denied|dismiss/i.test(msg)) {
+        title = 'Camera or microphone was blocked';
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        title = 'No camera or microphone found';
+        help = 'This assessment records video and audio. Please connect a ' +
+               'working camera and microphone, then reload this page.';
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        title = 'Your camera or microphone is in use';
+        help = 'Another app (Teams, Zoom, Meet) may be using it. Close that ' +
+               'app, then reload this page.';
+      }
+
+      const box = document.getElementById('cameraError');
+      const t = document.getElementById('cameraErrorTitle');
+      const h = document.getElementById('cameraErrorHelp');
+      if (t) t.textContent = title;
+      if (h) h.textContent = help;
+      box.classList.remove('hidden');
+    }
+
+    // Release camera and microphone before leaving this page, so the
+    // assessment page can acquire them cleanly.
+    function releaseDevices() {
+      try {
+        if (faceCheckInterval) { clearInterval(faceCheckInterval); faceCheckInterval = null; }
+        const s = video && video.srcObject;
+        if (s && s.getTracks) s.getTracks().forEach(t => t.stop());
+        if (video) video.srcObject = null;
+      } catch (_) { }
+    }
+    window.addEventListener('pagehide', releaseDevices);
+
+    async function initFaceDetection() {
+      if (!window.faceDetection) {
+        console.warn('faceDetection library not loaded — enabling start as fallback');
+        showStatus('faceDetected');
+        enableStart();
+        return;
+      }
+      const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+      // Try local MediaPipe model first
+      try {
+        detector = await faceDetection.createDetector(model, {
+          runtime: 'mediapipe', solutionPath: MODEL_BASE,
+          modelType: 'short', maxFaces: 1
+        });
+        return;
+      } catch (e) {
+        console.warn('Local MediaPipe init failed, trying tfjs fallback', e);
+      }
+      // Fallback to tfjs
+      try {
+        detector = await faceDetection.createDetector(model, {
+          runtime: 'tfjs', modelType: 'short', maxFaces: 1
+        });
+      } catch (e2) {
+        console.error('Face detection init failed entirely', e2);
+        // Graceful fallback: allow start anyway
+        showStatus('faceDetected');
+        enableStart();
+      }
+    }
+
+    async function checkFace() {
+      if (!detector || !video || video.readyState < 2) return;
+      try {
+        const faces = await detector.estimateFaces(video);
+        if (faces.length > 0) {
+          showStatus('faceDetected');
+          enableStart();
+        } else {
+          showStatus('faceNotDetected');
+          disableStart();
+        }
+      } catch (e) {
+        console.error('Face check error:', e);
+      }
+    }
+
+    async function boot() {
+      const cameraOk = await initCamera();
+      if (!cameraOk) return;
+      await initFaceDetection();
+      // Check every 1 second (same cadence as proctored_assessment.html)
+      faceCheckInterval = setInterval(checkFace, 1000);
+      // First check after short delay for video to be ready
+      setTimeout(checkFace, 1500);
+    }
+
+    // Hand the camera and microphone back before navigating to the assessment,
+    // so its getUserMedia call is not competing with this page for the devices.
+    startBtn.addEventListener('click', releaseDevices);
+
+    boot();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Final Assessment - {{ course.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-context" data-page="Final Assessment — Level 3 Manager" data-course="{{ course.title }}" data-chapter="" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    .progress { height: 25px; }
+    .form-check-label { margin-left: 10px; }
+    .question-card { border-left: 4px solid #0d6efd; }
+    @media (min-width: 992px) { .proctor-sticky { position: sticky; top: 1rem; } }
+    .proctor-card { border: 1px solid rgba(0,0,0,.08); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+    .timer-badge { font-variant-numeric: tabular-nums; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+</head>
+<body class="container mt-4 mt-lg-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0">🎓 Final Assessment: {{ course.title }}</h2>
+    <div class="text-end">
+      <div class="small text-muted">Time remaining</div>
+      <span id="timeLeft" class="badge bg-primary timer-badge">60:00</span>
+      <div class="progress mt-2" role="progressbar" aria-label="Time remaining">
+        <div id="timeBar" class="progress-bar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Questions -->
+    <div class="col-lg-8">
+      <form id="assessmentForm">
+        {% if questions %}
+          {% for q in questions %}
+            {% set outer = loop %}
+            {% set q_idx = outer.index %}
+            <div class="card mb-3 question-card">
+              <div class="card-body">
+                <h5 class="card-title">Q{{ q_idx }}.</h5>
+                <p class="card-text">{{ q.text }}</p>
+
+                {% if q.is_multi %}
+                  <div class="text-muted mb-2">Select <strong>all</strong> that apply.</div>
+                  {% for opt in q.options %}
+                    {% set opt_idx = loop.index0 %}
+                    {% set input_id = 'q' ~ q_idx ~ '_' ~ opt_idx %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox"
+                             name="q{{ q_idx }}"
+                             id="{{ input_id }}"
+                             value="{{ opt }}">
+                      <label class="form-check-label" for="{{ input_id }}">{{ opt }}</label>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  {% for opt in q.options %}
+                    {% set opt_idx = loop.index0 %}
+                    {% set input_id = 'q' ~ q_idx ~ '_' ~ opt_idx %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio"
+                             name="q{{ q_idx }}"
+                             id="{{ input_id }}"
+                             value="{{ opt }}" {% if loop.first %}required{% endif %}>
+                      <label class="form-check-label" for="{{ input_id }}">{{ opt }}</label>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="alert alert-info mt-4">ℹ️ This course does not contain final assessment questions. Only the video will be submitted.</div>
+        {% endif %}
+
+        <div class="border-top pt-3 mt-4">
+          <button type="submit" class="btn btn-success btn-lg w-100">✅ Submit Assessment</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Proctor panel -->
+    <div class="col-lg-4">
+      <div class="proctor-sticky">
+        <div class="card proctor-card">
+          <div class="card-body">
+            <h5 class="card-title mb-3">📹 Proctoring</h5>
+            <video id="preview" width="100%" height="auto" autoplay muted class="mb-3 rounded border"></video>
+            <p id="recording-status" class="text-danger fw-bold">
+              ⏺ Recording will start automatically. Please ensure your camera and mic are enabled.
+            </p>
+            <div id="upload-status" class="alert alert-warning py-2" style="display:none;">
+              ⏳ Uploading... Please do not close your browser.
+            </div>
+            <progress id="progressBar" value="0" max="100" style="width:100%; display:none;"></progress>
+            <hr class="my-3">
+            <ul class="small text-muted mb-0">
+              <li>Keep your face in frame.</li>
+              <li>Ensure good lighting.</li>
+              <li>Do not switch tabs during the assessment.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error modal -->
+  <div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">⚠️ Attention Required</h5>
+        </div>
+        <div class="modal-body" id="errorMessage"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" onclick="window.location.reload();">🔄 Retry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'partials/chunked_upload.html' %}
+
+  <!-- JS -->
+  <script>
+    let mediaRecorder, recordedChunks = [];
+    const preview = document.getElementById('preview');
+    const progressBar = document.getElementById('progressBar');
+    const statusMsg = document.getElementById('upload-status');
+    const form = document.getElementById('assessmentForm');
+    AssessmentSafeguard.init(form, 'level3_{{ course.id }}_' + (document.querySelector('[name="student_number"]') || {}).value);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let detector, noFaceCounter = 0, darkCounter = 0;
+
+    // ----- 60-minute timer -----
+    const EXAM_SECONDS = 60 * 60; // 60 minutes
+    let remaining = EXAM_SECONDS;
+    const timeLeftEl = document.getElementById('timeLeft');
+    const timeBarEl = document.getElementById('timeBar');
+    let timerHandle = null;
+    let finalized = false;
+
+    function fmt(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function tickTimer() {
+      remaining = Math.max(0, remaining - 1);
+      timeLeftEl.textContent = fmt(remaining);
+      const pct = (remaining / EXAM_SECONDS) * 100;
+      timeBarEl.style.width = pct + '%';
+      if (remaining <= 60) timeBarEl.classList.add('bg-danger'); // last minute in red
+      if (remaining === 0) {
+        clearInterval(timerHandle);
+        autoSubmitDueToTimeout();
+      }
+    }
+
+    function startTimer() {
+      timeLeftEl.textContent = fmt(remaining);
+      timeBarEl.style.width = '100%';
+      timerHandle = setInterval(tickTimer, 1000);
+    }
+
+    function autoSubmitDueToTimeout() {
+      if (finalized) return;
+      finalized = true;
+      showUploadingUI();
+
+      ChunkedRecorder.stop().then(() => {
+        buildAndSendSubmission();
+      });
+    }
+
+    function showUploadingUI() {
+      statusMsg.style.display = 'block';
+      statusMsg.textContent = '⏳ Time is up. Uploading your assessment... Please wait.';
+      progressBar.style.display = 'block';
+    }
+
+    // ----- Proctor helpers -----
+    function playAlertSound() {
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+      audio.play().catch(err => console.warn("Alert sound failed:", err));
+    }
+
+    function logViolation(type) {
+      fetch("/log_violation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type })
+      }).catch((err) => console.warn("Logging failed:", err));
+    }
+
+    function showError(msg) {
+      playAlertSound();
+      logViolation(msg);
+      document.getElementById('errorMessage').innerText = msg;
+      new bootstrap.Modal(document.getElementById('errorModal'), { backdrop: 'static', keyboard: false }).show();
+    }
+
+    async function initRecording() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        showError("Your browser doesn't support camera and microphone access.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        preview.srcObject = stream;
+        const videoTrack = stream.getVideoTracks()[0];
+        videoTrack.onmute = () => { showError("⚠️ Camera feed was interrupted or disabled."); stopRecording(); };
+
+        setInterval(() => checkBrightness(), 1000);
+        await initFaceDetection();
+
+        mediaRecorder = ChunkedRecorder.init(stream);
+        document.getElementById('recording-status').textContent = "🔴 Recording in progress...";
+
+        startTimer(); // start only after recording is running
+      } catch (err) {
+        console.error("Camera/mic access error:", err);
+        showError("❌ Could not access your camera or microphone. Error: " + err.message);
+        document.querySelector("form button[type=submit]").disabled = true;
+      }
+    }
+
+    function checkBrightness() {
+      if (preview.videoWidth === 0) return;
+      canvas.width = preview.videoWidth;
+      canvas.height = preview.videoHeight;
+      ctx.drawImage(preview, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let totalBrightness = 0;
+      for (let i = 0; i < data.length; i += 4) totalBrightness += (data[i] + data[i+1] + data[i+2]) / 3;
+      const avgBrightness = totalBrightness / (data.length / 4);
+      if (avgBrightness < 10) {
+        darkCounter++;
+        if (darkCounter >= 3) { showError("⚠️ Camera is covered or too dark. Assessment stopped."); stopRecording(); }
+      } else darkCounter = 0;
+    }
+
+    async function initFaceDetection() {
+      if (!faceDetection) return showError("❌ Face detection library failed to load. Please refresh the page.");
+      const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+      detector = await faceDetection.createDetector(model, { runtime: 'tfjs', maxFaces: 1 });
+      detectFaceLoop();
+    }
+
+    async function detectFaceLoop() {
+      if (!detector || preview.readyState < 2) return setTimeout(detectFaceLoop, 1000);
+      try {
+        const faces = await detector.estimateFaces(preview);
+        if (faces.length === 0) {
+          noFaceCounter++;
+          if (noFaceCounter >= 5) { showError("⚠️ No face detected for 5 seconds. Assessment stopped."); stopRecording(); return; }
+        } else noFaceCounter = 0;
+      } catch (e) { console.error("Face detection error:", e); }
+      setTimeout(detectFaceLoop, 1000);
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+    }
+
+    // Build and send without re-clicking submit (used by both manual and timeout paths)
+    async function buildAndSendSubmission() {
+      const formData = new FormData(form);
+
+      if (ChunkedRecorder.isChunkedMode()) {
+        formData.append('video_session_id', ChunkedRecorder.getSessionId());
+      } else {
+        const blob = ChunkedRecorder.getFallbackBlob();
+        formData.append('video', blob, 'final_assessment.webm');
+      }
+
+      AssessmentSafeguard.saveAnswers();
+      AssessmentSafeguard.submitWithRetry(formData, window.location.pathname, {
+        onProgress: function(e) {
+          if (e.lengthComputable) {
+            var percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.value = percent;
+            statusMsg.textContent = 'Uploading: ' + percent + '%';
+          }
+        },
+        onSuccess: function(xhr) {
+          window.location.href = "/assessment_submitted_rpas/{{ course.id }}";
+        },
+        onRetrying: function(n, max) {
+          statusMsg.textContent = 'Upload failed. Retrying (' + n + '/' + max + ')...';
+        }
+      });
+    }
+
+    // Manual submit
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (finalized) return;
+      finalized = true;
+      showUploadingUI();
+
+      ChunkedRecorder.stop().then(() => {
+        buildAndSendSubmission();
+      });
+    });
+
+    window.onload = initRecording;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

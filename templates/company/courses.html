@@ -1,0 +1,130 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Courses — Company Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{blue:'#17306B',gold:'#C7A434'}}}}}</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-slate-50">
+  <header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-brand-blue">Enroll Students</h1>
+    <div class="flex gap-3">
+      <a href="{{ url_for('company_cart') }}" class="rounded-xl bg-slate-900 text-white px-3 py-1.5 text-sm">View Cart</a>
+      <a href="{{ url_for('company_dashboard') }}" class="text-sm text-brand-blue underline">Dashboard</a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 pb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Students multi-select panel -->
+    <section class="bg-white rounded-2xl ring-1 ring-slate-200 p-4 lg:col-span-1">
+      <h2 class="text-sm font-semibold text-slate-600 mb-2">Select Students</h2>
+      <p class="text-xs text-slate-500 mb-3">Selected students will be enrolled in whichever course you add.</p>
+      <form id="empForm" class="space-y-4">
+
+        {# "New / not yet enrolled" — what the admin most likely needs to act on. #}
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+              <i class="fa-solid fa-user-plus mr-1"></i>To enrol
+            </h3>
+            <span class="text-xs text-slate-400">{{ students_unenrolled|length }}</span>
+          </div>
+          {% if students_unenrolled %}
+            <div class="space-y-2">
+              {% for s in students_unenrolled %}
+                <label class="flex items-center gap-2 text-sm rounded-md px-2 py-1 hover:bg-emerald-50/60 transition">
+                  <input type="checkbox" name="student_ids" value="{{ s.id }}" class="rounded border-slate-300">
+                  <span class="text-slate-800">{{ s.name }} {{ s.surname }}</span>
+                  <span class="text-slate-400 text-xs truncate">{{ s.email or '' }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-400 italic px-2 py-1">No students waiting to be enrolled.</p>
+          {% endif %}
+        </div>
+
+        {# "Already enrolled" — visually de-emphasised but still selectable in
+           case the admin wants to enrol them in an additional course. #}
+        <div class="pt-3 border-t border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <i class="fa-solid fa-user-check mr-1"></i>Already enrolled
+            </h3>
+            <span class="text-xs text-slate-400">{{ students_enrolled|length }}</span>
+          </div>
+          {% if students_enrolled %}
+            <div class="space-y-2">
+              {% for s in students_enrolled %}
+                <label class="flex items-center gap-2 text-sm rounded-md px-2 py-1 hover:bg-slate-50 transition">
+                  <input type="checkbox" name="student_ids" value="{{ s.id }}" class="rounded border-slate-300">
+                  <span class="text-slate-600">{{ s.name }} {{ s.surname }}</span>
+                  <span class="text-slate-400 text-xs truncate">{{ s.email or '' }}</span>
+                  <span class="ml-auto text-[10px] text-slate-400">{{ s.enrollments|length }} course{{ 's' if s.enrollments|length != 1 }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-xs text-slate-400 italic px-2 py-1">No students with active enrolments yet.</p>
+          {% endif %}
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Course list -->
+    <section class="bg-white rounded-2xl ring-1 ring-slate-200 p-4 lg:col-span-2">
+      <h2 class="text-sm font-semibold text-slate-600 mb-3">Courses</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% if not courses %}
+        <div class="col-span-2 text-center py-8">
+          <i class="fa-solid fa-book-open text-3xl text-slate-300 mb-2"></i>
+          <p class="text-slate-500 text-sm">No courses approved yet.</p>
+          <p class="text-slate-400 text-xs">Go to <strong>Settings → Approved Courses</strong> to select which courses your company offers.</p>
+        </div>
+        {% endif %}
+        {% for c in courses %}
+        <div class="rounded-xl ring-1 ring-slate-200 p-4">
+          <div class="font-semibold text-slate-900">{{ c.title }}</div>
+          <div class="text-xs text-slate-500 mb-3">{{ c.description or 'Course' }}</div>
+          <div class="flex items-center justify-between">
+            <div class="text-sm">
+              <span class="font-medium text-brand-gold"><i class="fa-solid fa-coins text-xs mr-0.5"></i> 1 credit</span>
+            </div>
+            <form method="post" action="{{ url_for('company_cart_add') }}" onsubmit="return attachStudents(this)">
+              <input type="hidden" name="course_id" value="{{ c.id }}">
+              <div id="stuHidden_{{ c.id }}"></div>
+              <button class="rounded-xl bg-brand-blue text-white text-sm px-3 py-1.5">Add to Cart</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md">
+    {% for c,m in messages %}
+      <div class="mb-2 text-sm px-3 py-2 rounded ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else 'bg-amber-50 text-amber-900 ring-amber-200' }}">{{ m }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+<script>
+function attachStudents(form) {
+  const checks = document.querySelectorAll('#empForm input[name="student_ids"]:checked');
+  if (!checks.length) { alert('Select at least one student.'); return false; }
+  const courseId = form.querySelector('input[name="course_id"]').value;
+  const holder = form.querySelector('[id^="stuHidden_"]');
+  holder.innerHTML = '';
+  checks.forEach(ch => {
+    const i = document.createElement('input');
+    i.type='hidden'; i.name='student_ids'; i.value=ch.value;
+    holder.appendChild(i);
+  });
+  return true;
+}
+</script>
+</body></html>

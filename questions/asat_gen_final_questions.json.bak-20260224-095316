@@ -1,0 +1,445 @@
+{
+  "questions": [
+    {
+      "question": "Aviation Security Awareness is: Being aware of your surroundings and the potential security concerns in your everyday aviation working environment.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Security is a concern for everyone in the industry, affecting virtually all areas of operation. Whether you work with passengers, cargo or at a security checkpoint, you have a role in keeping the industry safe.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose one correct answer from the statements below:",
+      "options": [
+        "Civil Aviation shall operate from a safe and open environment.",
+        "Not to prosecute or extradite persons who carry out acts of lawful interference.",
+        "Security measures shall be consistent with ICAO Standards.",
+        "Develop and implement Legislation and procedures necessary to ensure a unsafe and secure environment."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Which of the following are considered “offenders” within Civil Aviation?",
+      "options": [
+        "Mentally challenged persons",
+        "Shop Owners",
+        "Persons not seeking attention",
+        "Hijacking of vehicles"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "IED stands for  - Improvised Explosive Detector",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The following abbreviation stands for LAG’s",
+      "options": [
+        "Laminate and Gross Weight",
+        "Land and Ground",
+        "Liquids, Aerosols and Gels",
+        "Landside, Airside, Ground staff"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "There are a total of 17 Annexes to the Chicago Convention on International Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Choose the correct abbreviation:",
+      "options": [
+        "IATA – International Air Training Association",
+        "ACI – Airport Conference International",
+        "ICAO – International Civil Aviation Organization",
+        "AUCA – African Union Civil Aviation"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Annex 17 3.1.1 states…“Each Contracting State shall establish and implement a written national civil aviation security programme to safeguard civil aviation operations against acts of unlawful interference, through regulations, practices and procedures which take into account the safety, regularity and efficiency of flights.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is a NCASP",
+      "options": [
+        "National Civil Aviation Security Programme",
+        "National Civil Aviation Safety Programme",
+        "National Counsel Aviation Security Programme",
+        "National Counsel Aviation Safety Programme"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "“ASP” stands for the Airport Safety Program?",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The purpose of a permit system, is to:",
+      "options": [
+        "Vehicle permits are issued and used for similar purposes as persons to allow vehicular access",
+        "To count the number of staff at an airport",
+        "To Give to your friends",
+        "To look important"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Select one of the following attacks against airports that have been planned or executed.",
+      "options": [
+        "Riots",
+        "Suicide bombers",
+        "Drive by the airport",
+        "Observation of an airport"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Cyber can be classified as a: Virtual attack against the computer network consists of operations using computer networks to disrupt, deny, degrade, or destroy information residing in computers and computer networks or the computers and networks themselves.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The definition of countermeasure is:",
+      "options": [
+        "an action taken to counteract a danger or a passenger",
+        "an action taken to counteract a danger or threat",
+        "an action taken to counteract a pilot or threat",
+        "an action taken to counteract a cabin and hold baggage"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Complex electronic items e.g. laptops can be used to hide an I.E.D.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "International Legal Instruments (Conventions) are:",
+      "options": [
+        "Amsterdam – 1963",
+        "The Hague – 1970",
+        "Canada – 1971",
+        "IATA - 1962"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The following are BOTH, threats to Civil Aviation:\n•\tHijacking of an Aircraft\n•\tSabotage of a Porter",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Annex 17 of the standards issued by the International Civil Aviation Organization sets out the international requirements and recommended practices for aviation security, specifically aimed at safeguarding international civil aviation against acts of unlawful interference such as hijacking, sabotage, and attacks on airports and aircraft.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Passengers require a valid boarding pass and travel identification documents",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "When a suspect explosive device is found at an airport or aviation facility, security personnel should open it, unwrap it, shake or handle it, turn or unscrew parts, cut strings or wires, and lift or remove covers to inspect it more closely.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Security Culture - How does a person working in the cargo environment assist in helping to prevent Acts of Unlawful Interference? By establishing a Security Culture where each person is aware of basic security procedures. By knowing what the procedures should be, you will be able to distinguish when something is suspicious and be able to respond accordingly.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Acts of Unlawful Interference: “Unlawful seizure of aircraft; Hostage-taking on board aircraft or on aerodromes”.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The reason aviation is an attractive target:",
+      "options": [
+        "High death toll associated with attacks on civil aviation",
+        "Engendering of fear in the public (making people scared to fly)",
+        "Media attention gained from attacks which promotes the causes of the terrorists",
+        "All the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Reporting a suspicious act can be by the means of:",
+      "options": [
+        "Anonymous calls",
+        "Pigeon mail",
+        "Announce the incident",
+        "“Drop a mike”"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Human factors are issues affecting how people do their jobs. They are the social and personal skills, such as communication and decision making which complement our technical skills. These are important for safe and efficient aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Drones or RPAS are not becoming a challenge around the world.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Drones/RPAS have been used in an attack before.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "In order to act as part of the security function, staff must understand clearly what their roles and  responsibilities are in relation to security.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Is the appropriate authority in South Africa the SACAA?",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "ICAO’s restricted security manual is also known as?",
+      "options": [
+        "Doc 109",
+        "Doc 8973",
+        "Doc 1007",
+        "Doc 108"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Member State - Legal person, country, or organization that has joined a group, society, or team",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Reporting mechanisms are a key part of a strong security culture – reporting helps to understand what is going on in security.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which are the methods of screening for baggage:",
+      "options": [
+        "ETD",
+        "EDD",
+        "Physical Hand Search",
+        "X - Ray Screening",
+        "All of the Above"
+      ],
+      "correct_index": 4
+    },
+    {
+      "question": "When a passenger check in for a flight, the passenger obtains a:",
+      "options": [
+        "CSD",
+        "Boarding pass",
+        "Identity Document",
+        "Travel Document"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is Suspicious Behaviour? “ The type of behaviour or conduct which does appear to be normal in the circumstances or situation.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Where do you need to practice aviation security awareness?",
+      "options": [
+        "Abandoned vehicles",
+        "Passengers with medical conditions",
+        "Passengers in wheelchairs",
+        "Baggage or packages left unattended"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "During Screening, what would be classified as a suspicious behavior",
+      "options": [
+        "Suspicious articles",
+        "Desks",
+        "Fruit",
+        "Overly inquisitive people."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What is the goal of Behaviour Detection? The goal of behaviour detection is to identify persons who may pose a potential security risk through the recognition of their behaviour changes in response to stress.’",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Upon finding a prohibited item, you continue the search.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Every passenger and their carry-on baggage is screened before they can enter the restricted area where they wait to board the aircraft.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Once the passenger has their boarding pass, they then go to the screening checkpoint.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The screening of persons entering the security restricted area or sterile area of an airport is an essential part of aviation security",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "_____________ and __________________, for example, cannot detect nonmetallic weapons and explosives",
+      "options": [
+        "ETD and EDD",
+        "Landside and Airside",
+        "WTMDs and HHMDs",
+        "Passenger and Baggage"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Prohibited articles are items that are not allowed to be transported on an aircraft, either in passenger luggage or as cargo, due to their potential to endanger the safety of the aircraft, passengers, or crew.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose what actions should be taken in the event of a bomb threat",
+      "options": [
+        "Complete a bomb threat form",
+        "Tape record the song, if possible",
+        "Panic",
+        "None of the above"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can a suspected explosive be moved?",
+      "options": [
+        "Yes, out of the building",
+        "No, I cannot, I have to follow the bomb threat procedures"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Which of the following human factors from the ‘Dirty Dozen’ can negatively affect aviation security performance?",
+      "options": [
+        "Fatigue",
+        "Lack of communication",
+        "Complacency",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What is a Bomb Threat? “communicated threat, anonymous or otherwise, which suggests or infers, whether true or false, that the safety of an aircraft in flight or on the ground, or any airport or civil aviation facility or any person may be in danger from an explosive or other item or device”.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "An improvised explosive device is made up of three basic parts. Name one.",
+      "options": [
+        "Paper cup (Plastic)",
+        "Detonator (Initiator)",
+        "Knife (Metal)",
+        "Spoon"
+      ],
+      "correct_index": 1
+    }
+  ]
+}

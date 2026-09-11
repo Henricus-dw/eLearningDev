@@ -1,0 +1,22 @@
+{
+  "questions": [
+    {
+      "question": "What is 1 + 1",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "is Pretoria the capital of South Africa ?",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

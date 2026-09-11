@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ chapter.title }}</h2>
+<p>{{ chapter.content }}</p>
+
+<form action="{{ url_for('complete_course', course_id=course.id) }}" method="post">
+    <input type="checkbox" id="acknowledge" name="acknowledge" required>
+    <label for="acknowledge">✅ I have read and understood this page.</label><br><br>
+
+    <button type="submit" class="btn btn-success">Complete Course</button>
+</form>
+{% endblock %}

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Professional Training</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/asimo.css') }}" rel="stylesheet">
+  <style>
+    :root {
+      --colorPrimary: #212D65;
+      --colorSecondary: #EDAB1E;
+      --cardWidth: 385px;
+    }
+
+    /* Mobile responsive login */
+    @media (max-width: 768px) {
+      body::before {
+        background-attachment: scroll !important;
+      }
+
+      .centered-beveled-box {
+        position: relative !important;
+        width: 92% !important;
+        max-width: 420px !important;
+        height: auto !important;
+        min-height: auto !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        padding: 30px 24px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+        margin: 24px auto !important;
+      }
+
+      .sub-container,
+      .sub-container.single-column {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .sub-container.single-column .left-box {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .left-box .logo {
+        width: 220px !important;
+        max-width: 80% !important;
+      }
+
+      .mode-toggle {
+        width: 100% !important;
+        max-width: 280px !important;
+      }
+
+      .tab-buttons {
+        width: 100% !important;
+      }
+
+      .form-container {
+        width: 100% !important;
+      }
+
+      .form-container .input-field,
+      .form-container input,
+      .form-container select {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .button-beveled-login,
+      .button-beveled-signup {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Keep content inside container */
+      .left-box {
+        overflow: visible !important;
+      }
+
+      /* Company signup scroll area */
+      .company-signup-section.active {
+        max-height: none !important;
+        overflow-y: visible !important;
+      }
+
+      .company-login-section.active {
+        max-height: none !important;
+        overflow-y: visible !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .centered-beveled-box {
+        padding: 20px 16px !important;
+      }
+
+      .left-box .logo {
+        width: 180px !important;
+      }
+    }
+  </style>
+  <style>
+    /* Mode Toggle (Student / Company) */
+    .mode-toggle {
+      display: flex;
+      width: 280px;
+      margin: 20px auto 0 auto;
+      background: rgba(33, 45, 101, 0.08);
+      border-radius: 30px;
+      padding: 4px;
+      position: relative;
+    }
+    .mode-toggle button {
+      flex: 1;
+      padding: 10px 0;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 26px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: transparent;
+      color: #6B7280;
+      position: relative;
+      z-index: 1;
+    }
+    .mode-toggle button.active-mode {
+      background: var(--colorPrimary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(33, 45, 101, 0.3);
+    }
+    .mode-toggle button:not(.active-mode):hover {
+      color: var(--colorPrimary);
+    }
+    /* Company sections */
+    .company-login-section,
+    .company-signup-section {
+      display: none;
+    }
+    .company-login-section.active,
+    .company-signup-section.active {
+      display: block;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+    .company-register-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .company-register-card .icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--colorPrimary), #384FBC);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+    }
+    .company-register-card .icon-circle svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+    .company-register-card h3 {
+      color: var(--colorPrimary);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .company-register-card p {
+      color: #6B7280;
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .company-register-card .register-btn {
+      display: inline-block;
+      padding: 12px 32px;
+      background: var(--colorPrimary);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .company-register-card .register-btn:hover {
+      background: #384FBC;
+      box-shadow: 0 4px 12px rgba(33, 45, 101, 0.3);
+    }
+  </style>
+  <script>
+    /* Camera */
+    let videoStream = null;
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(stream => {
+        videoStream = stream;
+        document.getElementById('video').srcObject = stream;
+      }).catch(e => { });
+    }
+    function captureSelfie() {
+      let video = document.getElementById('video');
+      let canvas = document.getElementById('canvas');
+      let context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      let selfieData = canvas.toDataURL('image/jpeg');
+      document.getElementById('selfie-input').value = selfieData;
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+    }
+    /* Tabs */
+    function toggleSignup(checkbox) {
+      let btn = document.getElementById('real-signup-btn');
+      if (checkbox.checked) {
+        btn.classList.remove('disabled');
+      } else {
+        btn.classList.add('disabled');
+      }
+    }
+
+    let currentMode = 'student'; // 'student' or 'company'
+    let currentTab = 'login';    // 'login' or 'signup'
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('modeStudent').classList.toggle('active-mode', mode === 'student');
+      document.getElementById('modeCompany').classList.toggle('active-mode', mode === 'company');
+      // Re-render current tab
+      if (currentTab === 'login') showLogin();
+      else showSignup();
+    }
+
+    function showLogin() {
+      currentTab = 'login';
+      let loginBtn = document.getElementById('loginTab');
+      let signupBtn = document.getElementById('signupTab');
+      // Hide all form sections
+      document.querySelector('.login-section').classList.remove('active');
+      document.querySelector('.signup-section').classList.remove('active');
+      document.querySelector('.company-login-section').classList.remove('active');
+      document.querySelector('.company-signup-section').classList.remove('active');
+      // Show the right login form
+      if (currentMode === 'student') {
+        document.querySelector('.login-section').classList.add('active');
+      } else {
+        document.querySelector('.company-login-section').classList.add('active');
+      }
+      // Tab styling
+      loginBtn.classList.remove('inactive-login');
+      loginBtn.classList.add('login-tab');
+      signupBtn.classList.remove('active-signup');
+      signupBtn.classList.remove('signup-tab');
+      signupBtn.classList.add('inactive-signup');
+    }
+
+    function showSignup() {
+      currentTab = 'signup';
+      let loginBtn = document.getElementById('loginTab');
+      let signupBtn = document.getElementById('signupTab');
+      // Hide all form sections
+      document.querySelector('.login-section').classList.remove('active');
+      document.querySelector('.signup-section').classList.remove('active');
+      document.querySelector('.company-login-section').classList.remove('active');
+      document.querySelector('.company-signup-section').classList.remove('active');
+      // Show the right signup form
+      if (currentMode === 'student') {
+        document.querySelector('.signup-section').classList.add('active');
+      } else {
+        document.querySelector('.company-signup-section').classList.add('active');
+      }
+      // Tab styling
+      signupBtn.classList.remove('inactive-signup');
+      signupBtn.classList.add('active-signup');
+      loginBtn.classList.remove('login-tab');
+      loginBtn.classList.add('inactive-login');
+    }
+
+    /* Carousel */
+    function startCarousel() {
+      let currentSlide = 0;
+      const slides = document.querySelectorAll(".carousel-slide");
+      const bars = document.querySelectorAll(".indicator .bar");
+      const duration = 15000; // 15s
+      let intervalId = null;
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === index);
+          bars[i].style.transition = "none";
+          bars[i].style.width = "0%";
+        });
+        setTimeout(() => {
+          bars[index].style.transition = `width ${duration}ms linear`;
+          bars[index].style.width = "100%";
+        }, 50);
+        currentSlide = index;
+      }
+      function nextSlide() {
+        const next = (currentSlide + 1) % slides.length;
+        showSlide(next);
+      }
+      function goToSlide(index) {
+        clearInterval(intervalId);
+        showSlide(index);
+        startAutoPlay();
+      }
+      function startAutoPlay() {
+        intervalId = setInterval(() => {
+          nextSlide();
+        }, duration);
+        showSlide(currentSlide);
+      }
+      window.goToSlide = goToSlide;
+      startAutoPlay();
+    }
+    window.onload = function () {
+      startCamera();
+      setMode('student');
+      showLogin();
+      startCarousel();
+    };
+  </script>
+</head>
+
+<body>
+  <!--<div id="starBg">
+    <div id="starlayer1"></div>
+    <div id="starlayer2"></div>
+  </div>-->
+  <div class="centered-beveled-box">
+    <div class="sub-container single-column">
+      <div class="left-box">
+        <img src="{{ url_for('static', filename='images/proftraining.png') }}" class="logo">
+        <div style="color: #8B92B6; font-size: 14px; font-style: italic; margin-top: 10px;">
+          ~ The philosophy of our business is to strive for the highest standard of service and in all respects to act with integrity, kindness and professionalism.
+        </div>
+        <!-- Student / Company Mode Toggle -->
+        <div class="mode-toggle">
+          <button id="modeStudent" class="active-mode" onclick="setMode('student')">Student</button>
+          <button id="modeCompany" onclick="setMode('company')">Company</button>
+        </div>
+
+        <div class="tab-buttons">
+          <button id="signupTab" class="signup-tab" onclick="showSignup()">Sign Up</button>
+          <button id="loginTab" class="login-tab" onclick="showLogin()">Login</button>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div style="
+                margin: 15px 0;
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                {% if category == 'danger' %}
+                  background: #FEE2E2;
+                  color: #991B1B;
+                  border: 1px solid #FECACA;
+                {% elif category == 'success' %}
+                  background: #D1FAE5;
+                  color: #065F46;
+                  border: 1px solid #A7F3D0;
+                {% elif category == 'warning' %}
+                  background: #FEF3C7;
+                  color: #92400E;
+                  border: 1px solid #FDE68A;
+                {% else %}
+                  background: #DBEAFE;
+                  color: #1E40AF;
+                  border: 1px solid #BFDBFE;
+                {% endif %}
+              ">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Student Login -->
+        <form class="login-section form-container" method="POST" action="{{ url_for('login') }}">
+          <label class="margin-top-30">Email Address / Student ID / ID Number</label>
+          <input type="text" name="student_id" class="input-field" placeholder="Email, Student ID, or ID Number">
+
+          <label class="margin-top-20">Password</label>
+          <input type="password" name="password" class="input-field" placeholder="********">
+
+          <button type="submit" class="button-beveled-login">Login</button>
+
+          <div class="divider"></div>
+
+          <div class="trouble-text">
+            <span>Trouble signing in?</span>&nbsp;
+            <a href="{{ url_for('forgot_password') }}" style="color: var(--colorSecondary);">
+              Click here
+            </a>
+          </div>
+        </form>
+
+        <!-- Sign Up -->
+        <form class="signup-section form-container" method="POST" action="{{ url_for('signup') }}">
+          <label class="margin-top-30">First Name</label>
+          <input type="text" name="name" class="input-field">
+
+          <label class="margin-top-20">Surname</label>
+          <input type="text" name="surname" class="input-field">
+
+          <!-- 🔹 Company field -->
+          <label class="margin-top-20">Company</label>
+          <input type="text" name="company" class="input-field" placeholder="">
+
+          <label class="margin-top-20">National ID</label>
+          <input type="text" name="national_id" class="input-field">
+
+          <label class="margin-top-20">Email Address</label>
+          <input type="email" name="email" class="input-field">
+
+          <label class="margin-top-20">Cell Number</label>
+          <input type="tel" name="cell_number" class="input-field">
+
+          <label class="margin-top-20">Password</label>
+          <input type="password" name="password" class="input-field" placeholder="********">
+
+          <label class="margin-top-20">Confirm Password</label>
+          <input type="password" name="confirm_password" class="input-field" placeholder="********">
+
+          <div class="camera-container margin-top-20">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="canvas" width="300" height="200"></canvas>
+            <button type="button" class="btn btn-secondary mt-2" onclick="captureSelfie()">Capture Selfie</button>
+          </div>
+
+          <input type="hidden" name="selfie" id="selfie-input">
+
+          <div class="confirm-check">
+            <input type="checkbox" onchange="toggleSignup(this)">
+            <span style="font-size:14px;">I confirm the information is correct</span>
+          </div>
+
+          <button id="real-signup-btn" class="button-beveled-signup disabled" type="submit">
+            Sign Up
+          </button>
+        </form>
+
+        <!-- Company Login -->
+        <form class="company-login-section form-container" method="POST" action="{{ url_for('company_login') }}">
+          <label class="margin-top-30">Company Email</label>
+          <input type="email" name="email" class="input-field" placeholder="company@example.com" required>
+
+          <label class="margin-top-20">Password</label>
+          <input type="password" name="password" class="input-field" placeholder="********" required>
+
+          <button type="submit" class="button-beveled-login">Login</button>
+
+          <div class="divider"></div>
+
+          <div class="trouble-text">
+            <span>Trouble signing in?</span>&nbsp;
+            <a href="{{ url_for('forgot_password') }}" style="color: var(--colorSecondary);">
+              Click here
+            </a>
+          </div>
+        </form>
+
+        <!-- Company Sign Up -->
+        <div class="company-signup-section form-container">
+          <div class="company-register-card">
+            <div class="icon-circle">
+              <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+            </div>
+            <h3>Register Your Company</h3>
+            <p>Create a company account to manage your students and enrollments. Registration will be reviewed by an administrator.</p>
+            <a href="{{ url_for('company_register') }}" class="register-btn">Register Company</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="middle-box">
+        <div class="vertical-gradient-line"></div>
+      </div>
+
+      <div class="right-box">
+        <!-- News / carousel area (currently commented out) -->
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

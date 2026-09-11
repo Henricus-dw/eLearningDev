@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Violation Alert Settings | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#17306B',
+              gold: '#C7A434'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .card { border-top: 4px solid #C7A434; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('view_violations') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Violations
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+        <i class="fas fa-cog text-brand-gold text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-brand-blue">Violation Alert Settings</h1>
+        <p class="text-sm text-slate-500">Configure when to send alert emails based on violation severity</p>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="mb-6 p-4 rounded-lg {% if category == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-800{% elif category == 'danger' %}bg-red-50 border border-red-200 text-red-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          <div class="flex items-center gap-2">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- How It Works -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div class="flex items-start gap-3">
+        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+        <div class="text-sm text-blue-800">
+          <strong>How it works:</strong>
+          <span class="text-blue-700">Each violation type has a point value. During an assessment, points accumulate per student. When the threshold is reached, an alert email is sent and points reset to zero.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Threshold Settings Card -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-bell text-brand-gold"></i>
+          Alert Threshold
+        </h2>
+      </div>
+      <form action="{{ url_for('violation_settings_threshold') }}" method="POST" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Point Threshold
+              <span class="font-normal text-slate-500">(triggers alert email)</span>
+            </label>
+            <input type="number" name="threshold" value="{{ alert_settings.threshold }}" min="1" max="100"
+                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+            <p class="mt-1 text-xs text-slate-500">When a student accumulates this many points, an alert email is sent.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">System Status</label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="is_enabled" {% if alert_settings.is_enabled %}checked{% endif %}
+                     class="w-5 h-5 text-brand-blue rounded focus:ring-brand-blue">
+              <span class="text-sm text-slate-700">Enable point-based alert system</span>
+            </label>
+            <p class="mt-1 text-xs text-slate-500">When disabled, no alert emails will be sent for violations.</p>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+            <i class="fas fa-save"></i>
+            Save Threshold Settings
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Point Values Card -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-calculator text-brand-gold"></i>
+          Violation Point Values
+        </h2>
+      </div>
+      <form action="{{ url_for('violation_settings_points') }}" method="POST" class="p-6">
+        <p class="text-sm text-slate-600 mb-4">
+          Set point values for each violation type. Set to <strong>0</strong> to ignore a violation type (won't contribute to threshold).
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {% for reason_code, label in reason_labels.items() %}
+          <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+            <input type="number" name="points_{{ reason_code }}"
+                   value="{{ point_configs.get(reason_code, 0) }}"
+                   min="0" max="100"
+                   class="w-20 px-3 py-2 border border-slate-300 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+            <div class="flex-1">
+              <span class="text-sm font-medium text-slate-700">{{ label }}</span>
+              <span class="block text-xs text-slate-400 font-mono">{{ reason_code }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+            <i class="fas fa-save"></i>
+            Save Point Values
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Reset Trackers Card -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-sync text-brand-gold"></i>
+          Reset Trackers
+        </h2>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-slate-600 mb-4">
+          This will reset all accumulated violation points for all students. Use this if you want to start fresh or after making significant changes to point values.
+        </p>
+        <form action="{{ url_for('violation_settings_reset_trackers') }}" method="POST"
+              onsubmit="return confirm('Are you sure you want to reset all violation trackers? This cannot be undone.');">
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg text-sm transition">
+            <i class="fas fa-sync"></i>
+            Reset All Trackers
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+</body>
+</html>

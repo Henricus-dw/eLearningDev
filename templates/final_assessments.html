@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧪 Final Assessments</title>
+
+  <!-- Tailwind dark mode via class -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
+
+  <style>
+    .dashboard-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .dashboard-card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+    .dashboard-card h5 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      color: #1e3a8a;
+    }
+    .dashboard-card i { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .dark .dashboard-card { background:#0f172a; box-shadow:0 2px 8px rgba(0,0,0,0.5); }
+    .dark .dashboard-card:hover { box-shadow:0 16px 36px rgba(0,0,0,0.6); }
+    .dark .dashboard-card h5 { color:#e2e8f0; }
+    .icon-blue { color:#2563eb; }
+    .icon-yellow { color:#facc15; }
+    .icon-teal { color:#14b8a6; }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-950 text-gray-800 dark:text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-10">
+
+    <!-- Header / actions -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-yellow-300 flex items-center gap-2">
+        <i class="fas fa-clipboard-check"></i> Final Assessments
+      </h1>
+
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 rounded-xl px-3 py-2 border border-blue-200 bg-white text-blue-900 shadow-sm hover:shadow transition
+                  dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+          <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+        </a>
+
+        <!-- Theme toggle (same behavior as dashboard) -->
+        <button id="themeToggle"
+          class="hidden sm:inline-flex items-center gap-2 rounded-xl px-3 py-2 border border-blue-200 bg-white text-blue-900 shadow-sm hover:shadow transition
+                 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700"
+          title="Toggle theme">
+          <i class="fas fa-moon hidden dark:inline"></i>
+          <i class="fas fa-sun inline dark:hidden"></i>
+          <span id="themeLabel" class="text-sm">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Intro card -->
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-slate-700 p-6 shadow mb-8">
+      <h2 class="text-xl font-semibold text-blue-900 dark:text-slate-100">Overview</h2>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">
+        This space will manage all Final Assessment tasks. We’ll plug in results, rewrite requests,
+        and per-course assessments here as we go. For now, use this page as the entry point.
+      </p>
+    </div>
+
+    <!-- Quick actions (placeholders for next steps) -->
+    <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="dashboard-card">
+        <i class="fas fa-file-alt icon-blue"></i>
+        <h5>Assessment Results</h5>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">View recent scores and pass rates.</p>
+      </div>
+
+      <div class="dashboard-card">
+        <i class="fas fa-undo icon-yellow"></i>
+        <h5>Rewrite Requests</h5>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Approve or deny student rewrite requests.</p>
+      </div>
+
+      <a href="{{ url_for('admin_new_final_assessment') }}" class="block"></a>
+  <div class="dashboard-card hover:shadow-lg transition-shadow duration-300">
+    <i class="fas fa-cog icon-teal"></i>
+    <h5>Setup & Builder</h5>
+    <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+      Configure assessments and question banks.
+    </p>
+  </div>
+</a>
+
+  <div class="fixed bottom-4 left-4 opacity-80">
+    <img src="{{ url_for('static', filename='images/asimopowerlight.png') }}"
+         alt="Asimo Power"
+         class="h-12 drop-shadow dark:opacity-60">
+  </div>
+
+  <script>
+    // Theme toggle (match dashboard behavior)
+    const btn = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
+    function updateLabel(isDark) { if (label) label.textContent = isDark ? 'Light' : 'Dark'; }
+    const root = document.documentElement;
+    updateLabel(root.classList.contains('dark'));
+    btn?.addEventListener('click', () => {
+      const nowDark = root.classList.toggle('dark');
+      localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      btn.querySelector('.fa-moon')?.classList.toggle('hidden', !nowDark);
+      btn.querySelector('.fa-sun')?.classList.toggle('hidden', nowDark);
+      updateLabel(nowDark);
+    });
+  </script>
+</body>
+</html>

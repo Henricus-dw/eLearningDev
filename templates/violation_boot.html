@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assessment Ended — Proctoring Violation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { blue: '#17306B', gold: '#C7A434' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+      <span class="text-sm font-medium opacity-80">Assessment Ended</span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="max-w-lg w-full">
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+
+        <!-- Top Banner -->
+        {% if attempt_lost %}
+        <div class="bg-red-600 px-6 py-5 text-center">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+          </div>
+          <h1 class="text-xl font-bold text-white">Assessment Terminated</h1>
+          <p class="text-red-100 text-sm mt-1">Your attempt has been forfeited</p>
+        </div>
+        {% else %}
+        <div class="bg-amber-500 px-6 py-5 text-center">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-hand-paper text-white text-3xl"></i>
+          </div>
+          <h1 class="text-xl font-bold text-white">Assessment Paused</h1>
+          <p class="text-amber-100 text-sm mt-1">Your attempt has been preserved</p>
+        </div>
+        {% endif %}
+
+        <!-- Body -->
+        <div class="px-6 py-6 space-y-5">
+
+          <!-- Reason -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Reason</p>
+            <p class="text-slate-800 font-medium">{{ reason_message }}</p>
+          </div>
+
+          <!-- Attempt Status -->
+          {% if attempt_lost %}
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
+              <div>
+                <p class="font-semibold text-red-800">Attempt Lost</p>
+                <p class="text-sm text-red-600 mt-1">
+                  This attempt has been recorded as a failed attempt (0%) due to the proctoring violation.
+                  If you have remaining attempts, you may retake the assessment from your dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-info-circle text-emerald-500 mt-0.5"></i>
+              <div>
+                <p class="font-semibold text-emerald-800">Attempt Preserved</p>
+                <p class="text-sm text-emerald-600 mt-1">
+                  Because you were still in the early phase of your assessment, this attempt has not been
+                  counted against you. You may retake the assessment from your dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- What to do next -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-lightbulb text-brand-blue mt-0.5"></i>
+              <div>
+                <p class="font-semibold text-brand-blue">Before your next attempt</p>
+                <ul class="text-sm text-slate-600 mt-2 space-y-1 list-disc list-inside">
+                  <li>Make sure your face is clearly visible to the camera at all times</li>
+                  <li>Ensure adequate lighting so the camera can see you</li>
+                  <li>Do not switch tabs or leave the assessment window</li>
+                  <li>Avoid any background interference during the assessment</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action -->
+          <a href="{{ url_for('dashboard') }}"
+             class="block w-full text-center bg-brand-blue hover:bg-blue-900 text-white font-semibold py-3 rounded-xl transition">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4">
+    <p class="text-sm">Professional Training &copy; 2026</p>
+  </footer>
+
+</body>
+</html>

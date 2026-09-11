@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Virtual Course | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .card { border-top: 4px solid #C7A434; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100">
+
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('admin_virtual_training') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Virtual Training
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+        <i class="fab fa-microsoft text-brand-gold text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-brand-blue">Create Virtual Course</h1>
+        <p class="text-sm text-slate-500">Virtual courses are delivered live on Microsoft Teams. No chapters or quizzes &mdash; students only complete the final assessment.</p>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm
+                      {% if category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+                      {% elif category == 'warning' %}bg-amber-50 text-amber-700 border border-amber-200
+                      {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('admin_create_virtual_course') }}"
+          enctype="multipart/form-data"
+          class="bg-white rounded-xl shadow-sm card overflow-hidden">
+      <div class="p-6 space-y-5">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Course Title</label>
+          <input type="text" name="title" required maxlength="255"
+                 placeholder="e.g. Aviation Security Awareness (Virtual Cargo)"
+                 class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Description</label>
+          <textarea name="description" required rows="4"
+                    placeholder="What the course covers, who it's for, and anything the student should know before the Teams class."
+                    class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Final Assessment</label>
+          {% if assessments %}
+            <select name="final_assessment_key" required
+                    class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+              <option value="">-- Pick the assessment students will complete --</option>
+              {% for a in assessments %}
+                <option value="{{ a.key }}">{{ a.title }} (pass mark: {{ a.pass_mark }}%)</option>
+              {% endfor %}
+            </select>
+            <p class="text-xs text-slate-400 mt-1">
+              Need a different assessment?
+              <a href="{{ url_for('admin_final_assessments') }}" class="text-brand-blue underline" target="_blank" rel="noopener">Create one in Final Assessments</a>, then come back and refresh this page.
+            </p>
+          {% else %}
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+              No final assessments exist yet.
+              <a href="{{ url_for('admin_final_assessments') }}" class="underline font-semibold" target="_blank" rel="noopener">Create one first</a>, then refresh this page.
+            </div>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Cover Image <span class="text-slate-400 normal-case">(optional, PNG / JPG / WEBP)</span></label>
+          <input type="file" name="cover_image" accept=".png,.jpg,.jpeg,.webp"
+                 class="w-full text-sm text-slate-700 file:mr-3 file:px-4 file:py-2 file:border-0 file:rounded-lg file:bg-brand-blue file:text-white file:font-semibold file:cursor-pointer hover:file:bg-blue-900">
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600">
+          <div class="flex items-start gap-2">
+            <i class="fas fa-circle-info mt-0.5 text-brand-blue"></i>
+            <div>
+              Virtual courses skip all chapter content. Students only see the Teams link, session date, and the final assessment linked above.
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <a href="{{ url_for('admin_virtual_training') }}"
+           class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">
+          Cancel
+        </a>
+        <button type="submit"
+                class="px-5 py-2 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+          <i class="fas fa-plus mr-1"></i>Create Virtual Course
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+</body>
+</html>

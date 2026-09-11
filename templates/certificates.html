@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <title>📜 Certificate Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="page-context" data-page="Certificates" data-course="" data-chapter="">
+
+  <!-- Tailwind + brand-parity with your dashboard -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Existing libs you already use here -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      --brand-blue:#17306B;   /* deep navy */
+      --brand-gold:#C7A434;   /* aviation gold */
+    }
+    body {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(23,48,107,.10), transparent 50%),
+        radial-gradient(circle at 80% -10%, rgba(199,164,52,.10), transparent 40%),
+        linear-gradient(to bottom, #f7f9fc, #eef2f9);
+      color: #0b1022;
+    }
+    .dark body { background: linear-gradient(to bottom, #0B1226, #050912); color:#E6EDF7; }
+
+    .section-title{
+      font-size:1.35rem; font-weight:900;
+      color:var(--brand-blue);
+      border-left:4px solid var(--brand-gold);
+      padding-left:.75rem; margin:0;
+    }
+    .dark .section-title{ color:#F2F6FF; }
+
+    .card{
+      background:#fff; border:1px solid rgba(0,0,0,.08);
+      border-radius:1rem; box-shadow:0 10px 22px rgba(0,0,0,.08);
+      transition:.2s;
+    }
+    .card:hover{ transform:translateY(-2px); }
+    .dark .card{ background:#0C142B; border-color:rgba(255,255,255,.1); box-shadow:0 10px 24px rgba(0,0,0,.35); }
+
+    .btn{ display:inline-flex; align-items:center; gap:.5rem; font-weight:800;
+          border-radius:.75rem; padding:.6rem 1rem; transition:.18s; }
+    .btn-blue{ background:var(--brand-blue); color:#fff; }
+    .btn-blue:hover{ filter:brightness(1.06); }
+    .btn-gold{ background:var(--brand-gold); color:#0b1022; }
+    .btn-gold:hover{ filter:saturate(1.1); }
+    .btn-gray{ background:#e5e7eb; color:#0b1022; }
+    .btn-gray:hover{ filter:brightness(1.05); }
+    .btn-green{ background:#16a34a; color:#fff; }
+    .btn-green:hover{ filter:brightness(1.05); }
+    .btn-red{ background:#dc2626; color:#fff; }
+    .btn-red:hover{ filter:brightness(1.05); }
+    .btn-amber{ background:#f59e0b; color:#0b1022; }
+    .btn-amber:hover{ filter:saturate(1.08); }
+    .btn-indigo{ background:#4f46e5; color:#fff; }
+    .btn-indigo:hover{ filter:brightness(1.06); }
+
+    .input{
+      border:1px solid rgba(0,0,0,.15); border-radius:.75rem; background:#fff;
+      padding:.65rem .9rem; outline:none; transition:.15s;
+    }
+    .input:focus{ border-color:var(--brand-blue); box-shadow:0 0 0 3px rgba(23,48,107,.12); }
+    .dark .input{ background:#0E1730; border-color:rgba(255,255,255,.15); color:#E6EDF7; }
+
+    .accordion-btn{
+      width:100%; text-align:left;
+      background:rgba(23,48,107,.06);
+      color:var(--brand-blue);
+      padding:.9rem 1rem; font-weight:800;
+      transition:.15s;
+    }
+    .accordion-btn:hover{ background:rgba(23,48,107,.10); }
+    .dark .accordion-btn{
+      background:#0E1730; color:#F0F3FA;
+    }
+    .dark .accordion-btn:hover{ background:#132042; }
+
+    .status-badge{
+      display:inline-block; padding:.15rem .5rem; border-radius:.5rem;
+      font-weight:800; font-size:.8rem;
+    }
+    .badge-ok{ background:rgba(22,163,74,.15); color:#16a34a; border:1px solid rgba(22,163,74,.35); }
+    .badge-no{ background:rgba(220,38,38,.15); color:#dc2626; border:1px solid rgba(220,38,38,.35); }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <div class="max-w-7xl mx-auto p-6">
+
+    <!-- Header / Actions -->
+    <div class="card p-5 mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="section-title">📜 Certificate Management</h1>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="exportTableToExcel('certTable')" class="btn btn-blue shadow">
+            ⬇ Export
+          </button>
+          <input type="text" id="searchInput" onkeyup="filterTable()"
+                 placeholder="🔍 Search name / number / course…"
+                 class="input" />
+          <a href="{{ url_for('admin_dashboard') }}" class="btn btn-gold shadow">
+            ⬅ Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion list -->
+    <div id="accordion" class="space-y-3">
+      {% for s in students %}
+      <div class="card overflow-hidden border border-slate-200 dark:border-slate-700">
+        <button type="button"
+                class="accordion-btn"
+                onclick="toggleAccordion('panel{{ loop.index }}')">
+          {{ s.student_number }} — {{ s.name }} {{ s.surname }} | {{ s.course_title }}
+        </button>
+
+        <div id="panel{{ loop.index }}" class="hidden p-4">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <p>
+              <strong>Status:</strong>
+              {% if s.certificate_issued %}
+                <span class="status-badge badge-ok">✅ Issued</span>
+              {% else %}
+                <span class="status-badge badge-no">❌ Not Yet Issued</span>
+              {% endif %}
+            </p>
+            <p><strong>Certificate No.:</strong> {{ s.certificate_number or '—' }}</p>
+            <p><strong>Times Sent:</strong> {{ s.times_sent or 0 }}</p>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <!-- Approve / Not Approve / Re-issue -->
+            <button
+              onclick="openApprovalModal('{{ s.enrollment_id }}', '{{ s.name }} {{ s.surname }}', true)"
+              class="btn btn-green shadow" {% if s.certificate_issued %}disabled style="opacity:.6;cursor:not-allowed"{% endif %}>
+              ✅ Approve
+            </button>
+
+            <button
+              onclick="openApprovalModal('{{ s.enrollment_id }}', '{{ s.name }} {{ s.surname }}', false)"
+              class="btn btn-red shadow">
+              ❌ Not Approve
+            </button>
+
+            {% if s.certificate_issued %}
+              <button
+                onclick="openApprovalModal('{{ s.enrollment_id }}', '{{ s.name }} {{ s.surname }}', true)"
+                class="btn btn-amber shadow">
+                🔁 Re-issue
+              </button>
+              <a href="/certificates/{{ s.student_number }}/{{ s.course_id }}/preview" target="_blank"
+                 class="btn btn-blue shadow">👁 Preview</a>
+              <a href="/certificates/{{ s.student_number }}/{{ s.course_id }}/download" target="_blank"
+                 class="btn btn-indigo shadow">📄 Download</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="approvalModal"
+       class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+    <div class="card w-full max-w-md p-6">
+      <form id="approvalForm" method="POST">
+        <h3 id="modalTitle" class="text-xl font-extrabold text-[color:var(--brand-blue)] dark:text-[#F7F2DC] mb-4"></h3>
+        <input type="hidden" name="student_id" id="studentIdInput">
+        <textarea name="message" placeholder="Add your note here..." required
+                  class="input w-full h-28 mb-4"></textarea>
+        <div class="flex justify-end gap-3">
+          <button type="submit" class="btn btn-blue shadow">📨 Send</button>
+          <button type="button" onclick="closeModal()" class="btn btn-gray shadow">❌ Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleAccordion(id) {
+      const panel = document.getElementById(id);
+      panel.classList.toggle('hidden');
+    }
+
+    function openApprovalModal(studentId, studentName, isApprove) {
+      const modal = document.getElementById('approvalModal');
+      const form = document.getElementById('approvalForm');
+      const title = document.getElementById('modalTitle');
+
+      form.action = isApprove ? '/approve_certificate' : '/reject_certificate';
+      document.getElementById('studentIdInput').value = studentId;
+      title.textContent = isApprove ? `✅ Approve ${studentName}` : `❌ Reject ${studentName}`;
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById('approvalModal').classList.add("hidden");
+    }
+
+    // NOTE: Matches your existing function signature & behavior
+    function exportTableToExcel() {
+      const table = document.querySelector('table');
+      if (!table) { alert('No table found to export.'); return; }
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Certificates" });
+      XLSX.writeFile(wb, 'certificates_export.xlsx');
+    }
+
+    function filterTable() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const items = document.getElementById("accordion").children;
+      for (let i = 0; i < items.length; i++) {
+        const btn = items[i].querySelector("button");
+        const text = (btn?.textContent || '').toLowerCase();
+        items[i].style.display = text.includes(input) ? "block" : "none";
+      }
+    }
+  </script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

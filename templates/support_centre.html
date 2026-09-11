@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="page-context" data-page="Support Centre" data-course="" data-chapter="">
+  <title>Support Centre - Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      border-left: 4px solid var(--brand-gold);
+      padding-left: 0.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+
+    .footer-content a {
+      color: var(--brand-gold);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-content a:hover {
+      color: #e0c04a;
+    }
+
+    .table-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(23, 48, 107, 0.08);
+      overflow: hidden;
+    }
+
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    /* Horizontal padding trimmed from 1rem to 0.625rem when the Date Logged
+       column was added. Across 10 columns that recovers about 120px, which is
+       roughly what the new column costs, so the table still fits its container
+       instead of forcing a horizontal scrollbar. */
+    .table-card thead th {
+      background: var(--brand-blue);
+      color: white;
+      padding: 0.875rem 0.625rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .table-card tbody td {
+      padding: 0.875rem 0.625rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.875rem;
+      color: #374151;
+    }
+
+    .table-card tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-card tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .badge-open { background: #FEF3C7; color: #92400E; }
+    .badge-progress { background: #DBEAFE; color: #1E3A8A; }
+    .badge-closed { background: #DCFCE7; color: #065F46; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.55rem;
+      white-space: nowrap;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--brand-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+      transform: translateY(-1px);
+    }
+
+    /* Wide free-text columns are capped and ellipsised so the table fits its
+       container. Without this the Email and Course columns alone pushed it past
+       1280px and the Date Logged and Actions columns fell off the right edge.
+       Full value stays available via the title tooltip. */
+    .description-cell {
+      max-width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .email-cell {
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .course-cell {
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Date Logged column. Day and time stack on two short lines rather than
+       sitting side by side: on one line the cell needs roughly 150px and pushed
+       the whole table wider than its container, forcing a horizontal scrollbar.
+       Stacked it needs about 90px and the table fits again. Each line is
+       nowrap so a date never breaks mid-way. */
+    .date-cell {
+      line-height: 1.25;
+    }
+
+    .date-cell .date-day {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .date-cell .date-time {
+      display: block;
+      white-space: nowrap;
+      font-size: 0.78em;
+      color: #6b7280;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6b7280;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #d1d5db;
+      margin-bottom: 1rem;
+    }
+  </style>
+
+  <script>
+    function confirmClose(ticketId) {
+      return confirm('Are you sure you want to close Ticket #' + ticketId + '? A summary will be emailed to the student.');
+    }
+  </script>
+</head>
+
+<body class="font-sans text-slate-800">
+
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- Page Title -->
+    <div class="mb-6">
+      <h1 class="section-title">
+        <i class="fas fa-life-ring"></i>
+        Support Centre
+      </h1>
+      <p class="text-sm text-gray-600 ml-4">
+        Manage student support tickets. For urgent issues, contact
+        <a href="mailto:digital@professional.za.com" class="text-blue-600 font-medium hover:underline">digital@professional.za.com</a>
+      </p>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="table-card">
+      {% if tickets %}
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Student</th>
+              <th>Email</th>
+              <th>Student ID</th>
+              <th>National ID</th>
+              <th>Course</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Date Logged</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ticket in tickets %}
+            <tr>
+              <td class="font-medium" style="color: var(--brand-blue);">{{ ticket.ticket_id }}</td>
+              <td>{{ ticket.student.name }} {{ ticket.student.surname }}</td>
+              <td class="email-cell" title="{{ ticket.student.email }}">{{ ticket.student.email }}</td>
+              <td>{{ ticket.student.student_id }}</td>
+              <td>{{ ticket.student.national_id or 'N/A' }}</td>
+              <td class="course-cell" title="{{ ticket.course.title }}">{{ ticket.course.title }}</td>
+              <td class="description-cell" title="{{ ticket.problem_description }}">{{ ticket.problem_description }}</td>
+              <td>
+                {% if ticket.status == "Open" %}
+                  <span class="badge badge-open"><i class="fas fa-exclamation-circle"></i> Open</span>
+                {% elif ticket.status == "In Progress" %}
+                  <span class="badge badge-progress"><i class="fas fa-clock"></i> In Progress</span>
+                {% else %}
+                  <span class="badge badge-closed"><i class="fas fa-check-circle"></i> Closed</span>
+                {% endif %}
+              </td>
+              <td class="date-cell">
+                {% if ticket.created_at %}
+                  <span class="date-day">{{ ticket.created_at.strftime('%d %b %Y') }}</span>
+                  <span class="date-time">{{ ticket.created_at.strftime('%H:%M') }}</span>
+                {% else %}
+                  &ndash;
+                {% endif %}
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <a href="{{ url_for('admin_view_ticket', ticket_id=ticket.id) }}" class="btn btn-primary">
+                    <i class="fas fa-comments"></i> Open
+                  </a>
+                  {% if ticket.status != "Closed" %}
+                  <form action="{{ url_for('close_ticket', ticket_id=ticket.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" onclick="return confirmClose('{{ ticket.ticket_id }}');" class="btn btn-danger">
+                      <i class="fas fa-times"></i> Close
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p class="text-lg font-medium">No support tickets found</p>
+        <p class="text-sm">When students submit support requests, they'll appear here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Training. All rights reserved.</span>
+      <span class="flex items-center gap-2">Powered by <a href="https://asimo.tech" target="_blank" class="flex items-center gap-1">Asimotech <img src="{{ url_for('static', filename='images/asimowhitesmall.png') }}" alt="Asimotech" class="h-5"></a></span>
+    </div>
+  </footer>
+
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

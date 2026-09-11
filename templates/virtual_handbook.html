@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ handbook.title or course.title }} — Handbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-blue-dark: #10224E;
+      --brand-gold: #C7A434;
+    }
+    body { background: #1f2937; }
+    /* Disable text selection on the viewer canvas so the handbook contents
+       can't be copy-pasted out. Right-click is also blocked via JS below. */
+    .pdf-viewer-area, .pdf-viewer-area * {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+    canvas {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      background: white;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="text-white shadow-lg" style="background: var(--brand-blue);">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3 min-w-0">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-9 flex-shrink-0">
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-semibold truncate">{{ course.title }} — Handbook</h1>
+          <p class="text-xs opacity-70 truncate">{{ handbook.title }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button type="button" id="zoomOut" class="px-2.5 py-1.5 rounded border border-white/40 hover:bg-white/10 text-xs" title="Zoom out"><i class="fas fa-search-minus"></i></button>
+        <span id="zoomPct" class="text-xs opacity-80 tabular-nums w-12 text-center">100%</span>
+        <button type="button" id="zoomIn" class="px-2.5 py-1.5 rounded border border-white/40 hover:bg-white/10 text-xs" title="Zoom in"><i class="fas fa-search-plus"></i></button>
+        <span class="opacity-30">|</span>
+        <button type="button" id="prevPage" class="px-2.5 py-1.5 rounded border border-white/40 hover:bg-white/10 text-xs" title="Previous page"><i class="fas fa-chevron-left"></i></button>
+        <span class="text-xs opacity-80 tabular-nums"><span id="pageNum">1</span>/<span id="pageCount">…</span></span>
+        <button type="button" id="nextPage" class="px-2.5 py-1.5 rounded border border-white/40 hover:bg-white/10 text-xs" title="Next page"><i class="fas fa-chevron-right"></i></button>
+        <span class="opacity-30">|</span>
+        <a href="{{ url_for('dashboard') }}"
+           class="inline-flex items-center gap-2 px-3 py-1.5 border border-white/40 hover:bg-white/10 rounded text-xs font-medium">
+          <i class="fas fa-arrow-left"></i>
+          Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-auto pdf-viewer-area">
+    <div id="pdfPages" class="flex flex-col items-center py-6 gap-4"></div>
+    <div id="pdfStatus" class="text-center text-slate-300 text-sm py-12">
+      <i class="fas fa-spinner fa-spin mr-2"></i>Loading handbook…
+    </div>
+  </main>
+
+  <script>
+    // PDF.js setup. The viewer renders each page to its own <canvas>, so the
+    // browser's native PDF chrome (with Save / Print / open-in-new-tab) never
+    // appears. Right-click on the canvas is also blocked below.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const PDF_URL = "{{ pdf_url }}";
+    const STORAGE_KEY = "virtual_handbook:{{ course.id }}";
+
+    const pagesEl = document.getElementById('pdfPages');
+    const statusEl = document.getElementById('pdfStatus');
+    const pageNumEl = document.getElementById('pageNum');
+    const pageCountEl = document.getElementById('pageCount');
+    const zoomPctEl = document.getElementById('zoomPct');
+
+    let pdfDoc = null;
+    let currentScale = 1.25;
+    const canvasByPage = {};
+
+    // Persist zoom + last-viewed page so re-opening picks up where the student left off.
+    function loadState() {
+      try {
+        const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (typeof s.scale === 'number' && s.scale >= 0.5 && s.scale <= 3.0) currentScale = s.scale;
+        return s;
+      } catch (_) {
+        return {};
+      }
+    }
+    function saveState() {
+      try {
+        const s = { scale: currentScale, page: parseInt(pageNumEl.textContent, 10) || 1 };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      } catch (_) { /* localStorage may be disabled */ }
+    }
+
+    async function renderAllPages() {
+      pagesEl.innerHTML = '';
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: currentScale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.dataset.page = String(i);
+        canvas.classList.add('rounded');
+        pagesEl.appendChild(canvas);
+        canvasByPage[i] = canvas;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      }
+      zoomPctEl.textContent = Math.round(currentScale * 80) + '%';
+    }
+
+    function scrollToPage(n) {
+      const c = canvasByPage[n];
+      if (c) {
+        c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        pageNumEl.textContent = String(n);
+        saveState();
+      }
+    }
+
+    // Track which page is currently in view as the learner scrolls.
+    function trackVisiblePage() {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const n = parseInt(entry.target.dataset.page || '1', 10);
+            pageNumEl.textContent = String(n);
+            saveState();
+          }
+        });
+      }, { threshold: 0.5 });
+      Object.values(canvasByPage).forEach(c => obs.observe(c));
+    }
+
+    document.getElementById('zoomIn').addEventListener('click', async () => {
+      currentScale = Math.min(3.0, Math.round((currentScale + 0.25) * 100) / 100);
+      await renderAllPages();
+      trackVisiblePage();
+      saveState();
+    });
+    document.getElementById('zoomOut').addEventListener('click', async () => {
+      currentScale = Math.max(0.5, Math.round((currentScale - 0.25) * 100) / 100);
+      await renderAllPages();
+      trackVisiblePage();
+      saveState();
+    });
+    document.getElementById('prevPage').addEventListener('click', () => {
+      const n = Math.max(1, (parseInt(pageNumEl.textContent, 10) || 1) - 1);
+      scrollToPage(n);
+    });
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const n = Math.min(pdfDoc?.numPages || 1, (parseInt(pageNumEl.textContent, 10) || 1) + 1);
+      scrollToPage(n);
+    });
+
+    // Block right-click on canvases so "Save image as" can't grab the rendered page.
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target && e.target.tagName === 'CANVAS') e.preventDefault();
+    });
+
+    // Block common save / print shortcuts inside the viewer area.
+    document.addEventListener('keydown', (e) => {
+      const k = (e.key || '').toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'p')) {
+        e.preventDefault();
+      }
+    });
+
+    (async () => {
+      const state = loadState();
+      try {
+        pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
+        pageCountEl.textContent = String(pdfDoc.numPages);
+        statusEl.style.display = 'none';
+        await renderAllPages();
+        trackVisiblePage();
+        const startPage = Math.min(pdfDoc.numPages, Math.max(1, parseInt(state.page, 10) || 1));
+        if (startPage > 1) scrollToPage(startPage);
+      } catch (err) {
+        statusEl.innerHTML = '<i class="fas fa-triangle-exclamation mr-2 text-amber-400"></i>Failed to load handbook.';
+        console.error(err);
+      }
+    })();
+  </script>
+</body>
+</html>

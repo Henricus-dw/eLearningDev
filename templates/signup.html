@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Signup</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    let faceModelLoaded = false;
+    let videoStream = null;
+
+    async function loadFaceModel() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL);
+        faceModelLoaded = true;
+        console.log('Face detection model loaded.');
+      } catch (e) { console.warn('Could not load face model:', e); }
+    }
+    loadFaceModel();
+
+    async function startCamera() {
+      try {
+        const video = document.getElementById('video');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = videoStream;
+      } catch (error) {
+        console.error("Camera access error:", error);
+        alert("Please allow camera access to take a selfie.");
+      }
+    }
+
+    async function detectFace(canvas) {
+      if (!faceModelLoaded) return true;
+      try {
+        const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }));
+        return detections.length > 0;
+      } catch (e) { return true; }
+    }
+
+    async function captureSelfie() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+      const faceMsg = document.getElementById('face-check-msg');
+
+      // ensure canvas matches video
+      canvas.width  = video.videoWidth || 300;
+      canvas.height = video.videoHeight || 250;
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const selfieData = canvas.toDataURL('image/jpeg');
+
+      // show snapshot
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+
+      // Check for face
+      if (faceMsg) { faceMsg.textContent = 'Checking for face...'; faceMsg.className = ''; }
+      const hasFace = await detectFace(canvas);
+      if (hasFace) {
+        document.getElementById('selfie-input').value = selfieData;
+        if (faceMsg) { faceMsg.textContent = ''; faceMsg.className = ''; }
+      } else {
+        document.getElementById('selfie-input').value = '';
+        if (faceMsg) {
+          faceMsg.textContent = 'No face detected. Please retake with your face clearly visible.';
+          faceMsg.className = 'text-danger small mt-1';
+        }
+        // Reset to video so they can retake
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+      }
+    }
+
+    async function handlePhotoUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        input.value = '';
+        return;
+      }
+
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const faceMsg = document.getElementById('face-check-msg');
+
+      // Stop camera
+      if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+
+          // Show uploaded image on canvas
+          video.style.display = 'none';
+          canvas.style.display = 'block';
+
+          // Face detection
+          if (faceMsg) { faceMsg.textContent = 'Checking for face...'; faceMsg.className = ''; }
+          const hasFace = await detectFace(canvas);
+          if (hasFace) {
+            document.getElementById('selfie-input').value = canvas.toDataURL('image/jpeg', 0.85);
+            if (faceMsg) { faceMsg.textContent = ''; faceMsg.className = ''; }
+          } else {
+            document.getElementById('selfie-input').value = '';
+            if (faceMsg) {
+              faceMsg.textContent = 'No face detected. Please upload a photo with your face clearly visible.';
+              faceMsg.className = 'text-danger small mt-1';
+            }
+            // Reset back to video
+            canvas.style.display = 'none';
+            video.style.display = 'block';
+            input.value = '';
+            startCamera();
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function toggleSignup(checkbox) {
+      document.getElementById('signup-btn').disabled = !checkbox.checked;
+    }
+  </script>
+
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+    .signup-container {
+      max-width: 500px; margin: auto; background: white; padding: 20px;
+      border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .camera-container { display: flex; flex-direction: column; align-items: center; }
+    video, canvas {
+      width: 100%; max-width: 300px; height: 250px; border: 2px solid black; border-radius: 10px;
+    }
+    canvas { display: none; }
+  </style>
+</head>
+
+<body onload="startCamera()">
+  <div class="container mt-5">
+    <div class="signup-container">
+      <h2 class="text-center">📝 Student Signup</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {# shortcut for errors dict from the server route #}
+      {% set E = errors or {} %}
+
+      <form action="{{ url_for('signup') }}" method="POST" novalidate>
+        <div class="mb-3">
+          <label for="name" class="form-label">First Name</label>
+          <input
+            type="text"
+            class="form-control {% if E.get('name') %}is-invalid{% endif %}"
+            id="name" name="name"
+            value="{{ name|default('') }}"
+            required
+            pattern="^[A-Za-zÀ-ÿ' -]{2,60}$"
+            placeholder="e.g. Jane"
+          />
+          <div class="invalid-feedback">{{ E.get('name') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="surname" class="form-label">Surname</label>
+          <input
+            type="text"
+            class="form-control {% if E.get('surname') %}is-invalid{% endif %}"
+            id="surname" name="surname"
+            value="{{ surname|default('') }}"
+            required
+            pattern="^[A-Za-zÀ-ÿ' -]{2,60}$"
+            placeholder="e.g. Doe"
+          />
+          <div class="invalid-feedback">{{ E.get('surname') }}</div>
+        </div>
+
+        <!-- 🔹 Company field -->
+        <div class="mb-3">
+          <label for="company" class="form-label">Company</label>
+          <input
+            type="text"
+            class="form-control {% if E.get('company') %}is-invalid{% endif %}"
+            id="company" name="company"
+            value="{{ company|default('') }}"
+            required
+            pattern="^[A-Za-z0-9À-ÿ' &().-]{2,80}$"
+            placeholder="e.g. ABC Handling Services"
+          />
+          <div class="invalid-feedback">{{ E.get('company') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="national_id" class="form-label">National ID</label>
+          <input
+            type="text"
+            class="form-control {% if E.get('national_id') %}is-invalid{% endif %}"
+            id="national_id" name="national_id"
+            value="{{ national_id|default('') }}"
+            required
+            pattern="^[A-Za-z0-9]{6,20}$"
+            placeholder="Letters and digits"
+          />
+          <div class="invalid-feedback">{{ E.get('national_id') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email Address</label>
+          <input
+            type="email"
+            class="form-control {% if E.get('email') %}is-invalid{% endif %}"
+            id="email" name="email"
+            value="{{ email|default('') }}"
+            required
+            placeholder="name@example.com"
+          />
+          <div class="invalid-feedback">{{ E.get('email') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="cell_number" class="form-label">Cell Number</label>
+          <input
+            type="tel"
+            class="form-control {% if E.get('cell_number') %}is-invalid{% endif %}"
+            id="cell_number" name="cell_number"
+            value="{{ cell_number|default('') }}"
+            required
+            pattern="^\+?[0-9]{7,15}$"
+            placeholder="+27123456789"
+          />
+          <div class="invalid-feedback">{{ E.get('cell_number') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control {% if E.get('password') %}is-invalid{% endif %}"
+            id="password" name="password"
+            required
+            placeholder="Min 8 chars; upper, lower, digit & special"
+          />
+          <div class="invalid-feedback">{{ E.get('password') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="confirm_password" class="form-label">Confirm Password</label>
+          <input
+            type="password"
+            class="form-control {% if E.get('confirm_password') %}is-invalid{% endif %}"
+            id="confirm_password" name="confirm_password"
+            required
+          />
+          <div class="invalid-feedback">{{ E.get('confirm_password') }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Take a Selfie:</label>
+          <div class="camera-container">
+            <video id="video" autoplay class="border border-dark"></video>
+            <canvas id="canvas"></canvas>
+            <div style="display:flex; gap:8px; justify-content:center; margin-top:0.5rem;">
+              <button type="button" class="btn btn-secondary" onclick="captureSelfie()">📸 Capture Selfie</button>
+              <label for="signupPhotoUpload" class="btn btn-secondary" style="cursor:pointer;">📁 Upload Photo</label>
+              <input type="file" id="signupPhotoUpload" accept="image/*" style="display:none;" onchange="handlePhotoUpload(this)">
+            </div>
+          </div>
+          <input type="hidden" name="selfie" id="selfie-input"/>
+          <div id="face-check-msg"></div>
+          {% if E.get('selfie') %}
+            <div class="text-danger small mt-2">{{ E.get('selfie') }}</div>
+          {% endif %}
+          <div class="form-text">Your selfie is required for identity verification.</div>
+        </div>
+
+        <div class="form-check mt-4">
+          <input class="form-check-input" type="checkbox" id="confirmInfo" onchange="toggleSignup(this)">
+          <label class="form-check-label" for="confirmInfo">
+            I confirm the information provided is correct.
+          </label>
+        </div>
+        <div class="text-muted mb-3" style="font-size: 0.9rem;">
+          The information provided is correct, and will be used for my student profile.
+        </div>
+
+        <button type="submit" id="signup-btn" class="btn btn-primary w-100" disabled>Sign Up</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

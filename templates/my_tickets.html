@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Support Tickets</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+    .ticket-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .btn-primary {
+      background: var(--brand-blue);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+    }
+    .btn-secondary {
+      background: white;
+      color: var(--brand-blue);
+      border: 2px solid var(--brand-blue);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+    .badge-open { background: #FEF3C7; color: #92400E; }
+    .badge-progress { background: #DBEAFE; color: #1E3A8A; }
+    .badge-closed { background: #DCFCE7; color: #065F46; }
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+    }
+    .unread-dot {
+      width: 10px;
+      height: 10px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-life-ring text-white text-2xl"></i>
+        <span class="text-white font-bold text-xl">My Support Tickets</span>
+      </div>
+      <a href="{{ url_for('dashboard') }}" class="text-white hover:text-gray-200 flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto px-4 py-6">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Actions bar -->
+    <div class="flex justify-between items-center mb-6">
+      <p class="text-gray-600">
+        You have <strong>{{ tickets|length }}</strong> support ticket{% if tickets|length != 1 %}s{% endif %}
+      </p>
+      <a href="{{ url_for('support') }}" class="btn-primary flex items-center gap-2">
+        <i class="fas fa-plus"></i>
+        <span>New Ticket</span>
+      </a>
+    </div>
+
+    <!-- Tickets list -->
+    {% if tickets %}
+      <div class="space-y-4">
+        {% for ticket in tickets %}
+        <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" class="ticket-card block p-5">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-bold text-lg" style="color: var(--brand-blue);">
+                  #{{ ticket.ticket_id }}
+                </span>
+                <span class="px-2 py-1 rounded-full text-xs font-bold
+                  {% if ticket.status == 'Open' %}badge-open
+                  {% elif ticket.status == 'In Progress' %}badge-progress
+                  {% else %}badge-closed{% endif %}">
+                  {{ ticket.status }}
+                </span>
+                {% if ticket.has_new_reply %}
+                <div class="unread-dot" title="New reply"></div>
+                {% endif %}
+              </div>
+
+              <p class="text-gray-700 mb-2">{{ ticket.course.title }}</p>
+              <p class="text-gray-500 text-sm line-clamp-2">{{ ticket.problem_description[:150] }}{% if ticket.problem_description|length > 150 %}...{% endif %}</p>
+            </div>
+
+            <div class="text-right ml-4">
+              <p class="text-sm text-gray-500">{{ ticket.created_at.strftime('%d %b %Y') }}</p>
+              <p class="text-xs text-gray-400">{{ ticket.created_at.strftime('%H:%M') }}</p>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ ticket.messages.count() }} message{% if ticket.messages.count() != 1 %}s{% endif %}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end mt-3 pt-3 border-t text-sm">
+            <span class="text-blue-600 font-medium flex items-center gap-1">
+              View Conversation <i class="fas fa-chevron-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="ticket-card p-8 text-center">
+        <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 mb-4">You haven't submitted any support tickets yet.</p>
+        <a href="{{ url_for('support') }}" class="btn-primary inline-flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          <span>Create Your First Ticket</span>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+
+</body>
+</html>

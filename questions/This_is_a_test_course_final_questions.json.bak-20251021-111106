@@ -1,0 +1,20 @@
+{
+  "questions": [
+    {
+      "question": "1 + 1 = 2",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "2 + 1 = 2",
+      "options": [
+        "2",
+        "3"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

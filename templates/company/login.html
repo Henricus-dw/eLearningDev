@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Company Login — Professional Aviation Training</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' },
+        keyframes: {
+          dash: { to:{ strokeDashoffset:-700 } }
+        },
+        animation: {
+          dash: 'dash 20s linear infinite'
+        }
+      }
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  .bg-board {
+    background:
+      radial-gradient(900px 500px at 70% 15%, rgba(199,164,52,.08), transparent 60%),
+      radial-gradient(1000px 600px at 10% 90%, rgba(23,48,107,.10), transparent 60%),
+      radial-gradient(1200px 700px at 50% 50%, rgba(23,48,107,.06), transparent 65%),
+      radial-gradient(circle at center, rgba(255,255,255,.6), rgba(255,255,255,.4) 40%, rgba(255,255,255,.2) 70%, transparent 80%),
+      radial-gradient(circle at 50% 110%, rgba(0,0,0,.05), transparent 40%);
+    position: relative;
+  }
+  .dotfield {
+    background-image: radial-gradient(rgba(23,48,107,.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+    -webkit-mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+  }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 bg-board overflow-x-hidden flex items-center justify-center p-6">
+  <!-- Decorative dotted layer + routes -->
+  <div class="dotfield absolute inset-0 pointer-events-none"></div>
+  <svg class="pointer-events-none absolute inset-0 w-full h-full opacity-60" viewBox="0 0 1440 900" fill="none">
+    <g stroke="#17306B" stroke-opacity=".15" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 10" class="animate-dash">
+      <path d="M140,580 C420,420 740,520 960,340 C1120,220 1240,240 1320,300"/>
+      <path d="M220,260 C460,240 680,360 880,410 C1100,470 1250,400 1340,340"/>
+      <path d="M160,500 C380,520 600,440 760,300 C900,180 1120,200 1260,260"/>
+    </g>
+    <g fill="#C7A434" opacity=".65">
+      <circle cx="220" cy="260" r="3"/><circle cx="160" cy="500" r="3"/><circle cx="140" cy="580" r="3"/>
+      <circle cx="760" cy="300" r="3"/><circle cx="960" cy="340" r="3"/><circle cx="1260" cy="260" r="3"/>
+    </g>
+  </svg>
+
+  <main class="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-soft ring-1 ring-slate-200 overflow-hidden">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold"></div>
+    <div class="p-6 sm:p-8">
+      <div class="flex items-center gap-3 mb-4">
+        <img src="{{ url_for('static', filename='images/PAS_Training_Logo.png') }}" class="h-10 w-auto" alt="Logo">
+        <div>
+          <h1 class="text-xl font-semibold text-brand-blue">Company Login</h1>
+          <p class="text-slate-500 text-sm">Manage your students and enrollments.</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for c,m in messages %}<div class="text-sm px-3 py-2 rounded-lg ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}{% endwith %}
+
+      <form method="post" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">
+            <i class="fa-solid fa-envelope text-brand-gold mr-1"></i> Email
+          </label>
+          <input name="email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2.5 shadow-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">
+            <i class="fa-solid fa-lock text-brand-gold mr-1"></i> Password
+          </label>
+          <input name="password" type="password" required class="w-full rounded-lg border border-slate-300 px-3 py-2.5 shadow-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition">
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold shadow-soft hover:brightness-95 transition">
+          <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+        </button>
+
+        <p class="text-xs text-right">
+          <a class="font-medium text-brand-blue hover:text-brand-gold transition" href="{{ url_for('company_forgot_password') }}">
+            Forgot your password?
+          </a>
+        </p>
+      </form>
+
+      <p class="text-xs text-center text-slate-500 mt-4">No company account?
+        <a class="font-medium text-brand-blue hover:text-brand-gold transition" href="{{ url_for('company_register') }}">Register here</a>.
+      </p>
+    </div>
+  </main>
+</body>
+</html>

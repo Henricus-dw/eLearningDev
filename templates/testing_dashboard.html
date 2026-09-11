@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testing Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      border-left: 4px solid var(--brand-gold);
+      padding-left: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-blue {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+
+    .btn-blue:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-blue {
+      background: #ffffff;
+      border: 2px solid var(--brand-blue);
+      color: var(--brand-blue);
+    }
+
+    .btn-outline-blue:hover {
+      background: var(--brand-blue);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-green {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: #15803d;
+      transform: translateY(-2px);
+    }
+
+    .btn-red {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+
+    .btn-gray {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-gray:hover {
+      background: #d1d5db;
+    }
+
+    .test-item {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      transition: all 0.2s;
+      padding: 1rem;
+    }
+
+    .test-item:hover {
+      border-color: var(--brand-gold);
+      box-shadow: 0 4px 6px rgba(23, 48, 107, 0.1);
+    }
+
+    .test-item.checked {
+      background-color: #d1fae5;
+      border-color: #10b981;
+    }
+
+    .test-item.failed {
+      background-color: #fee2e2;
+      border-color: #ef4444;
+    }
+
+    .test-item.needs-fix {
+      background-color: #fef3c7;
+      border-color: #f59e0b;
+    }
+
+    .delete-btn {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .test-item:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(23, 48, 107, 0.2);
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(23, 48, 107, 0.15);
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Page Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+        <i class="fas fa-vial text-[var(--brand-gold)]"></i> Testing Dashboard
+      </h1>
+      <button onclick="openCreateModal()" class="btn btn-green shadow">
+        <i class="fas fa-plus"></i>
+        <span>Add Test</span>
+      </button>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card p-6">
+      <h2 class="section-title">
+        <i class="fas fa-chart-bar text-[var(--brand-gold)]"></i>
+        Test Summary
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card bg-slate-100">
+          <div class="text-3xl font-bold text-[var(--brand-blue)]" id="total-tests">0</div>
+          <div class="text-sm text-slate-600">Total Tests</div>
+        </div>
+        <div class="stat-card bg-green-100">
+          <div class="text-3xl font-bold text-green-700" id="passed-tests">0</div>
+          <div class="text-sm text-slate-600">Passed</div>
+        </div>
+        <div class="stat-card bg-red-100">
+          <div class="text-3xl font-bold text-red-700" id="failed-tests">0</div>
+          <div class="text-sm text-slate-600">Failed</div>
+        </div>
+        <div class="stat-card bg-yellow-100">
+          <div class="text-3xl font-bold text-yellow-700" id="needs-fix-tests">0</div>
+          <div class="text-sm text-slate-600">Needs Fix</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Items Container -->
+    <div id="test-container">
+      <!-- Test items will be loaded here -->
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Testing Dashboard</span>
+    </div>
+  </footer>
+
+  <!-- Create Test Modal -->
+  <div id="create-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-[var(--brand-blue)]">
+          <i class="fas fa-plus-circle text-[var(--brand-gold)] mr-2"></i>Add New Test Item
+        </h3>
+        <button class="text-gray-500 hover:text-gray-700" onclick="closeCreateModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form onsubmit="createTestItem(event)">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <i class="fas fa-folder text-[var(--brand-gold)] mr-1"></i> Category *
+          </label>
+          <select id="create-category" class="input">
+            <option value="">Select or type new...</option>
+          </select>
+          <input type="text" id="create-category-new" class="input mt-2" placeholder="Or enter new category name">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <i class="fas fa-tag text-[var(--brand-gold)] mr-1"></i> Test Name *
+          </label>
+          <input type="text" id="create-name" class="input" required placeholder="e.g., Login Page - Form Validation">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <i class="fas fa-align-left text-[var(--brand-gold)] mr-1"></i> Description
+          </label>
+          <textarea id="create-description" class="input" rows="3" placeholder="What should be tested?"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <i class="fas fa-link text-[var(--brand-gold)] mr-1"></i> Test URL (optional)
+          </label>
+          <input type="text" id="create-url" class="input" placeholder="/admin/some-page">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <i class="fas fa-flag text-[var(--brand-gold)] mr-1"></i> Priority
+          </label>
+          <select id="create-priority" class="input">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-200">
+          <button type="button" onclick="closeCreateModal()" class="btn btn-gray">Cancel</button>
+          <button type="submit" class="btn btn-green shadow">
+            <i class="fas fa-check"></i> Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-red-700">
+          <i class="fas fa-trash-alt mr-2"></i>Delete Test Item
+        </h3>
+        <button class="text-gray-500 hover:text-gray-700" onclick="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <p class="mb-6 text-slate-600">Are you sure you want to delete "<span id="delete-item-name" class="font-semibold"></span>"?</p>
+      <div class="flex justify-end gap-2 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeDeleteModal()" class="btn btn-gray">Cancel</button>
+        <button type="button" onclick="confirmDelete()" class="btn btn-red shadow">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let testItems = [];
+    let testStatus = {};
+
+    // Load test items from server
+    async function loadTestItems() {
+      try {
+        const response = await fetch('/api/testing/items');
+        const data = await response.json();
+        testItems = data.items || [];
+        testStatus = data.status || {};
+        renderTestItems();
+      } catch (error) {
+        console.error('Error loading test items:', error);
+      }
+    }
+
+    // Render test items by category
+    function renderTestItems() {
+      const container = document.getElementById('test-container');
+      const categories = {};
+
+      testItems.forEach(item => {
+        if (!categories[item.test_category]) {
+          categories[item.test_category] = [];
+        }
+        categories[item.test_category].push(item);
+      });
+
+      let html = '';
+      for (const [category, items] of Object.entries(categories)) {
+        html += `
+          <div class="card p-6 mb-6">
+            <h2 class="section-title">
+              <i class="fas fa-folder-open text-[var(--brand-gold)]"></i>
+              ${category}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${items.map(item => renderTestItem(item)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (html === '') {
+        html = `
+          <div class="card p-8 text-center">
+            <i class="fas fa-inbox text-4xl text-slate-300 mb-3"></i>
+            <p class="text-slate-500">No test items yet. Click "Add Test" to create your first test item.</p>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      updateSummary();
+    }
+
+    // Render individual test item
+    function renderTestItem(item) {
+      const status = testStatus[item.id] || { is_tested: false, status: 'pending' };
+      const statusClass = status.status === 'passed' ? 'checked' :
+                         status.status === 'failed' ? 'failed' :
+                         status.status === 'needs_fix' ? 'needs-fix' : '';
+      const checked = status.is_tested ? 'checked' : '';
+      const testedBy = status.tested_by ? `<small class="text-slate-500 block">By: ${status.tested_by}</small>` : '';
+      const testedAt = status.tested_at ? `<small class="text-slate-500 block">${new Date(status.tested_at).toLocaleDateString()}</small>` : '';
+
+      return `
+        <div class="test-item ${statusClass}" data-test-id="${item.id}">
+          <div class="flex items-start gap-3">
+            <input type="checkbox"
+                   class="mt-1 w-5 h-5 accent-[var(--brand-blue)]"
+                   ${checked}
+                   onchange="updateTestStatus(${item.id}, this.checked, 'passed')">
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div class="font-semibold text-slate-800">${item.test_name}</div>
+                <button onclick="openDeleteModal(${item.id}, '${item.test_name.replace(/'/g, "\\'")}')"
+                        class="delete-btn text-red-500 hover:text-red-700 text-sm px-2"
+                        title="Delete test item">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              ${item.test_description ? `<div class="text-sm text-slate-600 mt-1">${item.test_description}</div>` : ''}
+              ${item.test_url ? `<a href="${item.test_url}" target="_blank" class="text-[var(--brand-blue)] text-sm mt-1 inline-block hover:underline"><i class="fas fa-external-link-alt mr-1"></i>Test Link</a>` : ''}
+              <div class="mt-2 flex gap-2">
+                <button onclick="setTestStatus(${item.id}, 'failed')"
+                        class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition">
+                  <i class="fas fa-times-circle mr-1"></i>Failed
+                </button>
+                <button onclick="setTestStatus(${item.id}, 'needs_fix')"
+                        class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition">
+                  <i class="fas fa-wrench mr-1"></i>Needs Fix
+                </button>
+              </div>
+              ${testedBy}
+              ${testedAt}
+              <textarea
+                class="mt-2 w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:border-[var(--brand-blue)]"
+                placeholder="Add notes..."
+                onblur="saveTestNotes(${item.id}, this.value)"
+              >${status.test_notes || ''}</textarea>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Get admin email from server
+    let adminEmail = 'Unknown';
+    async function getAdminEmail() {
+      try {
+        const response = await fetch('/api/testing/admin-info');
+        const data = await response.json();
+        adminEmail = data.email || 'Unknown';
+      } catch (e) {
+        console.error('Error getting admin email:', e);
+      }
+    }
+
+    // Update test status
+    async function updateTestStatus(testId, isTested, status) {
+      try {
+        const response = await fetch('/api/testing/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            is_tested: isTested,
+            status: isTested ? status : 'pending',
+            tested_by: adminEmail,
+            tested_at: new Date().toISOString()
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          testStatus[testId] = data.status;
+          renderTestItems();
+        }
+      } catch (error) {
+        console.error('Error updating test status:', error);
+        alert('Error updating test status');
+      }
+    }
+
+    // Set test status (failed, needs_fix)
+    async function setTestStatus(testId, status) {
+      await updateTestStatus(testId, true, status);
+    }
+
+    // Save test notes
+    async function saveTestNotes(testId, notes) {
+      try {
+        await fetch('/api/testing/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            test_notes: notes
+          })
+        });
+      } catch (error) {
+        console.error('Error saving notes:', error);
+      }
+    }
+
+    // Update summary
+    function updateSummary() {
+      const statuses = Object.values(testStatus);
+      const total = testItems.length;
+      const passed = statuses.filter(s => s.status === 'passed').length;
+      const failed = statuses.filter(s => s.status === 'failed').length;
+      const needsFix = statuses.filter(s => s.status === 'needs_fix').length;
+
+      document.getElementById('total-tests').textContent = total;
+      document.getElementById('passed-tests').textContent = passed;
+      document.getElementById('failed-tests').textContent = failed;
+      document.getElementById('needs-fix-tests').textContent = needsFix;
+    }
+
+    // Initialize test items
+    async function initializeTestItems() {
+      if (!confirm('This will create test items in the database. Continue?')) {
+        return;
+      }
+      try {
+        const response = await fetch('/api/testing/initialize', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+          alert(`Success! ${data.message}. Total items: ${data.total}`);
+          loadTestItems();
+        } else if (data.message) {
+          alert(data.message || 'Test items already initialized');
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          const details = data.details ? '\n\nDetails:\n' + data.details : '';
+          alert(`Error initializing test items: ${errorMsg}${details}`);
+          console.error('Full error response:', data);
+        }
+      } catch (error) {
+        console.error('Error initializing:', error);
+        alert(`Error initializing test items: ${error.message}`);
+      }
+    }
+
+    // ==================== CREATE MODAL ====================
+    function openCreateModal() {
+      // Populate category dropdown with existing categories
+      const categories = [...new Set(testItems.map(item => item.test_category))];
+      const select = document.getElementById('create-category');
+      select.innerHTML = '<option value="">Select existing or type new below...</option>';
+      categories.forEach(cat => {
+        select.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+
+      // Clear form
+      document.getElementById('create-category-new').value = '';
+      document.getElementById('create-name').value = '';
+      document.getElementById('create-description').value = '';
+      document.getElementById('create-url').value = '';
+      document.getElementById('create-priority').value = 'medium';
+
+      document.getElementById('create-modal').style.display = 'flex';
+    }
+
+    function closeCreateModal() {
+      document.getElementById('create-modal').style.display = 'none';
+    }
+
+    async function createTestItem(event) {
+      event.preventDefault();
+
+      const categorySelect = document.getElementById('create-category').value;
+      const categoryNew = document.getElementById('create-category-new').value.trim();
+      const category = categoryNew || categorySelect;
+
+      if (!category) {
+        alert('Please select or enter a category');
+        return;
+      }
+
+      const name = document.getElementById('create-name').value.trim();
+      const description = document.getElementById('create-description').value.trim();
+      const url = document.getElementById('create-url').value.trim();
+      const priority = document.getElementById('create-priority').value;
+
+      try {
+        const response = await fetch('/api/testing/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, name, description, url, priority })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          closeCreateModal();
+          loadTestItems();
+        } else {
+          alert('Error creating test item: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error creating test item:', error);
+        alert('Error creating test item');
+      }
+    }
+
+    // ==================== DELETE MODAL ====================
+    let deleteItemId = null;
+
+    function openDeleteModal(itemId, itemName) {
+      deleteItemId = itemId;
+      document.getElementById('delete-item-name').textContent = itemName;
+      document.getElementById('delete-modal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+      deleteItemId = null;
+      document.getElementById('delete-modal').style.display = 'none';
+    }
+
+    async function confirmDelete() {
+      if (!deleteItemId) return;
+
+      try {
+        const response = await fetch(`/api/testing/delete/${deleteItemId}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          closeDeleteModal();
+          loadTestItems();
+        } else {
+          alert('Error deleting test item: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error deleting test item:', error);
+        alert('Error deleting test item');
+      }
+    }
+
+    // Close modals when clicking outside
+    document.getElementById('create-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeCreateModal();
+    });
+    document.getElementById('delete-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeDeleteModal();
+    });
+
+    // Load on page load
+    getAdminEmail().then(() => loadTestItems());
+  </script>
+</body>
+</html>

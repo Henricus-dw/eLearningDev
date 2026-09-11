@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "type": "drag_drop",
+    "question": "Outfit the cowboy",
+    "points": 1,
+    "background": "virtual_quiz_2/1/ChatGPT_Image_May_28_2026_11_20_46_AM_1.png",
+    "zones": [
+      {
+        "id": "zmppxk4kyae2",
+        "x": 36.8107302533532,
+        "y": 5.860413176996092,
+        "w": 16.84053651266767,
+        "h": 10.148520379676158,
+        "label": "Hat"
+      },
+      {
+        "id": "zmppxk6bd1es",
+        "x": 49.03129657228018,
+        "y": 18.43886097152429,
+        "w": 22.652757078986582,
+        "h": 11.006141820212168,
+        "label": "Gun"
+      }
+    ],
+    "items": [
+      {
+        "id": "imppxkbpmym8",
+        "label": "Hat",
+        "correct_zone": "zmppxk4kyae2",
+        "image": "virtual_quiz_2/1/ralphs_fotos-cowboy-hat-2801582_1.png"
+      },
+      {
+        "id": "imppxkgs835n",
+        "label": "Sheep",
+        "correct_zone": null,
+        "image": "virtual_quiz_2/1/2567670-lamb-3539619_640.png"
+      },
+      {
+        "id": "imppxkh2uv39",
+        "label": "Gun",
+        "correct_zone": "zmppxk6bd1es",
+        "image": "virtual_quiz_2/1/raniramli-gun-2535417_640_1.png"
+      }
+    ],
+    "position": 1
+  }
+]

@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-context" data-page="Chapter" data-course="{{ course.title if course else '' }}" data-chapter="Chapter {{ chapter.order if chapter else '' }}: {{ chapter.title if chapter else '' }}">
+  <title>{{ chapter.title }}</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --colorPrimary: #212D65;
+      --colorSecondary: #EDAB1E;
+      --ink: #333;
+      --inkLight: #484848;
+      --panel: #fff;
+      --radius: 14px;
+      --shadow: 0 8px 18px rgba(0, 0, 0, .08);
+      --manualWing: url("{{ url_for('static', filename='images/manual-wing.png') }}");
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      color: var(--ink);
+      padding: 30px;
+      background-image: linear-gradient(to bottom, rgba(0, 0, 0, .08), rgba(0, 0, 0, .08)),
+      url("{{ url_for('static', filename='images/chapterbg.jpg') }}");
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 30% 70%;
+    }
+
+    .courseTitle {
+      color: var(--inkLight);
+      font-size: 30px;
+    }
+
+    .progress {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5e7eb;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .08);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--colorSecondary), #facc15);
+      transition: width .45s ease;
+    }
+
+    .chapter-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-top: 20px;
+      backdrop-filter: saturate(120%) blur(0px);
+      width: 100%;
+      max-width: 1440px;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
+
+    .chapter-content {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+
+    .chapter-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 0.95rem;
+    }
+
+    .chapter-content table th,
+    .chapter-content table td {
+      border: 1px solid #d1d5db;
+      padding: 10px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .chapter-content table th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: var(--brand-blue, #17306B);
+    }
+
+    .chapter-content table tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .chapter-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 18px 0;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .06);
+    }
+
+    /* Respect TinyMCE's text-align centering on parent paragraphs */
+    .chapter-content p:has(img) {
+      text-align: inherit;
+    }
+
+    .chapter-content p[style*="text-align: center"] img,
+    .chapter-content p[style*="text-align:center"] img {
+      display: inline-block;
+    }
+
+    .chapter-content video,
+    .chapter-content iframe {
+      float: none !important;
+      display: block !important;
+      width: 1000px;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      border: none;
+      margin: 26px auto !important;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .08);
+    }
+
+    .btn {
+      border-radius: 999px;
+      font-size: 1rem;
+      padding: 12px 22px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--colorPrimary);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn-success {
+      background-color: var(--colorSecondary);
+      color: #000;
+      border: none;
+    }
+
+    .btn-success:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background-color: #6b757d;
+      color: #fff;
+      border: none;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--colorPrimary);
+      box-shadow: 0 0 0 2px rgba(33, 45, 101, .25);
+    }
+
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .quiz-badge {
+      display: inline-block;
+      padding: .25rem .6rem;
+      font-weight: 700;
+      background: #fff8e1;
+      color: #7a4b00;
+      border: 1px dashed var(--colorSecondary);
+      border-radius: 999px;
+      font-size: .8rem;
+    }
+
+    .quiz-card {
+      border: 1px dashed var(--colorSecondary);
+      background: #fffdf6;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .quiz-q {
+      font-weight: 800;
+      color: #4b2a0a;
+    }
+
+    .small-muted {
+      font-size: .9rem;
+      color: #6c757d;
+    }
+
+    .form-check-input {
+      width: 22px;
+      height: 22px;
+      margin-right: 10px;
+      cursor: pointer;
+      border: 2px solid var(--colorPrimary);
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, .25);
+    }
+
+    .form-check-input:checked {
+      background-color: var(--colorSecondary);
+      border-color: var(--colorPrimary);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, .45);
+    }
+
+    .form-check-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(33, 45, 101, .45);
+    }
+
+    .lock-hint {
+      font-size: .95rem;
+      color: #7a4b00;
+    }
+
+    .alert {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      border: 1px solid transparent;
+    }
+
+    .alert-success {
+      background: #ecfdf3;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+
+    .alert-danger {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    .alert-warning {
+      background: #fffbeb;
+      border-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .alert-info {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .text-bg-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .text-bg-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .d-flex {
+      display: flex;
+    }
+
+    .flex-column {
+      flex-direction: column;
+    }
+
+    .justify-content-between {
+      justify-content: space-between;
+    }
+
+    .align-items-end {
+      align-items: flex-end;
+    }
+
+    .text-end {
+      text-align: right;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .text-primary {
+      color: var(--colorPrimary);
+    }
+
+    /* Wing badge (tuned: bigger wing, smaller badge) */
+    .manual-fab {
+      position: fixed;
+      top: 170px;
+      right: 12px;
+      z-index: 1050;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+
+      background: #ffffffee;
+      color: #111827;
+
+      border: 1px solid rgba(33, 45, 101, .14);
+      border-radius: 16px;
+
+      /* ✅ Smaller badge (wing removed) */
+      padding: 10px 14px;
+      min-height: 56px;
+      /* was 66px */
+
+      box-shadow: 0 14px 34px rgba(0, 0, 0, .16);
+      backdrop-filter: blur(10px) saturate(130%);
+      text-decoration: none;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      overflow: visible;
+    }
+
+    .manual-fab::before {
+      display: none; /* Wing image removed */
+    }
+
+    .manual-fab::after {
+      content: "";
+      position: absolute;
+      top: -1px;
+      right: -1px;
+
+      /* ✅ Slightly smaller corner fold */
+      width: 22px;
+      /* was 26px */
+      height: 22px;
+      /* was 26px */
+
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, .95) 0%,
+          rgba(237, 171, 30, .65) 55%,
+          rgba(33, 45, 101, .18) 100%);
+      border-left: 1px solid rgba(33, 45, 101, .12);
+      border-bottom: 1px solid rgba(33, 45, 101, .12);
+      border-top-right-radius: 16px;
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+      pointer-events: none;
+    }
+
+    .manual-fab:hover {
+      text-decoration: none;
+      transform: translateY(1px);
+      filter: brightness(1.02);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .20);
+    }
+
+    .manual-fab .manual-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    .manual-fab .manual-title {
+      font-size: .88rem;
+      /* was .96rem */
+      color: var(--colorPrimary);
+      letter-spacing: .55px;
+      text-transform: uppercase;
+    }
+
+    .manual-fab .manual-sub {
+      margin-top: 3px;
+      font-size: .72rem;
+      /* was .78rem */
+      font-weight: 900;
+      color: rgba(17, 24, 39, .70);
+      letter-spacing: .2px;
+    }
+
+    .manual-fab .manual-pill {
+      margin-left: 6px;
+      font-size: .64rem;
+      /* was .70rem */
+      font-weight: 900;
+      padding: 5px 8px;
+      /* was 6px 10px */
+      border-radius: 999px;
+      background: rgba(237, 171, 30, .25);
+      color: #4b2a0a;
+      border: 1px dashed rgba(237, 171, 30, .85);
+      white-space: nowrap;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 992px) {
+      .manual-fab {
+        top: 10px;
+        right: 10px;
+        padding: 9px 12px;
+        min-height: 54px;
+      }
+
+      .manual-fab .manual-pill {
+        display: none;
+      }
+    }
+
+    /* PDF Viewer - Full Screen Overlay */
+    .pdf-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 9998;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .pdf-sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .pdf-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .pdf-sidebar.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .pdf-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 30px;
+      background: linear-gradient(135deg, #212D65 0%, #1a2450 100%);
+      color: white;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .pdf-sidebar-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pdf-sidebar-title i {
+      color: #EDAB1E;
+      font-size: 1.2rem;
+    }
+
+    .pdf-sidebar-close {
+      background: rgba(239, 68, 68, 0.9);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pdf-sidebar-close:hover {
+      background: rgba(239, 68, 68, 1);
+    }
+
+    .pdf-sidebar-close:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .pdf-sidebar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 14px 30px;
+      background: #1f1f1f;
+      border-bottom: 1px solid #333;
+      flex-shrink: 0;
+    }
+
+    .pdf-sidebar-nav button {
+      background: rgba(255, 255, 255, 0.12);
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+    }
+
+    .pdf-sidebar-nav button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .pdf-sidebar-nav button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .pdf-page-info {
+      color: #ccc;
+      font-size: 1rem;
+      font-weight: 600;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .pdf-nav-divider {
+      width: 1px;
+      height: 30px;
+      background: #444;
+      margin: 0 8px;
+    }
+
+    .pdf-zoom-info {
+      color: #aaa;
+      font-size: 0.9rem;
+      font-weight: 500;
+      min-width: 55px;
+      text-align: center;
+    }
+
+    .pdf-sidebar-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 40px;
+      background: #111;
+    }
+
+    .pdf-sidebar-canvas {
+      max-width: 100%;
+      max-height: none;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+      background: white;
+    }
+
+    .pdf-sidebar-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      gap: 12px;
+      padding: 60px;
+      height: 100%;
+    }
+
+    .pdf-sidebar-loading .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #EDAB1E;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Prevent text selection in sidebar */
+    .pdf-sidebar * {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    /* Side buttons container */
+    .side-buttons {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 1050;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    /* Side button labels — hidden on desktop, shown on mobile */
+    .side-btn-label {
+      display: none;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    /* Desktop: show sidebar version, hide mobile link */
+    .handbook-mobile { display: none !important; }
+    .handbook-desktop { display: flex; }
+
+    /* ── Mascot narration (v1.2) ────────────────────────────────────────
+       Sits under the handbook button in the fixed side rail. The figure is a
+       1:2 portrait box and gesture images are swapped inside it during
+       playback. Kept narrow so it never covers the slide content. */
+    #mascot-stage {
+      width: 120px;
+      background: #ffffffee;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px 0 0 12px;
+      box-shadow: 0 10px 26px rgba(23, 48, 107, .16);
+      padding: 8px 8px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mascot-figure {
+      width: 100%;
+      aspect-ratio: 1 / 2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #mascot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* Hidden until the first gesture applies, so no broken-image icon. */
+      visibility: hidden;
+    }
+
+    .mascot-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      background: #17306B;
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .mascot-btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+    .mascot-bar {
+      width: 100%;
+      height: 5px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #mascot-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #17306B, #C7A434);
+      transition: width .1s linear;
+    }
+
+    .mascot-status {
+      font-size: 10px;
+      line-height: 1.25;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    .mascot-status.done { color: #047857; font-weight: 700; }
+
+    /* Subtitles. Opaque rather than translucent: these slides are dense images
+       and text over them is unreadable. Inset on the right so it never runs
+       under the mascot rail, and the page gains matching bottom padding while it
+       is showing so it cannot cover the Next button. */
+    #sub-bar { position:fixed; left:0; right:150px; bottom:0; z-index:1040;
+      background:#0f172a; color:#fff; padding:.85rem 1.25rem;
+      box-shadow:0 -2px 14px rgba(0,0,0,.25); }
+    #sub-text { max-width:70ch; margin:0 auto; text-align:center;
+      font-size:1.05rem; line-height:1.45; font-weight:500; min-height:1.45em; }
+    body.subs-on { padding-bottom:96px; }
+    .sub-lang { width:100%; margin-top:.4rem; font-size:.7rem; padding:.2rem .3rem;
+      border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; }
+    @media (max-width: 900px) {
+      #sub-bar { right:0; }
+      body.subs-on { padding-bottom:120px; }
+    }
+
+    /* Shown over a slide's video until the narration has finished. */
+    .video-lock {
+      display: block;
+      max-width: 640px;
+      margin: 0 0 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #FEF3C7;
+      border: 1px solid #FCD34D;
+      color: #92400E;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* On narrow screens the side rail becomes a horizontal top bar, so the
+       portrait mascot would blow it open. Shrink it and lay it out sideways. */
+    @media (max-width: 768px) {
+      #mascot-stage {
+        width: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        border-radius: 0 0 12px 12px;
+        padding: 6px 10px;
+      }
+      .mascot-figure { width: 34px; }
+      .mascot-bar { width: 70px; }
+      .mascot-status { font-size: 9px; max-width: 110px; }
+    }
+
+    /* Square handbook trigger button */
+    .handbook-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #212D65 0%, #1a2450 100%);
+      color: white;
+      border: none;
+      border-radius: 10px 0 0 10px;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .handbook-trigger:hover {
+      width: 66px;
+    }
+
+    .handbook-trigger i {
+      color: white;
+      font-size: 1.6rem;
+    }
+
+    /* Custom tooltip for handbook button */
+    .handbook-trigger::before {
+      content: 'Student Handbook';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%) translateX(-8px);
+      background: linear-gradient(135deg, #212D65 0%, #1a2450 100%);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      pointer-events: none;
+    }
+
+    .handbook-trigger::after {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%) translateX(4px);
+      border: 6px solid transparent;
+      border-left-color: #212D65;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      pointer-events: none;
+    }
+
+    .handbook-trigger:hover::before,
+    .handbook-trigger:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Handbook pulse animation for first-time users */
+    @keyframes handbookPulse {
+      0% { box-shadow: 0 0 0 0 rgba(237, 171, 30, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(237, 171, 30, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(237, 171, 30, 0); }
+    }
+
+    .handbook-trigger.pulse {
+      animation: handbookPulse 1.5s ease-out infinite;
+    }
+
+    /* Attention tooltip */
+    .handbook-trigger.pulse::before {
+      content: 'Click here to access your handbook';
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .handbook-trigger.pulse::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Dashboard return button */
+    .dashboard-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: #212D65;
+      border: 2px solid #212D65;
+      border-right: none;
+      border-radius: 8px 0 0 8px;
+      width: 41px;
+      height: 41px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      text-decoration: none;
+    }
+
+    .dashboard-trigger:hover {
+      width: 46px;
+      background: #f8f9fa;
+    }
+
+    .dashboard-trigger i {
+      color: #212D65;
+      font-size: 1rem;
+    }
+
+    /* Custom tooltip for dashboard button */
+    .dashboard-trigger::before {
+      content: 'Back to Dashboard';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%) translateX(-8px);
+      background: linear-gradient(135deg, #212D65 0%, #1a2450 100%);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      pointer-events: none;
+    }
+
+    .dashboard-trigger::after {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%) translateX(4px);
+      border: 6px solid transparent;
+      border-left-color: #212D65;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      pointer-events: none;
+    }
+
+    .dashboard-trigger:hover::before,
+    .dashboard-trigger:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @media (max-width: 768px) {
+      /* Move side buttons to a sticky top bar on mobile */
+      .side-buttons {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        transform: none;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(33,45,101,0.95);
+        backdrop-filter: blur(8px);
+        padding: 8px 12px;
+        gap: 8px;
+        z-index: 1060;
+      }
+
+      .dashboard-trigger,
+      .handbook-trigger {
+        width: auto !important;
+        height: auto !important;
+        border-radius: 8px !important;
+        padding: 8px 14px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        text-decoration: none !important;
+      }
+
+      .dashboard-trigger {
+        background: rgba(255,255,255,0.15) !important;
+      }
+
+      /* Hide all tooltip pseudo-elements */
+      .handbook-trigger::before,
+      .handbook-trigger::after,
+      .dashboard-trigger::before,
+      .dashboard-trigger::after {
+        display: none !important;
+      }
+
+      .dashboard-trigger i,
+      .handbook-trigger i {
+        font-size: 0.85rem !important;
+        color: white !important;
+      }
+
+      .side-btn-label {
+        display: inline !important;
+      }
+
+      /* Mobile: open PDF in new tab for native pinch-zoom */
+      .handbook-desktop { display: none !important; }
+      .handbook-mobile { display: inline-flex !important; }
+
+      /* Add top padding to body to account for sticky bar */
+      body {
+        padding-top: 56px !important;
+      }
+
+      .pdf-sidebar-header {
+        padding: 12px 16px;
+      }
+
+      .pdf-sidebar-nav {
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pdf-nav-divider {
+        display: none;
+      }
+
+      .pdf-sidebar-container {
+        padding: 16px;
+      }
+
+      .pdf-sidebar-close span {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .courseTitle {
+        font-size: 1.3rem;
+      }
+
+      .chapter-card {
+        padding: 14px;
+        margin-top: 12px;
+      }
+
+      .chapter-content {
+        font-size: 0.92rem;
+        line-height: 1.6;
+      }
+
+      .chapter-content iframe {
+        height: 220px;
+      }
+
+      .chapter-content table {
+        font-size: 0.8rem;
+      }
+
+      .chapter-content table th,
+      .chapter-content table td {
+        padding: 6px 8px;
+      }
+
+      /* Nav buttons — stack vertically on mobile */
+      .d-flex.justify-content-between {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 10px;
+      }
+
+      .btn {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+        border-radius: 10px;
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      /* Quiz question text */
+      .quiz-q {
+        font-size: 0.9rem;
+      }
+
+      .quiz-card {
+        padding: 12px;
+      }
+
+      /* Checkbox label */
+      .form-check {
+        font-size: 0.95rem !important;
+      }
+
+      /* Lock hint */
+      .lock-hint {
+        font-size: 0.8rem;
+      }
+
+      /* Quiz header */
+      .quiz-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      /* Progress bar label */
+      .d-flex.justify-content-between.align-items-baseline {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+    }
+
+    @media (min-width: 2500px) {
+      .chapter-card {
+        max-width: 2300px;
+      }
+    }
+
+    /* Selected answer highlight */
+    .answer-picked {
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: inline-block;
+    }
+
+    .answer-picked-correct {
+      background: #ecfdf3;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-weight: 800;
+    }
+
+    .answer-picked-wrong {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      font-weight: 800;
+    }
+  </style>
+
+  <script>
+    function enableButtons() {
+      const acknowledgeCheckbox = document.getElementById('acknowledge');
+      const nextButton = document.getElementById('nextButton');
+      const completeButton = document.getElementById('completeCourseBtn');
+      if (!acknowledgeCheckbox) return;
+      const on = acknowledgeCheckbox.checked;
+      if (nextButton) nextButton.disabled = !on;
+      if (completeButton) completeButton.disabled = !on;
+    }
+  </script>
+</head>
+
+<body>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="mt-3 space-y-2">
+    {% for category, message in messages %}
+    <div class="alert
+            {% if category in ['success','ok'] %}
+              alert-success
+            {% elif category in ['error','danger'] %}
+              alert-danger
+            {% elif category == 'warning' %}
+              alert-warning
+            {% else %}
+              alert-info
+            {% endif %}
+            mb-2">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  {% set chapter_type = (chapter.chapter_type or 'text')|lower %}
+  {% set is_quiz = (chapter_type == 'quiz') %}
+  {% set is_audio = chapter_type in ['audio_gate', 'audio'] %}
+
+  {# ✅ used to lock/unlock Next + hide Submit Answers when passed #}
+  {% set passed_quiz = false %}
+  {% if is_quiz %}
+  {% set _grading_for_pass = quiz_result or preview_result %}
+  {% set passed_quiz = (_grading_for_pass and _grading_for_pass.passed) %}
+  {% endif %}
+
+  <div class="chapter-card">
+    <div class="courseTitle">{{ course.title }}</div>
+
+    <!-- Progress -->
+    <div class="mt-3 mb-4 w-full">
+      <div class="flex justify-between text-xs font-semibold text-gray-700 mb-1">
+        <span>Progress</span>
+        <span>{{ progress_percentage }}% Completed</span>
+      </div>
+      <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;"
+          aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
+
+    <h3 class="text-primary text-2xl font-semibold flex items-center gap-2">📖 {{ chapter.title }}</h3>
+
+    <div class="chapter-content mt-3">
+      {# A mascot voiceline supersedes the legacy audio gate: rendering
+         both would put two players on the page. #}
+      {% if is_audio and not mascot %}
+      <div id="vo-gate"
+        data-audio="{{ url_for('static', filename='audio/' ~ (chapter.audio_path or 'intro-briefing.mp3')) }}" style="max-width:800px;margin:0 0 30px;padding:24px;border-radius:18px;
+               background:#ffffffee;box-shadow:0 18px 40px rgba(0,0,0,.08);
+               border:1px solid #e2e8f0;">
+        <p class="text-gray-500 text-sm mb-0">
+          Audio briefing is loading. If you cannot see the play button, please refresh or contact support.
+        </p>
+      </div>
+      {% endif %}
+
+      {{ chapter.content | safe }}
+    </div>
+
+    <!-- ===========================
+         QUIZ (separate form)
+         =========================== -->
+    {% if is_quiz %}
+    {% set questions = (quiz_qs if quiz_qs is defined else (quiz_items if quiz_items is defined else [])) %}
+    {% set grading = quiz_result or preview_result %}
+    {% set total_q = questions|length %}
+
+    <hr class="my-4">
+    <div class="quiz-header">
+      <h4 class="mb-0 text-lg font-semibold">🧩 Chapter Quiz</h4>
+      <span class="quiz-badge">{{ total_q }} question{{ '' if total_q == 1 else 's' }}</span>
+    </div>
+
+    {% if grading %}
+    <div class="alert {{ 'alert-success' if grading.passed else 'alert-danger' }} mt-3">
+      <strong>{{ 'Passed' if grading.passed else 'Failed' }}</strong> —
+      Score: <strong>{{ grading.correct }}/{{ grading.total }}</strong>
+      ({{ grading.score_pct }}%)
+    </div>
+    {% endif %}
+
+    {% if total_q > 0 %}
+    <form class="mt-3" method="POST"
+      action="{{ url_for('chapter_content', course_id=course.id, chapter_id=chapter.id) }}">
+
+      {% for q in questions %}
+      <div class="quiz-card mb-3">
+        <div class="quiz-q mb-2">Q{{ loop.index }}. {{ q.prompt or q.question }}</div>
+
+        {% set qid = q.id|string %}
+        {% set field = 'q_' ~ q.id %}
+        {% set is_tf = (q.qtype or '')|lower in ['tf','truefalse','true_false'] %}
+        {% set has_opts = (q.option_a or q.option_b or q.option_c or q.option_d) %}
+        {% set has_json_map = (q.options is defined and q.options and (q.options is mapping)) %}
+
+        {% set r = (grading.per_q[qid] if grading and grading.per_q and qid in grading.per_q else None) %}
+
+        {% set selected = None %}
+        {% if r %}
+        {% if r.selected_key is defined and r.selected_key is not none %}{% set selected = r.selected_key %}
+        {% elif r.selected is defined and r.selected is not none %}{% set selected = r.selected %}
+        {% elif r.given is defined and r.given is not none %}{% set selected = r.given %}
+        {% elif r.answer is defined and r.answer is not none %}{% set selected = r.answer %}
+        {% elif r.user_answer is defined and r.user_answer is not none %}{% set selected = r.user_answer %}
+        {% elif r.response is defined and r.response is not none %}{% set selected = r.response %}
+        {% endif %}
+        {% endif %}
+        {% if selected is not none %}{% set selected = (selected|string)|lower %}{% endif %}
+
+        {% set opts_map = {} %}
+        {% if has_opts %}
+        {% set opts_map = {'a': q.option_a, 'b': q.option_b, 'c': q.option_c, 'd': q.option_d} %}
+        {% elif has_json_map %}
+        {% set opts_map = q.options %}
+        {% endif %}
+
+        {% if is_tf %}
+        <div class="mb-1 flex items-center">
+          <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}_t" value="true" required {% if
+            selected=='true' %}checked{% endif %}>
+          <label class="form-check-label
+                    {% if r and selected == 'true' %}
+                      answer-picked {{ 'answer-picked-correct' if r.is_correct else 'answer-picked-wrong' }}
+                    {% endif %}" for="{{ field }}_t">True</label>
+        </div>
+
+        <div class="flex items-center">
+          <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}_f" value="false" required {%
+            if selected=='false' %}checked{% endif %}>
+          <label class="form-check-label
+                    {% if r and selected == 'false' %}
+                      answer-picked {{ 'answer-picked-correct' if r.is_correct else 'answer-picked-wrong' }}
+                    {% endif %}" for="{{ field }}_f">False</label>
+        </div>
+
+        {% elif has_opts %}
+        {% set opts = [('a', q.option_a), ('b', q.option_b), ('c', q.option_c), ('d', q.option_d)] %}
+        {% for key, text in opts if text %}
+        <div class="flex items-center {% if not loop.last %}mb-1{% endif %}">
+          <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}_{{ key }}" value="{{ key }}"
+            required {% if selected==key %}checked{% endif %}>
+          <label class="form-check-label
+                    {% if r and selected == key %}
+                      answer-picked {{ 'answer-picked-correct' if r.is_correct else 'answer-picked-wrong' }}
+                    {% endif %}" for="{{ field }}_{{ key }}">{{ text }}</label>
+        </div>
+        {% endfor %}
+
+        {% elif has_json_map %}
+        {% set ns = namespace(opts=[]) %}
+        {% for key in ['a','b','c','d'] %}
+        {% if q.options[key] is defined and q.options[key] %}
+        {% set _ = ns.opts.append((key, q.options[key])) %}
+        {% endif %}
+        {% endfor %}
+        {% for key, text in ns.opts %}
+        <div class="flex items-center {% if not loop.last %}mb-1{% endif %}">
+          <input class="form-check-input" type="radio" name="{{ field }}" id="{{ field }}_{{ key }}" value="{{ key }}"
+            required {% if selected==key %}checked{% endif %}>
+          <label class="form-check-label
+                    {% if r and selected == key %}
+                      answer-picked {{ 'answer-picked-correct' if r.is_correct else 'answer-picked-wrong' }}
+                    {% endif %}" for="{{ field }}_{{ key }}">{{ text }}</label>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <input type="text" class="form-control" name="{{ field }}" required placeholder="Type your answer" {% if
+          selected is not none %}value="{{ selected }}" {% endif %}>
+        <div class="small-muted mt-1">Short answer accepted.</div>
+        {% endif %}
+
+        <!-- Results: correct = badge only, wrong = badge + lines -->
+        {% if r %}
+        <div class="mt-2">
+          {% if r.is_correct %}
+          <span class="badge text-bg-success">Correct</span>
+          {% else %}
+          <span class="badge text-bg-danger">Incorrect</span>
+
+          {% set correct_key = (r.correct_key if r.correct_key is defined else None) %}
+          {% if correct_key %}
+          {% set ck = (correct_key|string)|lower %}
+          <div class="mt-2 text-sm text-gray-600">
+            <div><strong>Your answer:</strong>
+              {% if selected %}
+              <code>{{ selected|upper }}</code>
+              {% if opts_map and opts_map[selected] is defined and opts_map[selected] %}
+              — {{ opts_map[selected] }}
+              {% endif %}
+              {% else %}
+              <span class="text-gray-400">N/A</span>
+              {% endif %}
+            </div>
+
+            <div class="mt-1"><strong>Correct answer:</strong>
+              <code>{{ ck|upper }}</code>
+              {% if opts_map and opts_map[ck] is defined and opts_map[ck] %}
+              — {{ opts_map[ck] }}
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <!-- ✅ SUBMIT CONTROL: hide/disable after PASS -->
+      <div class="d-flex gap-2 items-center mt-2">
+        {% if not passed_quiz %}
+        <button type="submit" class="btn btn-primary">Submit Answers</button>
+        <span class="align-self-center small-muted">All questions are required.</span>
+        {% else %}
+        <span class="align-self-center small-muted">✅ Quiz completed. You may continue.</span>
+        {% endif %}
+      </div>
+    </form>
+    {% else %}
+    <div class="alert alert-warning mt-3">
+      No quiz questions have been added to this chapter yet.
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- ===========================
+         ACK / NAV (separate form)
+         =========================== -->
+    <form method="POST" action="{{ url_for('acknowledge_chapter', chapter_id=chapter.id) }}" class="mt-4">
+      <input type="hidden" name="acknowledged" value="1">
+
+      <div class="d-flex justify-content-between mt-4 align-items-end">
+        {% if prev_chapter %}
+        <a href="{{ url_for('chapter_content', course_id=course.id, chapter_id=prev_chapter.id) }}"
+          class="btn btn-secondary">⬅ Previous Unit</a>
+        {% else %}
+        <span></span>
+        {% endif %}
+
+        <div class="d-flex flex-column align-items-end" style="gap:0.4rem;">
+          {% if is_quiz %}
+          {% if not passed_quiz %}
+          <div class="lock-hint text-end">🔒 You must answer all quiz questions correctly to proceed.</div>
+          {% endif %}
+          {% elif is_audio %}
+          <div class="lock-hint text-end">🔊 Please listen to the full audio briefing. The button will unlock when
+            playback is complete.</div>
+          {% else %}
+          {% if mascot %}
+          {# Mascot narration gates the acknowledgement. The checkbox starts
+             disabled and is enabled by the runtime once the voiceline (and the
+             video, if required) has finished. acknowledge_chapter re-checks
+             this server side, so disabling it here is convenience, not the
+             actual control. #}
+          <div id="mascot-lock-hint" class="lock-hint text-end">
+            🔊 Listen to your course guide before confirming this page.
+          </div>
+          {% endif %}
+          <div class="form-check text-end" style="font-size:1.15rem; margin-bottom:14px;">
+            <input type="checkbox" id="acknowledge" name="acknowledged_check" class="form-check-input"
+              onchange="enableButtons()" required {% if mascot %}disabled{% endif %}>
+            <label for="acknowledge" class="form-check-label" style="font-weight:600;">
+              I have read and understood this page.
+            </label>
+          </div>
+          {% endif %}
+
+          {% if next_chapter %}
+          {% if is_quiz %}
+          <button type="submit" id="nextButton" class="btn btn-primary" {% if not passed_quiz %}disabled{% endif %}>
+            ➡ Next: {{ next_chapter.title }}
+          </button>
+          {% elif is_audio %}
+          <button type="submit" id="nextButton" class="btn btn-primary" disabled>
+            ➡ Next: {{ next_chapter.title }}
+          </button>
+          {% else %}
+          <button type="submit" id="nextButton" class="btn btn-primary" disabled>
+            ➡ Next: {{ next_chapter.title }}
+          </button>
+          {% endif %}
+          {% else %}
+          {% if is_quiz %}
+          <button type="submit" id="completeCourseBtn" class="btn btn-success" {% if not passed_quiz %}disabled{% endif
+            %}>
+            ✅ Complete Course
+          </button>
+          {% elif is_audio %}
+          <button type="submit" id="completeCourseBtn" class="btn btn-success" disabled>
+            ✅ Final Assessment
+          </button>
+          {% else %}
+          <button type="submit" id="completeCourseBtn" class="btn btn-success" disabled>
+            ✅ Final Assessment
+          </button>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </form>
+
+  </div> <!-- /chapter-card -->
+
+  <!-- Manual badge OUTSIDE forms -->
+  {% set manual_href = None %}
+  {% if chapter.manual_url is defined and chapter.manual_url %}
+    {% set manual_href = chapter.manual_url %}
+  {% elif course.manual_url is defined and course.manual_url %}
+    {% set manual_href = course.manual_url %}
+  {% elif handbook_url %}
+    {% set manual_href = handbook_url %}
+  {% endif %}
+
+  <!-- Side buttons -->
+  <div class="side-buttons">
+    <a href="{{ url_for('dashboard') }}" class="dashboard-trigger" aria-label="Back to Dashboard">
+      <i class="fas fa-arrow-left"></i>
+      <span class="side-btn-label">Dashboard</span>
+    </a>
+    {% if manual_href %}
+    <button type="button" class="handbook-trigger handbook-desktop" onclick="openPdfSidebar('{{ manual_href }}')" aria-label="Open Student Handbook">
+      <i class="fas fa-book-open"></i>
+      <span class="side-btn-label">Handbook</span>
+    </button>
+    <a href="{{ manual_href }}" target="_blank" class="handbook-trigger handbook-mobile" aria-label="Open Student Handbook" style="text-decoration:none;">
+      <i class="fas fa-book-open"></i>
+      <span class="side-btn-label">Handbook</span>
+    </a>
+    {% endif %}
+
+    {# ── Mascot narration (v1.2). Sits directly under the handbook button in a
+         1:2 container. Rendered only when this slide has a voiceline. ── #}
+    {% if mascot %}
+    <div id="mascot-stage"
+         data-audio="{{ mascot.audio_url }}"
+         data-chapter="{{ chapter.id }}"
+         data-duration="{{ mascot.duration_ms }}"
+         data-require-video="{{ 1 if mascot.require_video else 0 }}"
+         data-cues='{{ mascot.cues | tojson }}'
+         data-subtitles='{{ mascot.subtitles | tojson }}'
+         data-prefs='{{ mascot.prefs | tojson }}'>
+      <div class="mascot-figure">
+        <img id="mascot-img" alt="Course guide" />
+      </div>
+      <button type="button" id="mascot-play" class="mascot-btn">
+        <i class="fas fa-play"></i><span>Play</span>
+      </button>
+      <div class="mascot-bar"><div id="mascot-fill"></div></div>
+      <div id="mascot-status" class="mascot-status">Tap play to begin</div>
+      {% if mascot.languages %}
+      <select id="sub-lang" class="sub-lang" aria-label="Subtitles">
+        <option value="">Subtitles off</option>
+        {% for l in mascot.languages %}
+        <option value="{{ l.code }}">{{ l.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if mascot and mascot.languages %}
+    {# Subtitles sit in their own bar across the foot of the window, clear of the
+       mascot rail and of the acknowledgement controls. #}
+    <div id="sub-bar" hidden>
+      <div id="sub-text"></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // AJAX feedback submit handler (kept as-is)
+    document.addEventListener('submit', async function (e) {
+      const form = e.target;
+      const isFeedback = form.matches('form[action^="/course/"][action$="/feedback"][method="POST"]');
+      if (!isFeedback) return;
+
+      e.preventDefault();
+      if (window.tinymce) tinymce.triggerSave();
+      let container = form.closest('[id^="course-feedback-block-"]') || form;
+      const btn = form.querySelector('button[type="submit"]');
+      const old = btn ? btn.textContent : null;
+      if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+      try {
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const html = await resp.text();
+        container.outerHTML = html;
+      } catch (err) {
+        alert('⚠ Error submitting feedback. Please try again.');
+        if (btn) { btn.disabled = false; btn.textContent = old; }
+      }
+    });
+
+    // ── Mascot narration runtime (v1.2) ────────────────────────────────────
+    // Plays the slide's voiceline, swaps the mascot artwork on cue, then
+    // unlocks the acknowledgement checkbox. If the slide has a <video> and the
+    // slide is configured to require it, the video must finish first.
+    //
+    // Progress is reported to the server, which is what actually authorises the
+    // acknowledgement. Enabling the checkbox in devtools achieves nothing.
+    document.addEventListener('DOMContentLoaded', function () {
+      const stage = document.getElementById('mascot-stage');
+      if (!stage) return;
+
+      const chapterId = parseInt(stage.dataset.chapter, 10);
+      const requireVideo = stage.dataset.requireVideo === '1';
+      let cues = [];
+      try { cues = JSON.parse(stage.dataset.cues || '[]'); } catch (_) { cues = []; }
+
+      // ── Subtitles ───────────────────────────────────────────────────────
+      // Every language shares one set of windows, so the player only picks a
+      // key out of each block. Driven from the same visual loop as the gestures.
+      let subBlocks = [];
+      try { subBlocks = JSON.parse(stage.dataset.subtitles || '[]'); }
+      catch (_) { subBlocks = []; }
+      let subPrefs = { enabled: false, lang: 'en' };
+      try { subPrefs = JSON.parse(stage.dataset.prefs || '{}') || subPrefs; }
+      catch (_) {}
+
+      const subBar = document.getElementById('sub-bar');
+      const subText = document.getElementById('sub-text');
+      const subSel = document.getElementById('sub-lang');
+      let subLang = subPrefs.enabled ? (subPrefs.lang || 'en') : '';
+      let subShown = null;
+
+      function applySubMode() {
+        const on = !!subLang;
+        if (subBar) subBar.hidden = !on;
+        document.body.classList.toggle('subs-on', on);
+        if (!on) { subShown = null; if (subText) subText.textContent = ''; }
+      }
+
+      function paintSubs(ms) {
+        if (!subLang || !subBar) return;
+        let line = '';
+        for (let i = 0; i < subBlocks.length; i++) {
+          const b = subBlocks[i];
+          if (ms >= b.start_ms && ms < b.end_ms) {
+            line = (b.texts && b.texts[subLang]) || '';
+            break;
+          }
+        }
+        if (line !== subShown) { subText.textContent = line; subShown = line; }
+      }
+
+      function saveSubPref() {
+        try {
+          localStorage.setItem('subLang', subLang);
+        } catch (_) {}
+        fetch('/api/subtitle-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: !!subLang, lang: subLang || 'en' })
+        }).catch(function () {});
+      }
+
+      if (subSel) {
+        // localStorage answers instantly so the bar does not flash on load; the
+        // value on the student record is what follows them to another device.
+        try {
+          const cached = localStorage.getItem('subLang');
+          if (cached !== null) subLang = cached;
+        } catch (_) {}
+        // Fall back if this slide has nothing in the remembered language.
+        if (subLang && !Array.prototype.some.call(
+              subSel.options, function (o) { return o.value === subLang; })) {
+          subLang = '';
+        }
+        subSel.value = subLang;
+        subSel.addEventListener('change', function () {
+          subLang = subSel.value;
+          applySubMode();
+          paintSubs(audio.currentTime * 1000);
+          saveSubPref();
+        });
+      }
+      applySubMode();
+      cues.sort((a, b) => a.at_ms - b.at_ms);
+
+      const img = document.getElementById('mascot-img');
+      const playBtn = document.getElementById('mascot-play');
+      const fill = document.getElementById('mascot-fill');
+      const status = document.getElementById('mascot-status');
+      const checkbox = document.getElementById('acknowledge');
+      const lockHint = document.getElementById('mascot-lock-hint');
+
+      // Only gate on a video that is actually on the slide.
+      const video = requireVideo
+        ? document.querySelector('.chapter-content video') : null;
+
+      const audio = new Audio(stage.dataset.audio);
+      audio.preload = 'auto';
+
+      // Preload every gesture up front so a swap never flashes blank.
+      const preloaded = {};
+      cues.forEach(c => {
+        if (c.src && !preloaded[c.src]) {
+          const p = new Image();
+          p.src = c.src;
+          preloaded[c.src] = p;
+        }
+      });
+
+      function setStatus(text, done) {
+        status.textContent = text;
+        status.classList.toggle('done', !!done);
+      }
+
+      // Show whichever gesture is current for this moment.
+      let shown = null;
+      function paint(ms) {
+        let pick = null;
+        for (let i = 0; i < cues.length; i++) {
+          if (cues[i].at_ms <= ms) pick = cues[i]; else break;
+        }
+        const src = pick ? pick.src : (cues.length ? cues[0].src : null);
+        if (src && src !== shown) {
+          img.src = src;
+          img.style.visibility = 'visible';
+          shown = src;
+        }
+        paintSubs(ms);
+      }
+      paint(0);
+
+      // ── server beacon ────────────────────────────────────────────────────
+      let lastSent = 0;
+      function report(extra) {
+        const body = Object.assign({
+          chapter_id: chapterId,
+          heard_ms: Math.round(highWater)
+        }, extra || {});
+        return fetch('/api/mascot/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          keepalive: true
+        }).catch(() => { });
+      }
+
+      // Track the furthest point genuinely reached, so skipping ahead cannot
+      // manufacture completion.
+      let highWater = 0;
+
+      // Slides come in two shapes: most have an "I have read and understood"
+      // checkbox, but audio_gate slides have no checkbox and rely on the Next /
+      // Complete buttons instead. Gate whichever this slide actually has.
+      const navButtons = [document.getElementById('nextButton'),
+                          document.getElementById('completeCourseBtn')]
+                          .filter(Boolean);
+      // Gate the nav buttons too, not only the checkbox. A DISABLED checkbox is
+      // skipped by HTML5 'required' validation, so leaving Next active let the
+      // form submit anyway; the server then refused and redirected back to the
+      // same slide, and because flash messages render at the top of a long page
+      // the student never saw why. It read as the page being stuck.
+      const gatesNav = navButtons.length > 0;
+
+      function setNav(enabled) {
+        navButtons.forEach(b => {
+          b.disabled = !enabled;
+          b.style.opacity = enabled ? '1' : '.45';
+          b.style.cursor = enabled ? 'pointer' : 'not-allowed';
+          b.style.pointerEvents = enabled ? 'auto' : 'none';
+        });
+      }
+      if (gatesNav) setNav(false);
+
+      function unlockCheckbox() {
+        if (checkbox) checkbox.disabled = false;
+        if (gatesNav) setNav(true);
+        if (lockHint) lockHint.style.display = 'none';
+      }
+
+      function afterAudio() {
+        setStatus('Narration complete', true);
+        fill.style.width = '100%';
+        report({ completed: true }).then(() => {
+          if (video) {
+            unlockVideo();
+            setStatus('Now watch the video below', false);
+            if (lockHint) {
+              lockHint.textContent = '🎬 Watch the video all the way through to continue. It cannot be skipped.';
+            }
+            video.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            unlockCheckbox();
+          }
+        });
+      }
+
+      // requestAnimationFrame drives only the VISUALS. Browsers pause it in a
+      // hidden tab, so it must never be what measures listening progress:
+      // listening in a background tab used to freeze the counter at the moment
+      // the tab was hidden, and the narration could then never complete.
+      let raf = null;
+      function tick() {
+        const ms = audio.currentTime * 1000;
+        const d = (isFinite(audio.duration) && audio.duration > 0)
+          ? audio.duration * 1000
+          : parseInt(stage.dataset.duration || '0', 10);
+        if (d) fill.style.width = Math.min(100, (ms / d) * 100) + '%';
+        paint(ms);
+        raf = requestAnimationFrame(tick);
+      }
+
+      // timeupdate keeps firing while the tab is in the background, so this is
+      // what actually measures listening. It accumulates elapsed playback
+      // rather than furthest position reached: a large jump means the student
+      // seeked rather than listened, so it is not counted.
+      let lastPos = 0;
+      audio.addEventListener('seeking', function () { lastPos = audio.currentTime * 1000; });
+      audio.addEventListener('timeupdate', function () {
+        const pos = audio.currentTime * 1000;
+        const delta = pos - lastPos;
+        if (delta > 0 && delta < 2000) highWater += delta;
+        lastPos = pos;
+        // Heartbeat roughly every 10s so a partial listen is still recorded.
+        if (highWater - lastSent > 10000) { lastSent = highWater; report(); }
+      });
+
+      playBtn.addEventListener('click', function () {
+        if (!audio.paused) {
+          audio.pause();
+          playBtn.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+          setStatus('Paused. Listen to the end to continue.');
+          return;
+        }
+        audio.play().then(() => {
+          playBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+          setStatus('Playing...');
+          if (!raf) raf = requestAnimationFrame(tick);
+        }).catch(() => {
+          setStatus('Could not play audio. Check your sound and try again.');
+        });
+      });
+
+      audio.addEventListener('ended', function () {
+        // Reaching the end is proof enough; without this a couple of hundred
+        // milliseconds of rounding could leave a genuine listen just short.
+        const dur = (isFinite(audio.duration) && audio.duration > 0)
+          ? audio.duration * 1000
+          : parseInt(stage.dataset.duration || '0', 10);
+        if (dur) highWater = Math.max(highWater, dur);
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        playBtn.disabled = true;
+        playBtn.innerHTML = '<i class="fas fa-check"></i><span>Done</span>';
+        afterAudio();
+      });
+
+      // ── Video: locked until the narration finishes, and not skippable ──
+      // Requirements: the student cannot press play before the guide has
+      // finished speaking, and cannot fast forward through the video once it is
+      // unlocked. Native controls allow both, so playback is policed here and
+      // the elapsed watch time is reported for the server to verify.
+      let videoUnlocked = false;
+      let vidWatched = 0;      // elapsed playback, seeks excluded
+      let vidLastPos = 0;
+
+      if (video) {
+        video.controls = false;
+        video.setAttribute('controlsList', 'nodownload noplaybackrate');
+        video.setAttribute('disablepictureinpicture', '');
+
+        // Cover the video with an explanation until the narration is done.
+        const shade = document.createElement('div');
+        shade.className = 'video-lock';
+        shade.innerHTML =
+          '<span><i class="fas fa-lock"></i> Listen to your course guide first,'
+          + ' then this video will unlock.</span>';
+        if (video.parentNode) {
+          video.parentNode.insertBefore(shade, video);
+        }
+
+        // Any attempt to start it early is refused.
+        video.addEventListener('play', function () {
+          if (!videoUnlocked) {
+            video.pause();
+            video.currentTime = 0;
+            setStatus('Finish the narration before the video', false);
+          }
+        });
+
+        // Count only real playback. A jump larger than a couple of seconds is a
+        // seek, not watching, so it adds nothing.
+        video.addEventListener('timeupdate', function () {
+          const pos = video.currentTime * 1000;
+          const delta = pos - vidLastPos;
+          if (delta > 0 && delta < 2000) vidWatched += delta;
+          vidLastPos = pos;
+        });
+
+        // Refuse to move the playhead past the furthest point genuinely watched.
+        // Going back to re-watch is fine.
+        video.addEventListener('seeking', function () {
+          if (!videoUnlocked) { video.currentTime = 0; return; }
+          if (video.currentTime * 1000 > vidWatched + 1500) {
+            video.currentTime = Math.max(0, vidWatched / 1000);
+          }
+          vidLastPos = video.currentTime * 1000;
+        });
+
+        video.addEventListener('ended', function () {
+          const vd = (isFinite(video.duration) && video.duration > 0)
+            ? Math.round(video.duration * 1000) : 0;
+          if (vd) vidWatched = Math.max(vidWatched, vd);
+          report({
+            video_completed: true,
+            video_watched_ms: Math.round(vidWatched),
+            video_duration_ms: vd
+          }).then(function () {
+            setStatus('All done', true);
+            if (lockHint) lockHint.style.display = 'none';
+            unlockCheckbox();
+          });
+        });
+
+        // Periodically report progress so a part-watched video is not lost.
+        setInterval(function () {
+          if (videoUnlocked && !video.paused) {
+            report({
+              video_watched_ms: Math.round(vidWatched),
+              video_duration_ms: (isFinite(video.duration) && video.duration > 0)
+                ? Math.round(video.duration * 1000) : 0
+            });
+          }
+        }, 10000);
+      }
+
+      function unlockVideo() {
+        if (!video) return;
+        videoUnlocked = true;
+        video.controls = true;
+        const shade = document.querySelector('.video-lock');
+        if (shade) shade.remove();
+      }
+
+      // If they already completed this slide in an earlier visit, do not make
+      // them sit through it again.
+      fetch('/api/mascot/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chapter_id: chapterId, heard_ms: 0 })
+      }).then(r => r.json()).then(function (j) {
+        if (j && j.completed) {
+          fill.style.width = '100%';
+          if (video && !j.video_completed) {
+            // Narration already done on a previous visit: release the video and
+            // let them pick up where the requirement actually still stands.
+            unlockVideo();
+            vidWatched = Math.max(vidWatched, j.video_watched_ms || 0);
+            setStatus('Narration done. Watch the video to continue.', false);
+            if (lockHint) {
+              lockHint.textContent = '🎬 Watch the video all the way through to continue. It cannot be skipped.';
+            }
+          } else {
+            unlockVideo();
+            setStatus('Already completed', true);
+            unlockCheckbox();
+          }
+        }
+      }).catch(() => { });
+    });
+
+    // Audio gate unlock logic
+    document.addEventListener('DOMContentLoaded', function () {
+      const gate = document.getElementById('vo-gate');
+      if (!gate) return;
+
+      const audioSrc = gate.dataset.audio;
+      const nextBtn = document.getElementById('nextButton');
+      const completeBtn = document.getElementById('completeCourseBtn');
+
+      if (!audioSrc || (!nextBtn && !completeBtn)) return;
+
+      gate.innerHTML = `
+        <h4 style="margin:0 0 10px;font-size:20px;color:#17306B;">
+          ✈️ Audio Briefing: Important Information
+        </h4>
+        <p style="margin:0 0 16px;color:#4b5563;line-height:1.5;">
+          Please listen to this short audio briefing before you continue. The
+          <strong>Next</strong> button will unlock when the audio finishes.
+        </p>
+
+        <audio id="vo-audio" preload="auto">
+          <source src="${audioSrc}" type="audio/mpeg">
+        </audio>
+
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:10px;">
+          <button id="vo-play" type="button"
+                  style="border:none;border-radius:999px;padding:10px 20px;
+                         background:#17306B;color:#fff;font-weight:600;
+                         cursor:pointer;font-size:14px;">
+            ▶️ Play briefing
+          </button>
+
+          <button id="vo-stop" type="button"
+                  style="border:none;border-radius:999px;padding:10px 18px;
+                         background:#e5e7eb;color:#111827;font-weight:500;
+                         cursor:pointer;font-size:14px;">
+            ⏹ Stop
+          </button>
+
+          <span id="vo-status"
+                style="font-size:13px;color:#6b7280;margin-left:auto;">
+            Status: Waiting to start…
+          </span>
+        </div>
+
+        <div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;">
+          <div id="vo-progress"
+               style="height:100%;width:0%;background:linear-gradient(90deg,#17306B,#C7A434);
+                      transition:width .15s ease-out;"></div>
+        </div>
+      `;
+
+      const audio = document.getElementById('vo-audio');
+      const playBtn = document.getElementById('vo-play');
+      const stopBtn = document.getElementById('vo-stop');
+      const statusLabel = document.getElementById('vo-status');
+      const progressBar = document.getElementById('vo-progress');
+
+      function setStatus(msg) { if (statusLabel) statusLabel.textContent = msg; }
+
+      function lockTargets() {
+        [nextBtn, completeBtn].forEach(btn => {
+          if (!btn) return;
+          btn.disabled = true;
+          btn.style.opacity = '.45';
+          btn.style.cursor = 'not-allowed';
+          btn.style.pointerEvents = 'none';
+        });
+      }
+
+      function unlockTargets() {
+        [nextBtn, completeBtn].forEach(btn => {
+          if (!btn) return;
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.style.pointerEvents = 'auto';
+        });
+      }
+
+      lockTargets();
+
+      playBtn.addEventListener('click', function () {
+        audio.play()
+          .then(() => setStatus('Status: Playing…'))
+          .catch(err => {
+            console.error('Audio play error:', err);
+            setStatus('Status: Unable to play audio. Please check your sound or try another browser.');
+          });
+      });
+
+      stopBtn.addEventListener('click', function () {
+        audio.pause();
+        audio.currentTime = 0;
+        setStatus('Status: Stopped.');
+        if (progressBar) progressBar.style.width = '0%';
+      });
+
+      audio.addEventListener('timeupdate', function () {
+        if (!audio.duration || !isFinite(audio.duration)) return;
+        const pct = (audio.currentTime / audio.duration) * 100;
+        if (progressBar) progressBar.style.width = pct + '%';
+      });
+
+      audio.addEventListener('ended', function () {
+        setStatus('Status: Completed ✔ You may continue.');
+        if (progressBar) progressBar.style.width = '100%';
+        unlockTargets();
+      });
+
+      audio.addEventListener('pause', function () {
+        if (audio.currentTime < audio.duration) setStatus('Status: Paused.');
+      });
+    });
+  </script>
+
+  <!-- PDF Sidebar Backdrop -->
+  <div id="pdfBackdrop" class="pdf-sidebar-backdrop" onclick="closePdfSidebar()"></div>
+
+  <!-- PDF Sidebar -->
+  <div id="pdfSidebar" class="pdf-sidebar" oncontextmenu="return false;">
+    <div class="pdf-sidebar-header">
+      <div class="pdf-sidebar-title">
+        <i class="fas fa-book-open"></i>
+        <span>Student Handbook</span>
+      </div>
+      <button class="pdf-sidebar-close" onclick="closePdfSidebar()" title="Close">
+        <i class="fas fa-times"></i>
+        <span>Close</span>
+      </button>
+    </div>
+    <div class="pdf-sidebar-nav">
+      <button onclick="pdfPrevPage()" id="pdfPrevBtn" title="Previous Page">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="pdf-page-info" id="pdfPageInfo">1 / 1</span>
+      <button onclick="pdfNextPage()" id="pdfNextBtn" title="Next Page">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <span class="pdf-nav-divider"></span>
+      <button onclick="pdfZoomOut()" id="pdfZoomOutBtn" title="Zoom Out">
+        <i class="fas fa-search-minus"></i>
+      </button>
+      <span class="pdf-zoom-info" id="pdfZoomInfo">100%</span>
+      <button onclick="pdfZoomIn()" id="pdfZoomInBtn" title="Zoom In">
+        <i class="fas fa-search-plus"></i>
+      </button>
+      <span class="pdf-nav-divider"></span>
+      <a id="pdfOpenNewTab" href="#" target="_blank" title="Open in new tab" style="color:white;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;text-decoration:none;opacity:0.7;">
+        <i class="fas fa-external-link-alt"></i>
+      </a>
+    </div>
+    <div class="pdf-sidebar-container" id="pdfSidebarContainer">
+      <div class="pdf-sidebar-loading" id="pdfLoading">
+        <div class="spinner"></div>
+        <span>Loading handbook...</span>
+      </div>
+      <canvas id="pdfCanvas" class="pdf-sidebar-canvas" style="display: none;"></canvas>
+    </div>
+  </div>
+
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    // PDF Sidebar State
+    let pdfDoc = null;
+    let currentPage = 1;
+    let totalPages = 0;
+    let isRendering = false;
+    let currentPdfUrl = null;
+    let currentZoom = 1.5;  // Start at 150% for good readability
+    const zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
+
+    // Handbook attention pulse logic
+    const courseId = '{{ course.id }}';
+    const handbookClickedKey = 'handbookClicked_' + courseId;
+    const pageVisitKey = 'handbookPageVisits_' + courseId;
+
+    function checkHandbookAttention() {
+      const handbookBtn = document.querySelector('.handbook-trigger');
+      if (!handbookBtn) return;
+
+      const hasClicked = localStorage.getItem(handbookClickedKey) === 'true';
+      if (hasClicked) return; // User already knows about handbook
+
+      // Track page visits
+      let visits = parseInt(localStorage.getItem(pageVisitKey) || '0', 10);
+      visits++;
+      localStorage.setItem(pageVisitKey, visits.toString());
+
+      // Show pulse on first visit (1) or every 5 pages (6, 11, 16, etc.)
+      if (visits === 1 || (visits > 1 && (visits - 1) % 5 === 0)) {
+        handbookBtn.classList.add('pulse');
+
+        // Auto-hide after 8 seconds
+        setTimeout(function() {
+          handbookBtn.classList.remove('pulse');
+        }, 8000);
+      }
+    }
+
+    function markHandbookClicked() {
+      localStorage.setItem(handbookClickedKey, 'true');
+      const handbookBtn = document.querySelector('.handbook-trigger');
+      if (handbookBtn) {
+        handbookBtn.classList.remove('pulse');
+      }
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', checkHandbookAttention);
+
+    // Set PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // Get storage key for this PDF
+    function getPdfStorageKey(url) {
+      const filename = url.split('/').pop().split('?')[0];
+      return 'pdfPage_' + filename;
+    }
+
+    function getZoomStorageKey(url) {
+      const filename = url.split('/').pop().split('?')[0];
+      return 'pdfZoom_' + filename;
+    }
+
+    // Save current page to localStorage
+    function savePagePosition() {
+      if (currentPdfUrl && currentPage > 0) {
+        localStorage.setItem(getPdfStorageKey(currentPdfUrl), currentPage.toString());
+        localStorage.setItem(getZoomStorageKey(currentPdfUrl), currentZoom.toString());
+      }
+    }
+
+    // Load saved page from localStorage
+    function loadPagePosition(url) {
+      const saved = localStorage.getItem(getPdfStorageKey(url));
+      return saved ? parseInt(saved, 10) : 1;
+    }
+
+    function loadZoomLevel(url) {
+      const saved = localStorage.getItem(getZoomStorageKey(url));
+      return saved ? parseFloat(saved) : 1.5;
+    }
+
+    function openPdfSidebar(pdfUrl) {
+      // Mark handbook as clicked (stops future pulse reminders)
+      markHandbookClicked();
+
+      const sidebar = document.getElementById('pdfSidebar');
+      const backdrop = document.getElementById('pdfBackdrop');
+      const loading = document.getElementById('pdfLoading');
+      const canvas = document.getElementById('pdfCanvas');
+
+      currentPdfUrl = pdfUrl;
+      var newTabLink = document.getElementById('pdfOpenNewTab');
+      if (newTabLink) newTabLink.href = pdfUrl;
+      sidebar.classList.add('active');
+      backdrop.classList.add('active');
+      loading.style.display = 'flex';
+      canvas.style.display = 'none';
+
+      // Load saved zoom level
+      currentZoom = loadZoomLevel(pdfUrl);
+      updateZoomInfo();
+
+      // Load PDF
+      pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+        pdfDoc = pdf;
+        totalPages = pdf.numPages;
+
+        const savedPage = loadPagePosition(pdfUrl);
+        currentPage = Math.max(1, Math.min(savedPage, totalPages));
+
+        updatePageInfo();
+        renderPage(currentPage);
+      }).catch(function(error) {
+        console.error('Error loading PDF:', error);
+        loading.innerHTML = '<span style="color: #ef4444;">Error loading handbook.</span>';
+      });
+    }
+
+    function closePdfSidebar() {
+      const sidebar = document.getElementById('pdfSidebar');
+      const backdrop = document.getElementById('pdfBackdrop');
+
+      savePagePosition();
+
+      sidebar.classList.remove('active');
+      backdrop.classList.remove('active');
+    }
+
+    function renderPage(pageNum) {
+      if (isRendering || !pdfDoc) return;
+      isRendering = true;
+
+      const canvas = document.getElementById('pdfCanvas');
+      const loading = document.getElementById('pdfLoading');
+      const ctx = canvas.getContext('2d');
+
+      pdfDoc.getPage(pageNum).then(function(page) {
+        // Use current zoom level for rendering
+        const viewport = page.getViewport({ scale: currentZoom });
+        const scaledViewport = viewport;
+
+        canvas.height = scaledViewport.height;
+        canvas.width = scaledViewport.width;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: scaledViewport
+        };
+
+        page.render(renderContext).promise.then(function() {
+          loading.style.display = 'none';
+          canvas.style.display = 'block';
+          isRendering = false;
+
+          // Save position after render
+          savePagePosition();
+        });
+      });
+    }
+
+    function pdfPrevPage() {
+      if (currentPage <= 1) return;
+      currentPage--;
+      updatePageInfo();
+      renderPage(currentPage);
+    }
+
+    function pdfNextPage() {
+      if (currentPage >= totalPages) return;
+      currentPage++;
+      updatePageInfo();
+      renderPage(currentPage);
+    }
+
+    function updatePageInfo() {
+      document.getElementById('pdfPageInfo').textContent = currentPage + ' / ' + totalPages;
+      document.getElementById('pdfPrevBtn').disabled = (currentPage <= 1);
+      document.getElementById('pdfNextBtn').disabled = (currentPage >= totalPages);
+    }
+
+    function updateZoomInfo() {
+      document.getElementById('pdfZoomInfo').textContent = Math.round(currentZoom * 100) + '%';
+      const zoomIdx = zoomLevels.indexOf(currentZoom);
+      document.getElementById('pdfZoomOutBtn').disabled = (zoomIdx <= 0);
+      document.getElementById('pdfZoomInBtn').disabled = (zoomIdx >= zoomLevels.length - 1);
+    }
+
+    function pdfZoomIn() {
+      const currentIdx = zoomLevels.findIndex(z => z >= currentZoom);
+      if (currentIdx < zoomLevels.length - 1) {
+        currentZoom = zoomLevels[currentIdx + 1];
+        updateZoomInfo();
+        renderPage(currentPage);
+      }
+    }
+
+    function pdfZoomOut() {
+      const currentIdx = zoomLevels.findIndex(z => z >= currentZoom);
+      if (currentIdx > 0) {
+        currentZoom = zoomLevels[currentIdx - 1];
+        updateZoomInfo();
+        renderPage(currentPage);
+      }
+    }
+
+    // Keyboard navigation and blocking
+    document.addEventListener('keydown', function(e) {
+      const sidebar = document.getElementById('pdfSidebar');
+      if (!sidebar.classList.contains('active')) return;
+
+      // Block copy/save/print shortcuts
+      if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'c', 'a'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        return false;
+      }
+
+      // Zoom with +/- keys
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        pdfZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        pdfZoomOut();
+      }
+
+      // Navigation
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        pdfPrevPage();
+      } else if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        pdfNextPage();
+      } else if (e.key === 'Escape') {
+        closePdfSidebar();
+      }
+    });
+  </script>
+
+  {% include 'partials/heartbeat.html' %}
+</body>
+
+</html>

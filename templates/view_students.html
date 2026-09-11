@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Students | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#17306B',
+              gold: '#C7A434'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Modal / reactivity -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important }
+    .card { border-top: 4px solid #C7A434; }
+    .progress-bar { transition: width 0.6s ease; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div x-data="studentsUI()" x-init="init()">
+      <!-- Toast -->
+      <div x-cloak x-show="toast.show"
+        class="fixed top-4 right-4 z-50 rounded-xl bg-brand-blue text-white px-4 py-2 shadow-lg" x-transition.opacity
+        x-text="toast.message"></div>
+
+      <!-- Page Title -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+            <i class="fas fa-user-graduate text-brand-gold text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-brand-blue">Manage Students</h1>
+            <p class="text-sm text-slate-500">Review profiles, attempts and enrollments at a glance</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center gap-2 text-sm text-slate-600">
+            <span class="h-2 w-2 rounded-full bg-green-500"></span> Active
+          </span>
+          <span class="inline-flex items-center gap-2 text-sm text-slate-600">
+            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Pending
+          </span>
+          <span class="inline-flex items-center gap-2 text-sm text-slate-600">
+            <span class="h-2 w-2 rounded-full bg-red-500"></span> Suspended
+          </span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+            <i class="fas fa-search text-brand-gold"></i>
+            Search Students
+          </h2>
+        </div>
+        <div class="p-6">
+          <form method="get" class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input type="text" name="q" value="{{ search_q or '' }}"
+                placeholder="Search by name, ID number, email, student number, company..."
+                class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+              <div class="pointer-events-none absolute right-3 top-2.5 text-slate-400">
+                <i class="fas fa-keyboard"></i>
+              </div>
+            </div>
+            <button type="submit"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+              <i class="fas fa-search"></i>
+              Search
+            </button>
+            {% if search_q %}
+            <a href="{{ url_for('view_students') }}"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg text-sm transition">
+              <i class="fas fa-times"></i>
+              Clear
+            </a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+      <!-- Students Card -->
+      <div class="bg-white rounded-xl shadow-sm card">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+            <i class="fas fa-users text-brand-gold"></i>
+            Student Records
+          </h2>
+          <span class="text-sm text-slate-500">
+            <i class="fas fa-list mr-1"></i>
+            {{ pagination.total }} student{% if pagination.total != 1 %}s{% endif %}
+            {% if search_q %}<span class="text-brand-gold ml-1">(filtered)</span>{% endif %}
+          </span>
+        </div>
+
+        <!-- Student cards -->
+        <div class="divide-y divide-slate-100" id="students-list">
+          {% for s in students %}
+          {% set sid = s.student_id %}
+          <div id="stu-{{ s.id }}" class="{% if s.is_suspended %}opacity-60 bg-slate-50{% endif %}">
+            <!-- Student summary row (clickable) -->
+            <div class="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-slate-50/70 transition"
+                 onclick="toggleStudent('detail-{{ s.id }}')">
+              <!-- Avatar (clickable for selfie preview) -->
+              {# Append the file's mtime to the URL so the browser refetches
+                 fresh after an admin re-uploads via the Edit modal (the URL
+                 changes whenever the file does). #}
+              {% set _selfie_path = 'uploads/' ~ s.student_id ~ '/' ~ s.student_id ~ '_selfie.jpg' %}
+              {% set _selfie_v = '?v=' ~ (_selfie_path|file_mtime) %}
+              <div class="flex-shrink-0 w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-semibold text-sm overflow-hidden cursor-pointer ring-2 ring-transparent hover:ring-brand-gold transition-all"
+                   onclick="event.stopPropagation(); openSelfiePreview('/uploads/{{ s.student_id }}/{{ s.student_id }}_selfie.jpg{{ _selfie_v }}', '{{ s.name }} {{ s.surname }}')"
+                   title="View selfie">
+                <img src="/uploads/{{ s.student_id }}/{{ s.student_id }}_selfie.jpg{{ _selfie_v }}"
+                     alt="{{ (s.name or '?')[0] }}{{ (s.surname or '')[0] }}"
+                     class="w-full h-full object-cover"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+                <span style="display:none">{{ (s.name or '?')[0] }}{{ (s.surname or '')[0] }}</span>
+              </div>
+
+              <!-- Name + meta -->
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-slate-900 text-sm">{{ s.name or '' }} {{ s.surname or '' }}</div>
+                <div class="text-xs text-slate-500">
+                  {{ s.email or '—' }} &bull; #{{ sid }}
+                  {% if s.national_id %} &bull; NID: {{ s.national_id }}{% endif %}
+                  &bull; {{ s.created_by_company.name if s.created_by_company else (s.company or '—') }}
+                </div>
+              </div>
+
+              <!-- Status + info chips -->
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <!-- Status chip -->
+                <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5
+                  {% if s.is_suspended %}bg-rose-50 text-rose-700 ring-1 ring-rose-200
+                  {% elif s.status == 'Pending' %}bg-amber-50 text-amber-700 ring-1 ring-amber-200
+                  {% else %}bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200{% endif %}">
+                  {{ s.status or 'Active' }}
+                </span>
+                <!-- Course count -->
+                <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-slate-50 text-slate-600 ring-1 ring-slate-200">
+                  {{ s.enrollments|length }} course{{ 's' if s.enrollments|length != 1 }}
+                </span>
+                <!-- Joined -->
+                <span class="text-xs text-slate-400 hidden sm:inline">
+                  {% if s.date_joined %}{{ s.date_joined.strftime('%d %b %Y') }}{% elif s.registration_date %}{{ s.registration_date.strftime('%d %b %Y') }}{% else %}—{% endif %}
+                </span>
+                <!-- Chevron -->
+                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="chev-detail-{{ s.id }}"></i>
+              </div>
+            </div>
+
+            <!-- Expandable detail section -->
+            <div class="hidden border-t border-slate-100 bg-slate-50/50" id="detail-{{ s.id }}">
+              <!-- Action bar -->
+              <div class="px-5 py-2.5 bg-slate-100/60 border-b border-slate-100 flex flex-wrap items-center gap-2">
+                <!-- View profile modal trigger -->
+                <div x-data="{ open: false }">
+                  <button @click="open=true"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-blue text-white hover:bg-blue-900 text-xs font-medium transition">
+                    <i class="fas fa-eye"></i> Profile
+                  </button>
+
+                  <!-- Profile Modal -->
+                  <div x-show="open" x-cloak x-trap.noscroll="open" @keydown.escape.window="open=false"
+                    class="fixed inset-0 z-50 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black/50" @click="open=false"></div>
+
+                    <div x-data="{ showId:false }"
+                      class="relative bg-white w-full max-w-3xl mx-4 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+                      <!-- Modal Header -->
+                      <div class="bg-brand-blue text-white px-6 py-4 rounded-t-2xl">
+                        <div class="flex items-start justify-between">
+                          <h3 class="text-xl font-semibold flex items-center gap-2">
+                            <i class="fas fa-user-circle text-brand-gold"></i>
+                            {{ s.name or '' }} {{ s.surname or '' }}
+                            <span class="text-white/70 font-normal text-base">({{ sid }})</span>
+                          </h3>
+                          <button @click="open=false"
+                            class="text-2xl text-white/70 hover:text-white">&times;</button>
+                        </div>
+                      </div>
+
+                      <div class="p-6">
+                        <!-- Top: avatar + identity -->
+                        <div class="flex gap-4 mb-6">
+                          {% set selfie_path = 'uploads/' ~ sid ~ '/' ~ sid ~ '_selfie.jpg' %}
+                          <img
+                            src="{{ '/' ~ selfie_path if selfie_path|file_exists else url_for('static', filename='default_profile.jpg') }}"
+                            class="w-24 h-24 rounded-full object-cover shadow border-4 border-brand-gold" alt="Profile" />
+                          <div class="text-sm grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                            <p><strong class="text-slate-600">Email:</strong> {{ s.email or '—' }}</p>
+                            <p><strong class="text-slate-600">Cell:</strong> {{ s.cell_number or '—' }}</p>
+
+                            {% set id_path_jpg = 'uploads/' ~ sid ~ '/' ~ sid ~ '_id.jpg' %}
+                            {% set id_path_pdf = 'uploads/' ~ sid ~ '/' ~ sid ~ '_id.pdf' %}
+                            {% if id_path_jpg|file_exists %}
+                              {% set id_path = id_path_jpg %}
+                            {% elif id_path_pdf|file_exists %}
+                              {% set id_path = id_path_pdf %}
+                            {% else %}
+                              {% set id_path = '' %}
+                            {% endif %}
+                            <p class="flex items-center gap-2 sm:col-span-2">
+                              <strong class="text-slate-600">National ID:</strong>
+                              <span>{{ s.national_id or '—' }}</span>
+                              {% if id_path %}
+                              <button @click="showId=true"
+                                class="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md bg-brand-blue text-white hover:bg-blue-900">
+                                <i class="fas fa-id-card"></i> View ID
+                              </button>
+                              {% else %}
+                              <span class="text-xs text-slate-500 italic">No ID on file</span>
+                              {% endif %}
+                            </p>
+
+                            <p class="sm:col-span-2">
+                              <strong class="text-slate-600">POPIA:</strong>
+                              {% if s.popi_accepted_at %}
+                              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">
+                                Accepted
+                              </span>
+                              <span class="text-slate-600 text-xs ml-2">
+                                on {{ s.popi_accepted_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if s.popi_version %} v{{ s.popi_version }}{% endif %}
+                              </span>
+                              {% if s.popi_ip %}
+                              <span class="text-slate-400 text-xs ml-2"
+                                title="{{ (s.popi_user_agent or '')[:200] }}{% if (s.popi_user_agent or '')|length>200 %}...{% endif %}">
+                                (IP {{ s.popi_ip }})
+                              </span>
+                              {% endif %}
+                              {% else %}
+                              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">
+                                Not accepted
+                              </span>
+                              {% endif %}
+                            </p>
+
+                            <p class="sm:col-span-2">
+                              <strong class="text-slate-600">Signup:</strong>
+                              {% if s.date_joined %}
+                              {{ s.date_joined.strftime('%Y-%m-%d %H:%M') }}
+                              {% elif s.registration_date %}
+                              {{ s.registration_date.strftime('%Y-%m-%d %H:%M') }}
+                              {% else %}
+                              N/A
+                              {% endif %}
+                            </p>
+
+                            <p class="sm:col-span-2">
+                              <strong class="text-slate-600">Company:</strong>
+                              {{ s.created_by_company.name if s.created_by_company else (s.company or '—') }}
+                            </p>
+                          </div>
+                        </div>
+
+                        <!-- ID lightbox modal with zoom -->
+                        <div x-show="showId" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center">
+                          <div class="absolute inset-0 bg-black/60" @click="showId=false"></div>
+                          <div class="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4" style="max-height:92vh; display:flex; flex-direction:column;">
+                            <div class="flex justify-between items-center px-5 py-3 bg-brand-blue text-white rounded-t-xl">
+                              <h4 class="text-base font-semibold flex items-center gap-2">
+                                <i class="fas fa-id-card text-brand-gold"></i>ID Document — {{ s.name }} {{ s.surname }}
+                              </h4>
+                              <div class="flex items-center gap-2">
+                                {% if not id_path.endswith('.pdf') %}
+                                <button onclick="idZoom(this, -1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-lg font-bold" title="Zoom out">−</button>
+                                <button onclick="idZoom(this, 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-lg font-bold" title="Zoom in">+</button>
+                                <button onclick="idZoomReset(this)" class="px-2 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold" title="Reset zoom">Reset</button>
+                                {% endif %}
+                                <button @click="showId=false"
+                                  class="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-xl">&times;</button>
+                              </div>
+                            </div>
+                            <div class="flex-1 overflow-auto p-2 flex items-center justify-center bg-slate-50 rounded-b-xl" style="min-height:200px;">
+                              {% if id_path.endswith('.pdf') %}
+                              <iframe src="{{ '/' ~ id_path }}" class="w-full rounded" style="height:78vh; border:none;"></iframe>
+                              {% else %}
+                              <img src="{{ '/' ~ id_path }}" alt="Student ID"
+                                class="id-zoom-img rounded shadow" style="max-height:78vh; max-width:100%; object-fit:contain; transform-origin:center center; transition:transform .2s;"
+                                onwheel="event.preventDefault(); idZoomWheel(this, event);"
+                                ondblclick="this.style.transform='scale(1)'; this.dataset.zoom='1';" />
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Edit modal trigger (admin can update profile + upload selfie / ID on behalf) -->
+                <div x-data="{ editOpen: false }">
+                  <button @click="editOpen = true"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium transition">
+                    <i class="fas fa-pen-to-square"></i> Edit
+                  </button>
+
+                  <div x-show="editOpen" x-cloak x-trap.noscroll="editOpen" @keydown.escape.window="editOpen = false"
+                       class="fixed inset-0 z-50 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black/50" @click="editOpen = false"></div>
+                    <div class="relative bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl p-6 max-h-[92vh] overflow-y-auto">
+                      <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-slate-900">
+                          <i class="fas fa-pen-to-square text-brand-blue mr-1"></i>
+                          Edit {{ s.name }} {{ s.surname }}
+                        </h3>
+                        <button type="button" @click="editOpen = false" class="text-2xl text-slate-500 hover:text-slate-900">&times;</button>
+                      </div>
+
+                      <form method="POST" action="{{ url_for('update_student') }}" enctype="multipart/form-data" class="space-y-4">
+                        <input type="hidden" name="student_id" value="{{ s.id }}">
+                        <input type="hidden" name="return_q" value="{{ search_q or '' }}">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">First name</label>
+                            <input type="text" name="name" value="{{ s.name or '' }}" required
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Surname</label>
+                            <input type="text" name="surname" value="{{ s.surname or '' }}" required
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                          <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                            <input type="email" name="email" value="{{ s.email or '' }}" required
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Cell number</label>
+                            <input type="text" name="cell_number" value="{{ s.cell_number or '' }}"
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">National ID</label>
+                            <input type="text" name="national_id" value="{{ s.national_id or '' }}"
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                          <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Company <span class="text-slate-400 font-normal">(free text)</span></label>
+                            <input type="text" name="company" value="{{ s.company or '' }}"
+                                   class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                          </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-200">
+                          <h4 class="text-sm font-semibold text-brand-blue mb-2">Upload on behalf of student</h4>
+                          <p class="text-xs text-slate-500 mb-3">Optional. Use these when the company or student can't upload the docs themselves. Existing files are replaced.</p>
+
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-sm font-medium text-slate-700 mb-1">Selfie <span class="text-slate-400 font-normal">(JPG/PNG)</span></label>
+                              <input type="file" name="selfie_file" accept="image/jpeg,image/png"
+                                     class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                              {% if s.selfie_filename %}
+                                <p class="text-xs text-slate-400 mt-1">Current: <code>{{ s.selfie_filename }}</code></p>
+                              {% else %}
+                                <p class="text-xs text-red-500 mt-1">No selfie on file yet.</p>
+                              {% endif %}
+                            </div>
+                            <div>
+                              <label class="block text-sm font-medium text-slate-700 mb-1">ID document <span class="text-slate-400 font-normal">(JPG/PNG/PDF)</span></label>
+                              <input type="file" name="id_file" accept="image/jpeg,image/png,application/pdf"
+                                     class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                              <p class="text-xs text-slate-400 mt-1">Saved as <code>{{ s.student_id }}_id.&lt;jpg|pdf&gt;</code> based on the file type.</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="flex justify-end items-center gap-3 pt-4 border-t border-slate-200 flex-wrap">
+                          <button type="button" @click="editOpen = false"
+                                  class="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm font-medium transition">
+                            Cancel
+                          </button>
+                          {# Multiple submit buttons inside one form. The one
+                             the admin actually clicks is the only one whose
+                             name=value pair gets posted, so the route can
+                             distinguish "just save" from "save + resend". #}
+                          <button type="submit" name="resend_invite" value="1"
+                                  onclick="return confirm('Save and resend the setup invite to ' + (this.form.email.value || 'the address on file') + '?');"
+                                  class="px-4 py-2 rounded-lg bg-brand-blue text-white hover:bg-blue-900 text-sm font-semibold transition">
+                            <i class="fas fa-paper-plane mr-1"></i> Save &amp; Resend Invite
+                          </button>
+                          <button type="submit"
+                                  class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-semibold transition">
+                            <i class="fas fa-save mr-1"></i> Save Changes
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                {% if s.is_banned %}
+                <a href="{{ url_for('unban_student', student_id=s.id) }}"
+                  class="px-2.5 py-1 rounded-lg bg-green-100 text-green-800 hover:bg-green-200 text-xs font-medium">
+                  <i class="fas fa-check mr-1"></i>Unban
+                </a>
+                {% else %}
+                <a href="{{ url_for('ban_student', student_id=s.id) }}"
+                  class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 text-xs font-medium">
+                  <i class="fas fa-ban mr-1"></i>Ban
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('reset_student_password', student_id=s.id) }}"
+                  class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs font-medium">
+                  <i class="fas fa-key mr-1"></i>Reset
+                </a>
+
+                {% if s.is_suspended %}
+                <a href="{{ url_for('activate_student', student_id=s.id) }}"
+                  class="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs font-medium">
+                  <i class="fas fa-play mr-1"></i>Activate
+                </a>
+                {% else %}
+                <a href="{{ url_for('deactivate_student', student_id=s.id) }}"
+                  class="px-2.5 py-1 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs font-medium">
+                  <i class="fas fa-pause mr-1"></i>Deactivate
+                </a>
+                {% endif %}
+
+                {% if admin_role_level >= 3 %}
+                <button type="button" class="px-2.5 py-1 rounded-lg bg-red-100 text-red-800 hover:bg-red-200 text-xs font-medium"
+                  @click.stop.prevent="openDelete({ id: {{ s.id }}, code: '{{ s.student_id }}', name: '{{ (s.name or '') ~ ' ' ~ (s.surname or '') }}' })">
+                  <i class="fas fa-trash mr-1"></i>Delete
+                </button>
+                {% endif %}
+              </div>
+
+              <!-- Enrollments -->
+              {% if s.enrollments %}
+                <div class="divide-y divide-slate-100">
+                  {% for enr in s.enrollments %}
+                    {% set prog = progress_map.get(enr.id, {"completed": 0, "total": 0, "percent": 0, "passed": false, "expired": false, "failed": false, "attempts_used": 0, "attempts_left": 0}) %}
+                    <div class="px-5 py-3" id="enr-{{ enr.id }}">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="font-medium text-sm text-slate-900">
+                          <i class="fa-solid fa-book text-brand-gold mr-1"></i>
+                          {{ enr.course.title if enr.course else 'Course #' ~ enr.course_id }}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span id="status-badge-{{ enr.id }}">
+                          {% if prog.passed and not prog.expired %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                              <i class="fa-solid fa-circle-check mr-0.5"></i> Passed{% if prog.last_score %} ({{ prog.last_score }}%){% endif %}
+                            </span>
+                          {% elif prog.passed and prog.expired %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Expired
+                            </span>
+                          {% elif prog.failed and prog.attempts_left == 0 %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-circle-xmark mr-0.5"></i> Failed ({{ prog.last_score }}%)
+                            </span>
+                          {% elif prog.failed %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-rotate-right mr-0.5"></i> Failed ({{ prog.last_score }}%) — {{ prog.attempts_left }} left
+                            </span>
+                          {% elif enr.approved %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">
+                              <i class="fa-solid fa-spinner mr-0.5"></i> In Progress
+                            </span>
+                          {% else %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-clock mr-0.5"></i> Pending Approval
+                            </span>
+                          {% endif %}
+                          </span>
+
+                          <!-- Attempt buttons -->
+                          <button type="button"
+                            class="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-rose-600 text-white hover:bg-rose-800 text-xs"
+                            title="Remove 1 attempt"
+                            @click.stop.prevent="removeAttempt({ enrollment_id: {{ enr.id }} })">
+                            &minus;
+                          </button>
+                          <button type="button"
+                            class="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-brand-blue text-white hover:bg-blue-900 text-xs"
+                            title="Add 1 attempt"
+                            @click.stop.prevent="addAttempt({ enrollment_id: {{ enr.id }}, student_id: '{{ sid }}', course_id: {{ enr.course_id }} })">
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Progress bar -->
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div class="progress-bar h-full rounded-full {{ 'bg-emerald-500' if prog.passed else ('bg-rose-500' if prog.failed and prog.attempts_left == 0 else ('bg-amber-400' if prog.failed else ('bg-brand-blue' if prog.percent > 0 else 'bg-slate-300'))) }}"
+                               style="width: {{ prog.percent }}%"></div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-600 w-10 text-right">{{ prog.percent }}%</span>
+                      </div>
+
+                      <!-- Detail chips -->
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <div><i class="fa-regular fa-calendar mr-1"></i> Enrolled: {{ enr.enrolled_at.strftime('%d %b %Y') if enr.enrolled_at else '—' }}</div>
+                        <div><i class="fa-regular fa-clock mr-1"></i> Last accessed: {{ enr.last_accessed.strftime('%d %b %Y') if enr.last_accessed else 'Never' }}</div>
+                        <div class="relative" id="chapters-chip-{{ enr.id }}">
+                          <button type="button" class="hover:text-brand-blue transition cursor-pointer"
+                            onclick="toggleChapterBreakdown({{ enr.id }})">
+                            <i class="fa-solid fa-list-check mr-1"></i> {{ prog.completed }}/{{ prog.total }} chapters
+                            <i class="fa-solid fa-caret-down ml-1 text-[10px]"></i>
+                          </button>
+                          <div id="chapters-dropdown-{{ enr.id }}" class="hidden absolute left-0 top-full mt-1 z-30 bg-white border border-slate-200 rounded-lg shadow-lg p-3 min-w-[480px] max-h-[300px] overflow-y-auto">
+                            <div class="text-xs text-slate-400 text-center py-2">Loading...</div>
+                          </div>
+                        </div>
+                        <div id="attempts-chip-{{ enr.id }}" class="relative" {% if not (prog.attempts_used is defined and prog.attempts_used > 0) %}style="display:none"{% endif %}>
+                          <button type="button" class="hover:text-brand-blue transition cursor-pointer"
+                            onclick="toggleAttemptHistory({{ enr.id }})">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Attempts: <span id="attempts-used-{{ enr.id }}">{{ prog.attempts_used }}</span> used, <span id="attempts-left-{{ enr.id }}">{{ prog.attempts_left }}</span> remaining
+                            <i class="fa-solid fa-caret-down ml-1 text-[10px]"></i>
+                          </button>
+                          <div id="attempts-dropdown-{{ enr.id }}" class="hidden absolute left-0 top-full mt-1 z-30 bg-white border border-slate-200 rounded-lg shadow-lg p-3 min-w-[280px]">
+                            <div class="text-xs text-slate-400 text-center py-2">Loading...</div>
+                          </div>
+                        </div>
+                        {% if prog.passed and prog.passed_date %}
+                          <div><i class="fa-solid fa-award text-emerald-600 mr-1"></i> Passed: {{ prog.passed_date.strftime('%d %b %Y') }}</div>
+                        {% endif %}
+                        {% if prog.cert_expiry %}
+                          {% if prog.expired %}
+                            <div class="text-rose-600 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Renewal overdue (expired {{ prog.cert_expiry.strftime('%d %b %Y') }})</div>
+                          {% else %}
+                            <div><i class="fa-solid fa-rotate mr-1"></i> Renewal: {{ prog.cert_expiry.strftime('%d %b %Y') }} <span class="text-emerald-600 font-medium">({{ prog.time_remaining }} left)</span></div>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="px-5 py-4 text-sm text-slate-400 text-center">
+                  No course enrollments yet.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div class="px-6 py-12 text-center">
+            <div class="text-slate-400">
+              <i class="fas fa-users text-4xl mb-3"></i>
+              <p class="text-slate-500">{% if search_q %}No students match "{{ search_q }}".{% else %}No students found.{% endif %}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <div class="text-sm text-slate-500">
+            Showing {{ ((pagination.page - 1) * pagination.per_page) + 1 }}–{{ [pagination.page * pagination.per_page, pagination.total]|min }}
+            of {{ pagination.total }}
+          </div>
+          <div class="flex items-center gap-1">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('view_students', page=pagination.prev_num, q=search_q or '') }}"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-brand-blue hover:bg-brand-blue/5 transition">
+              <i class="fas fa-chevron-left mr-1"></i> Prev
+            </a>
+            {% endif %}
+
+            {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+              {% if p %}
+                {% if p == pagination.page %}
+                  <span class="px-3 py-1.5 rounded-lg text-sm font-bold bg-brand-blue text-white">{{ p }}</span>
+                {% else %}
+                  <a href="{{ url_for('view_students', page=p, q=search_q or '') }}"
+                     class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-200 transition">{{ p }}</a>
+                {% endif %}
+              {% else %}
+                <span class="px-2 text-slate-400">&hellip;</span>
+              {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <a href="{{ url_for('view_students', page=pagination.next_num, q=search_q or '') }}"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-brand-blue hover:bg-brand-blue/5 transition">
+              Next <i class="fas fa-chevron-right ml-1"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Delete Reason Modal (single, global) -->
+      <div x-cloak x-show="modals.deleteOpen" class="fixed inset-0 z-50 flex items-center justify-center"
+        @keydown.escape.window="modals.deleteOpen=false">
+        <div class="absolute inset-0 bg-black/50" @click="modals.deleteOpen=false"></div>
+
+        <div class="relative bg-white w-full max-w-lg mx-4 rounded-2xl shadow-2xl overflow-hidden">
+          <div class="bg-red-600 text-white px-6 py-4">
+            <div class="flex items-start justify-between">
+              <h3 class="text-xl font-semibold flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                Delete Student
+              </h3>
+              <button class="text-2xl text-white/70 hover:text-white" @click="modals.deleteOpen=false">&times;</button>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <p class="text-slate-700 mb-4">
+              You are about to delete:
+              <strong x-text="selected.name"></strong>
+              (<span class="font-mono text-sm" x-text="selected.code"></span>)
+            </p>
+
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Reason for deletion</label>
+            <textarea x-model="form.reason" rows="4"
+              class="w-full rounded-lg border border-slate-300 p-3 shadow-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
+              placeholder="Explain why this record is being removed (policy, request, duplicate, etc.)"></textarea>
+
+            <div class="flex items-center justify-end gap-2 mt-4">
+              <button type="button" class="px-4 py-2 rounded-lg bg-slate-200 text-slate-800 hover:bg-slate-300 font-medium"
+                @click="modals.deleteOpen=false">Cancel</button>
+              <button type="button" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium"
+                @click.stop.prevent="submitDelete()">
+                <i class="fas fa-trash mr-1"></i>Confirm Delete
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-4">
+              <i class="fas fa-info-circle mr-1"></i>
+              A backup of the student's folder will be copied before deletion. The action is logged.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <script>
+    function toggleStudent(id) {
+      const el = document.getElementById(id);
+      const chev = document.getElementById('chev-' + id);
+      if (!el) return;
+      el.classList.toggle('hidden');
+      if (chev) chev.classList.toggle('rotate-180');
+    }
+
+    function studentsUI() {
+      return {
+        modals: { deleteOpen: false },
+        selected: { id: null, code: '', name: '' },
+        form: { reason: '' },
+        toast: { show: false, message: '' },
+
+        init() { /* reserved for future use */ },
+
+        openDelete(s) {
+          this.selected = { ...s };
+          this.form.reason = '';
+          this.modals.deleteOpen = true;
+        },
+
+        async submitDelete() {
+          const reason = (this.form.reason || '').trim();
+          if (reason.length < 5) {
+            this.notify('Please provide a reason (min 5 characters).');
+            return;
+          }
+          try {
+            const res = await fetch(`/delete_student/${this.selected.id}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify({ reason })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) {
+              throw new Error(data.message || 'Delete failed');
+            }
+            const row = document.getElementById(`stu-${this.selected.id}`);
+            if (row) row.remove();
+            this.modals.deleteOpen = false;
+            this.notify(`Student ${this.selected.code} deleted.`);
+          } catch (err) {
+            this.notify(err.message || 'Delete failed');
+          }
+        },
+
+        // Add attempt for a specific enrollment
+        async addAttempt(payload) {
+          const enrollmentId = payload?.enrollment_id;
+          if (!enrollmentId) {
+            this.notify('Missing enrollment_id for this row.');
+            return;
+          }
+
+          if (!confirm('Grant 1 additional final assessment attempt to this student?')) return;
+
+          try {
+            const res = await fetch(`/admin/enrollment/${enrollmentId}/attempts/add`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify({ enrollment_id: enrollmentId })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+              throw new Error(data.message || 'Could not add attempt.');
+            }
+
+            // Update attempts chip in-place
+            const chip = document.getElementById(`attempts-chip-${enrollmentId}`);
+            if (chip) {
+              chip.style.display = '';
+              const usedEl = document.getElementById(`attempts-used-${enrollmentId}`);
+              const leftEl = document.getElementById(`attempts-left-${enrollmentId}`);
+              if (usedEl) usedEl.textContent = data.attempts_used;
+              if (leftEl) leftEl.textContent = data.attempts_left;
+            }
+
+            // Update status badge if student went from 0-remaining to having attempts
+            if (data.attempts_left > 0) {
+              const badge = document.getElementById(`status-badge-${enrollmentId}`);
+              if (badge) {
+                const failedNoLeft = badge.querySelector('.bg-rose-50');
+                if (failedNoLeft && failedNoLeft.textContent.includes('Failed')) {
+                  const scoreMatch = failedNoLeft.textContent.match(/\d+%/);
+                  const score = scoreMatch ? scoreMatch[0] : '';
+                  failedNoLeft.className = 'inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200';
+                  failedNoLeft.innerHTML = `<i class="fa-solid fa-rotate-right mr-0.5"></i> Failed (${score}) — ${data.attempts_left} left`;
+                }
+              }
+            }
+
+            this.notify(`Attempt granted! (${data.attempts_used} used, ${data.attempts_left} remaining)`);
+          } catch (err) {
+            this.notify(err.message || 'Could not add attempt.');
+          }
+        },
+
+        // Remove attempt for a specific enrollment
+        async removeAttempt(payload) {
+          const enrollmentId = payload?.enrollment_id;
+          if (!enrollmentId) {
+            this.notify('Missing enrollment_id for this row.');
+            return;
+          }
+
+          if (!confirm('Remove 1 allowed attempt from this student?')) return;
+
+          try {
+            const res = await fetch(`/admin/enrollment/${enrollmentId}/attempts/remove`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify({ enrollment_id: enrollmentId })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+              throw new Error(data.message || 'Could not remove attempt.');
+            }
+
+            // Update attempts chip in-place
+            const chip = document.getElementById(`attempts-chip-${enrollmentId}`);
+            if (chip) {
+              chip.style.display = '';
+              const usedEl = document.getElementById(`attempts-used-${enrollmentId}`);
+              const leftEl = document.getElementById(`attempts-left-${enrollmentId}`);
+              if (usedEl) usedEl.textContent = data.attempts_used;
+              if (leftEl) leftEl.textContent = data.attempts_left;
+            }
+
+            // Update status badge if attempts_left hit 0
+            if (data.attempts_left === 0) {
+              const badge = document.getElementById(`status-badge-${enrollmentId}`);
+              if (badge) {
+                const failedWithLeft = badge.querySelector('.bg-amber-50');
+                if (failedWithLeft && failedWithLeft.textContent.includes('Failed')) {
+                  const scoreMatch = failedWithLeft.textContent.match(/\d+%/);
+                  const score = scoreMatch ? scoreMatch[0] : '';
+                  failedWithLeft.className = 'inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200';
+                  failedWithLeft.innerHTML = `<i class="fa-solid fa-circle-xmark mr-0.5"></i> Failed (${score})`;
+                }
+              }
+            }
+
+            this.notify(`Attempt removed. (${data.attempts_used} used, ${data.attempts_left} remaining)`);
+          } catch (err) {
+            this.notify(err.message || 'Could not remove attempt.');
+          }
+        },
+
+        notify(msg) {
+          this.toast.message = msg;
+          this.toast.show = true;
+          setTimeout(() => this.toast.show = false, 3000);
+        }
+      }
+    }
+  </script>
+
+  <script>
+    // Attempt history dropdown
+    const _attemptCache = {};
+
+    function toggleAttemptHistory(enrollmentId) {
+      const dd = document.getElementById(`attempts-dropdown-${enrollmentId}`);
+      if (!dd) return;
+
+      // Close any other open dropdowns
+      document.querySelectorAll('[id^="attempts-dropdown-"]').forEach(el => {
+        if (el !== dd) el.classList.add('hidden');
+      });
+
+      const isHidden = dd.classList.toggle('hidden');
+      if (isHidden) return; // just closed it
+
+      // If already loaded, don't re-fetch
+      if (_attemptCache[enrollmentId]) {
+        renderAttemptDropdown(dd, _attemptCache[enrollmentId]);
+        return;
+      }
+
+      dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Loading...</div>';
+
+      fetch(`/admin/enrollment/${enrollmentId}/attempts`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.attempts) {
+          dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Could not load attempts.</div>';
+          return;
+        }
+        _attemptCache[enrollmentId] = data.attempts;
+        renderAttemptDropdown(dd, data.attempts);
+      })
+      .catch(() => {
+        dd.innerHTML = '<div class="text-xs text-rose-500 text-center py-2">Error loading attempts.</div>';
+      });
+    }
+
+    function renderAttemptDropdown(dd, attempts) {
+      if (!attempts.length) {
+        dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">No attempts recorded.</div>';
+        return;
+      }
+
+      let html = '<table class="w-full text-xs"><thead><tr class="text-slate-400 border-b border-slate-100">'
+        + '<th class="text-left py-1 pr-3 font-medium">#</th>'
+        + '<th class="text-left py-1 pr-3 font-medium">Date</th>'
+        + '<th class="text-right py-1 pr-3 font-medium">Score</th>'
+        + '<th class="text-right py-1 font-medium">Result</th>'
+        + '</tr></thead><tbody>';
+
+      attempts.forEach(a => {
+        const scoreColor = a.passed ? 'text-emerald-600' : (a.score !== null && a.score >= 75 ? 'text-amber-600' : 'text-rose-600');
+        const badge = a.passed
+          ? '<span class="inline-flex items-center rounded-full px-1.5 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">Pass</span>'
+          : '<span class="inline-flex items-center rounded-full px-1.5 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">Fail</span>';
+        html += `<tr class="border-b border-slate-50">`
+          + `<td class="py-1.5 pr-3 text-slate-600">${a.attempt_no}</td>`
+          + `<td class="py-1.5 pr-3 text-slate-500">${a.date || '—'}</td>`
+          + `<td class="py-1.5 pr-3 text-right font-medium ${scoreColor}">${a.score !== null ? a.score + '%' : '—'}</td>`
+          + `<td class="py-1.5 text-right">${badge}</td>`
+          + `</tr>`;
+      });
+
+      html += '</tbody></table>';
+      dd.innerHTML = html;
+    }
+
+    // Chapter breakdown dropdown
+    const _chapterCache = {};
+
+    function toggleChapterBreakdown(enrollmentId) {
+      const dd = document.getElementById(`chapters-dropdown-${enrollmentId}`);
+      if (!dd) return;
+
+      // Close other chapter dropdowns
+      document.querySelectorAll('[id^="chapters-dropdown-"]').forEach(el => {
+        if (el !== dd) el.classList.add('hidden');
+      });
+
+      const isHidden = dd.classList.toggle('hidden');
+      if (isHidden) return;
+
+      if (_chapterCache[enrollmentId]) {
+        renderChapterDropdown(dd, _chapterCache[enrollmentId]);
+        return;
+      }
+
+      dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Loading...</div>';
+
+      fetch(`/api/enrollment/${enrollmentId}/chapters`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.chapters) {
+          dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Could not load chapters.</div>';
+          return;
+        }
+        _chapterCache[enrollmentId] = data;
+        renderChapterDropdown(dd, data);
+      })
+      .catch(() => {
+        dd.innerHTML = '<div class="text-xs text-rose-500 text-center py-2">Error loading chapters.</div>';
+      });
+    }
+
+    function renderChapterDropdown(dd, data) {
+      const chapters = data.chapters || [];
+      if (!chapters.length) {
+        dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">No chapters found.</div>';
+        return;
+      }
+
+      const typeIcons = {
+        quiz: '<i class="fa-solid fa-question-circle text-amber-500 mr-1.5"></i>',
+        video: '<i class="fa-solid fa-video text-blue-500 mr-1.5"></i>',
+        audio: '<i class="fa-solid fa-headphones text-purple-500 mr-1.5"></i>',
+        content: '<i class="fa-solid fa-file-lines text-slate-400 mr-1.5"></i>',
+        text: '<i class="fa-solid fa-file-lines text-slate-400 mr-1.5"></i>',
+      };
+
+      let html = '';
+      chapters.forEach((ch, i) => {
+        const icon = typeIcons[ch.type] || typeIcons.content;
+        const check = ch.completed
+          ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>'
+          : '<i class="fa-regular fa-circle text-slate-300"></i>';
+        const textClass = ch.completed ? 'text-slate-700' : 'text-slate-400';
+        html += `<div class="flex items-center gap-2 py-1 ${i > 0 ? 'border-t border-slate-50' : ''} text-xs">
+          <span class="w-4 text-center">${check}</span>
+          <span>${icon}</span>
+          <span class="${textClass} flex-1 truncate">${ch.title}</span>
+        </div>`;
+      });
+
+      // Feedback row
+      const fbDone = data.feedback_submitted;
+      const fbCheck = fbDone
+        ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>'
+        : '<i class="fa-regular fa-circle text-slate-300"></i>';
+      const fbClass = fbDone ? 'text-slate-700' : 'text-slate-400';
+      const fbLabel = fbDone ? 'Feedback submitted' : 'Feedback not submitted';
+      html += `<div class="flex items-center gap-2 py-1 border-t border-slate-200 text-xs mt-1 pt-1">
+        <span class="w-4 text-center">${fbCheck}</span>
+        <span><i class="fa-solid fa-comment-dots ${fbDone ? 'text-emerald-500' : 'text-slate-300'} mr-1.5"></i></span>
+        <span class="${fbClass} flex-1">${fbLabel}</span>
+      </div>`;
+
+      dd.innerHTML = html;
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('[id^="attempts-chip-"]')) {
+        document.querySelectorAll('[id^="attempts-dropdown-"]').forEach(el => el.classList.add('hidden'));
+      }
+      if (!e.target.closest('[id^="chapters-chip-"]')) {
+        document.querySelectorAll('[id^="chapters-dropdown-"]').forEach(el => el.classList.add('hidden'));
+      }
+    });
+    // Selfie preview modal
+    function openSelfiePreview(src, name) {
+      const overlay = document.getElementById('selfiePreviewOverlay');
+      const img = document.getElementById('selfiePreviewImg');
+      const label = document.getElementById('selfiePreviewName');
+      img.src = src;
+      label.textContent = name;
+      overlay.classList.remove('hidden');
+      img.onerror = function() {
+        label.textContent = name + ' — No selfie uploaded';
+        img.src = '';
+        img.alt = 'No selfie';
+        img.classList.add('hidden');
+      };
+    }
+    function closeSelfiePreview() {
+      const overlay = document.getElementById('selfiePreviewOverlay');
+      overlay.classList.add('hidden');
+      document.getElementById('selfiePreviewImg').classList.remove('hidden');
+    }
+
+    // ID zoom helpers
+    function _idImg(btn) {
+      return btn.closest('.fixed').querySelector('.id-zoom-img');
+    }
+    function idZoom(btn, dir) {
+      const img = _idImg(btn);
+      if (!img) return;
+      let z = parseFloat(img.dataset.zoom || '1');
+      z = Math.min(5, Math.max(0.5, z + dir * 0.3));
+      img.dataset.zoom = z;
+      img.style.transform = 'scale(' + z + ')';
+    }
+    function idZoomReset(btn) {
+      const img = _idImg(btn);
+      if (!img) return;
+      img.dataset.zoom = '1';
+      img.style.transform = 'scale(1)';
+    }
+    function idZoomWheel(img, e) {
+      let z = parseFloat(img.dataset.zoom || '1');
+      z = Math.min(5, Math.max(0.5, z + (e.deltaY < 0 ? 0.15 : -0.15)));
+      img.dataset.zoom = z;
+      img.style.transform = 'scale(' + z + ')';
+    }
+  </script>
+
+  <!-- Selfie Preview Modal -->
+  <div id="selfiePreviewOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)closeSelfiePreview()">
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+      <div class="bg-brand-blue text-white px-5 py-3 flex items-center justify-between">
+        <span id="selfiePreviewName" class="font-semibold text-sm"></span>
+        <button onclick="closeSelfiePreview()" class="text-white/70 hover:text-white text-xl">&times;</button>
+      </div>
+      <div class="p-4 flex items-center justify-center bg-slate-50">
+        <img id="selfiePreviewImg" src="" alt="Selfie" class="max-w-full max-h-[60vh] rounded-lg object-contain shadow">
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

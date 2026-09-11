@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#17306B">
+  <title>Download App - Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{blue:'#17306B',gold:'#C7A434'}}}}}</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+</head>
+<body class="min-h-screen bg-brand-blue flex flex-col">
+
+  <!-- Hero Section -->
+  <div class="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
+
+    <!-- Logo (same as navbar) -->
+    <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training"
+         class="h-12 mb-4">
+
+    <p class="text-white/60 text-sm mb-8 max-w-sm">Get the app on your phone or tablet for the best learning experience.</p>
+
+    <!-- Install Button (shown when installable) -->
+    <button id="installBtn" style="display:none;"
+            class="bg-white text-brand-blue font-bold text-lg px-8 py-4 rounded-2xl shadow-lg hover:brightness-95 transition mb-6 flex items-center gap-3">
+      <i class="fa-solid fa-download text-xl"></i>
+      Install App
+    </button>
+
+    <!-- Manual Instructions -->
+    <div id="manualInstructions" class="w-full max-w-md">
+
+      <!-- Android -->
+      <div class="bg-white/10 backdrop-blur rounded-2xl p-6 mb-4 text-left">
+        <div class="flex items-center gap-3 mb-3">
+          <i class="fa-brands fa-android text-2xl text-green-400"></i>
+          <h3 class="text-white font-bold text-lg">Android</h3>
+        </div>
+        <ol class="text-white/80 text-sm space-y-2">
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">1</span> Open this page in <strong class="text-white">Chrome</strong></li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">2</span> Tap the <strong class="text-white">menu</strong> (3 dots) in the top right</li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">3</span> Tap <strong class="text-white">"Add to Home screen"</strong></li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">4</span> Tap <strong class="text-white">"Install"</strong></li>
+        </ol>
+      </div>
+
+      <!-- iOS -->
+      <div class="bg-white/10 backdrop-blur rounded-2xl p-6 mb-4 text-left">
+        <div class="flex items-center gap-3 mb-3">
+          <i class="fa-brands fa-apple text-2xl text-white"></i>
+          <h3 class="text-white font-bold text-lg">iPhone / iPad</h3>
+        </div>
+        <ol class="text-white/80 text-sm space-y-2">
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">1</span> Open this page in <strong class="text-white">Safari</strong></li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">2</span> Tap the <strong class="text-white">Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket text-xs text-white/60"></i></li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">3</span> Scroll down and tap <strong class="text-white">"Add to Home Screen"</strong></li>
+          <li class="flex items-start gap-2"><span class="bg-white/20 rounded-full w-5 h-5 flex-shrink-0 flex items-center justify-center text-xs font-bold">4</span> Tap <strong class="text-white">"Add"</strong></li>
+        </ol>
+      </div>
+
+      <!-- Back to login -->
+      <div class="text-center mt-6">
+        <a href="{{ url_for('frontpage') }}" class="text-white/50 text-sm hover:text-white transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Return to Login
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBtn').style.display = 'inline-flex';
+    });
+
+    document.getElementById('installBtn').addEventListener('click', function() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(result) {
+        if (result.outcome === 'accepted') {
+          document.getElementById('installBtn').textContent = 'Installed!';
+          document.getElementById('installBtn').disabled = true;
+        }
+        deferredPrompt = null;
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js');
+    }
+  </script>
+</body>
+</html>

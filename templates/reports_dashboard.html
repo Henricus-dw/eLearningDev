@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📊 Reports Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 min-h-screen p-6">
+
+  <div class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <h2 class="text-3xl font-bold text-gray-800 mb-2">📊 Reports Dashboard</h2>
+    <p class="text-gray-600 mb-8">
+      Welcome to the Reports Dashboard. Here you can generate and review system reports.
+    </p>
+
+    <!-- Buttons Section -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <a href="#"
+         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md text-center transition">
+        📁 Generate Report
+      </a>
+      <a href="#"
+         class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md text-center transition">
+        📄 View Past Reports
+      </a>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-10 text-center">
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="inline-block text-sm bg-gray-700 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg shadow transition">
+        ⬅ Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>

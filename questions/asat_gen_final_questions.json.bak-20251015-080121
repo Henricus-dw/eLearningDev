@@ -1,0 +1,48 @@
+{
+  "questions": [
+    {
+      "question": "Aviation Security Awareness is: Being aware of your surroundings and the potential security concerns in your everyday aviation working environment.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Security is a concern for everyone in the industry, affecting virtually all areas of operation. Whether you work with passengers, cargo or at a security checkpoint, you have a role in keeping the industry safe.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose one correct answer from the statements below:",
+      "options": [
+        "Civil Aviation shall operate from a safe and open environment.",
+        "Not to prosecute or extradite persons who carry out acts of lawful interference.",
+        "Security measures shall be consistent with ICAO Standards.",
+        "Develop and implement Legislation and procedures necessary to ensure a unsafe and secure environment."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Which of the following are considered “offenders” within Civil Aviation?",
+      "options": [
+        "Mentally challenged persons",
+        "Shop Owners",
+        "Persons not seeking attention",
+        "Hijacking of vehicles"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "IED stands for  - Improvised Explosive Detector",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    }
+  ]
+}

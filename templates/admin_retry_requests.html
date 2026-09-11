@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Retry Requests</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/alpinejs" defer></script>
+
+  <style>
+    [x-cloak]{display:none !important}
+
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.55rem 1rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-green {
+      background: #059669;
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: #047857;
+      transform: translateY(-2px);
+    }
+
+    .btn-red {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+
+    .btn-gray {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-gray:hover {
+      background: #d1d5db;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .tab-btn:hover {
+      background: #d1d5db;
+    }
+
+    .tab-btn.active {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+
+    .count-badge {
+      background: var(--brand-gold);
+      color: var(--brand-blue);
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .score-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+
+    .score-75-80 {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-approved {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8" x-data="{ openModal: null }">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+        <i class="fas fa-redo-alt text-[var(--brand-gold)]"></i> Retry Requests
+      </h1>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="flex gap-2 mb-4">
+      <a href="{{ url_for('admin_retry_requests', status='pending') }}"
+         class="tab-btn {% if status_filter == 'pending' %}active{% endif %}">
+        <i class="fas fa-clock"></i>
+        Pending
+        {% if pending_count > 0 %}<span class="count-badge">{{ pending_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin_retry_requests', status='approved') }}"
+         class="tab-btn {% if status_filter == 'approved' %}active{% endif %}">
+        <i class="fas fa-check-circle"></i>
+        Approved
+        {% if approved_count > 0 %}<span class="count-badge">{{ approved_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin_retry_requests', status='rejected') }}"
+         class="tab-btn {% if status_filter == 'rejected' %}active{% endif %}">
+        <i class="fas fa-times-circle"></i>
+        Rejected
+        {% if rejected_count > 0 %}<span class="count-badge">{{ rejected_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin_retry_requests', status='all') }}"
+         class="tab-btn {% if status_filter == 'all' %}active{% endif %}">
+        <i class="fas fa-list"></i>
+        All
+      </a>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="bg-[var(--brand-blue)] text-white">
+              <th class="px-6 py-3 text-left text-sm font-semibold">Student</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Course</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold">Score</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold">Attempt #</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Requested</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold">Status</th>
+              {% if status_filter == 'pending' %}
+              <th class="px-6 py-3 text-center text-sm font-semibold">Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            {% if requests %}
+              {% for req in requests %}
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <div class="font-semibold">{{ req.student.name }} {{ req.student.surname }}</div>
+                  <div class="text-sm text-slate-500 font-mono">{{ req.student.student_id }}</div>
+                </td>
+                <td class="px-6 py-4">{{ req.course.title }}</td>
+                <td class="px-6 py-4 text-center">
+                  <span class="score-badge score-75-80">{{ req.score|round(1) }}%</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="font-semibold">{{ req.attempt_number }}</span>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                  {{ req.created_at.strftime('%d %b %Y, %H:%M') }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="score-badge status-{{ req.status }}">
+                    {% if req.status == 'pending' %}
+                      <i class="fas fa-clock"></i> Pending
+                    {% elif req.status == 'approved' %}
+                      <i class="fas fa-check"></i> Approved
+                    {% else %}
+                      <i class="fas fa-times"></i> Rejected
+                    {% endif %}
+                  </span>
+                </td>
+                {% if status_filter == 'pending' %}
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-2 justify-center">
+                    <!-- Approve -->
+                    <form method="POST" action="{{ url_for('admin_approve_retry', request_id=req.id) }}" class="inline">
+                      <button type="submit" class="btn btn-green shadow"
+                              onclick="return confirm('Approve retry request for {{ req.student.name }}?');">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Approve</span>
+                      </button>
+                    </form>
+
+                    <!-- Reject (opens modal) -->
+                    <button
+                      @click="openModal = '{{ req.id }}'"
+                      class="btn btn-red shadow">
+                      <i class="fas fa-times-circle"></i>
+                      <span>Reject</span>
+                    </button>
+                  </div>
+
+                  <!-- Rejection Modal -->
+                  <div
+                    x-cloak
+                    x-show="openModal === '{{ req.id }}'"
+                    x-transition.opacity
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div @click.away="openModal = null"
+                         class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                      <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-extrabold text-red-700">
+                          Reject Retry Request
+                        </h3>
+                        <button class="text-gray-500 hover:text-gray-700"
+                                @click="openModal = null" aria-label="Close">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+
+                      <p class="text-sm text-slate-600 mb-4">
+                        <strong>Student:</strong> {{ req.student.name }} {{ req.student.surname }}<br>
+                        <strong>Course:</strong> {{ req.course.title }}<br>
+                        <strong>Score:</strong> {{ req.score|round(1) }}%
+                      </p>
+
+                      <form method="POST" action="{{ url_for('admin_reject_retry', request_id=req.id) }}">
+                        <label class="block mb-2 text-sm font-semibold text-slate-700">
+                          Reason for Rejection
+                        </label>
+                        <textarea name="reason" required
+                                  class="w-full p-3 rounded-lg border border-slate-300 bg-white
+                                         focus:outline-none focus:ring-2 focus:ring-red-500"
+                                  rows="4"
+                                  placeholder="Briefly explain why this retry request is being rejected"></textarea>
+
+                        <div class="flex justify-end mt-5 gap-2">
+                          <button type="button" @click="openModal = null" class="btn btn-gray">
+                            Cancel
+                          </button>
+                          <button type="submit" class="btn btn-red shadow">
+                            Submit Rejection
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- /Modal -->
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="{% if status_filter == 'pending' %}7{% else %}6{% endif %}" class="py-10">
+                  <div class="text-center text-slate-500">
+                    <i class="fas fa-inbox text-3xl mb-2 text-slate-300"></i>
+                    <p>No {% if status_filter != 'all' %}{{ status_filter }}{% endif %} retry requests.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Info Box for Pending -->
+    {% if status_filter == 'pending' and pending_count > 0 %}
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <h3 class="font-semibold text-blue-800 mb-2">
+        <i class="fas fa-info-circle"></i> About Retry Requests
+      </h3>
+      <p class="text-sm text-blue-700">
+        Students who scored between 75-79.99% on their <strong>2nd attempt</strong> can request a 3rd attempt.
+        Approving a request will grant them one additional attempt at the final assessment.
+      </p>
+    </div>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Retry Request Management</span>
+    </div>
+  </footer>
+
+  <!-- Live Updates Script -->
+  <script>
+    (function() {
+      // Track the current pending count to detect changes
+      let lastKnownCount = {{ pending_count }};
+
+      function checkForUpdates() {
+        fetch('/api/retry-requests/count')
+          .then(response => response.json())
+          .then(data => {
+            const newCount = data.count || 0;
+
+            // If count changed, refresh the page
+            if (newCount !== lastKnownCount) {
+              console.log('Retry requests count changed from', lastKnownCount, 'to', newCount, '- refreshing page');
+              location.reload();
+            }
+          })
+          .catch(err => console.error('Error checking retry requests:', err));
+      }
+
+      // Poll every 10 seconds
+      setInterval(checkForUpdates, 10000);
+
+      // Update the tab badge counts in real-time without refresh
+      function updateTabBadges() {
+        fetch('/api/retry-requests/all-counts')
+          .then(response => response.json())
+          .then(data => {
+            // Update pending badge
+            const pendingBadge = document.querySelector('a[href*="pending"] .count-badge');
+            if (pendingBadge && data.pending !== undefined) {
+              pendingBadge.textContent = data.pending;
+              pendingBadge.style.display = data.pending > 0 ? 'inline' : 'none';
+            }
+
+            // Update approved badge
+            const approvedBadge = document.querySelector('a[href*="approved"] .count-badge');
+            if (approvedBadge && data.approved !== undefined) {
+              approvedBadge.textContent = data.approved;
+              approvedBadge.style.display = data.approved > 0 ? 'inline' : 'none';
+            }
+
+            // Update rejected badge
+            const rejectedBadge = document.querySelector('a[href*="rejected"] .count-badge');
+            if (rejectedBadge && data.rejected !== undefined) {
+              rejectedBadge.textContent = data.rejected;
+              rejectedBadge.style.display = data.rejected > 0 ? 'inline' : 'none';
+            }
+          })
+          .catch(err => console.error('Error updating tab badges:', err));
+      }
+
+      // Initial badge update and poll every 10 seconds
+      updateTabBadges();
+      setInterval(updateTabBadges, 10000);
+    })();
+  </script>
+
+</body>
+</html>

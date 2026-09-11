@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pending Enrollments</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/alpinejs" defer></script>
+
+  <style>
+    [x-cloak]{display:none !important}
+
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.55rem 1rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-blue {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+
+    .btn-blue:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-red {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+
+    .btn-gray {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-gray:hover {
+      background: #d1d5db;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.5rem;
+      color: #fff;
+      background: var(--brand-blue);
+    }
+
+    .count-badge {
+      background: var(--brand-gold);
+      color: var(--brand-blue);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8" x-data="{ openModal: null }">
+
+    <!-- Page Title Row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-user-clock text-[var(--brand-gold)]"></i> Pending Enrollments
+        </h1>
+        <span id="enrollmentCount" class="count-badge">{{ pending_enrollments|length }}</span>
+      </div>
+
+      <!-- Live update indicator -->
+      <div class="live-indicator">
+        <span id="liveIndicator" class="live-dot"></span>
+        <span>Live</span>
+        <span id="lastUpdate" class="text-xs text-slate-400">Updated just now</span>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="bg-[var(--brand-blue)] text-white">
+              <th class="px-6 py-3 text-left text-sm font-semibold">Student ID</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Full Name</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Company</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">ID No</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Email</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Course Title</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Enrolled</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            {% if pending_enrollments %}
+              {% for enrollment in pending_enrollments %}
+              <tr class="hover:bg-slate-50 transition" data-enrollment-id="{{ enrollment.enrollment_id }}">
+                <td class="px-6 py-4 font-mono text-sm">{{ enrollment.student_id }}</td>
+                <td class="px-6 py-4">{{ enrollment.name }} {{ enrollment.surname }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600">{{ enrollment.company or '—' }}</td>
+                <td class="px-6 py-4 font-mono text-sm">{{ enrollment.national_id or '—' }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600">{{ enrollment.email }}</td>
+                <td class="px-6 py-4">
+                  <span class="chip"><i class="fas fa-graduation-cap"></i> {{ enrollment.course_title }}</span>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-500">
+                  {{ enrollment.enrolled_at.strftime('%d %b %Y, %H:%M') if enrollment.enrolled_at else '—' }}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-2 items-center">
+                    <!-- Approve -->
+                    <a href="{{ url_for('approve_enrollment', enrollment_id=enrollment.enrollment_id) }}"
+                       class="btn btn-blue shadow">
+                      <i class="fas fa-check-circle"></i>
+                      <span>Approve</span>
+                    </a>
+
+                    <!-- Reject (opens modal) -->
+                    <button
+                      @click="openModal = '{{ enrollment.enrollment_id }}'"
+                      class="btn btn-red shadow">
+                      <i class="fas fa-times-circle"></i>
+                      <span>Reject</span>
+                    </button>
+                  </div>
+
+                  <!-- Modal -->
+                  <div
+                    x-cloak
+                    x-show="openModal === '{{ enrollment.enrollment_id }}'"
+                    x-transition.opacity
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div @click.away="openModal = null"
+                         class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                      <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-extrabold text-red-700">
+                          Reject Enrollment
+                        </h3>
+                        <button class="text-gray-500 hover:text-gray-700"
+                                @click="openModal = null" aria-label="Close">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+
+                      <form method="POST" action="{{ url_for('delete_enrollment', enrollment_id=enrollment.enrollment_id) }}">
+                        <label class="block mb-2 text-sm font-semibold text-slate-700">
+                          Reason for Rejection
+                        </label>
+                        <textarea name="reason" required
+                                  class="w-full p-3 rounded-lg border border-slate-300 bg-white
+                                         focus:outline-none focus:ring-2 focus:ring-red-500"
+                                  rows="4"
+                                  placeholder="Briefly explain why this enrollment is being rejected"></textarea>
+
+                        <div class="flex justify-end mt-5 gap-2">
+                          <button type="button" @click="openModal = null" class="btn btn-gray">
+                            Cancel
+                          </button>
+                          <button type="submit" class="btn btn-red shadow">
+                            Submit Rejection
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- /Modal -->
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="8" class="py-10">
+                  <div class="text-center text-slate-500">
+                    <i class="fas fa-inbox text-3xl mb-2 text-slate-300"></i>
+                    <p>No pending enrollments.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Enrollment Management</span>
+    </div>
+  </footer>
+
+  <!-- Live update script -->
+  <script>
+    const POLL_INTERVAL = 5000; // 5 seconds
+    let lastUpdateTime = Date.now();
+
+    function updateLastUpdateText() {
+      const el = document.getElementById('lastUpdate');
+      if (!el) return;
+      const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
+      if (seconds < 5) el.textContent = 'Updated just now';
+      else if (seconds < 60) el.textContent = `Updated ${seconds}s ago`;
+      else el.textContent = `Updated ${Math.floor(seconds / 60)}m ago`;
+    }
+
+    function createEnrollmentRow(e) {
+      return `
+        <tr class="hover:bg-slate-50 transition" data-enrollment-id="${e.enrollment_id}">
+          <td class="px-6 py-4 font-mono text-sm">${e.student_id}</td>
+          <td class="px-6 py-4">${e.name} ${e.surname}</td>
+          <td class="px-6 py-4 text-sm text-slate-600">${e.company || '—'}</td>
+          <td class="px-6 py-4 font-mono text-sm">${e.national_id || '—'}</td>
+          <td class="px-6 py-4 text-sm text-slate-600">${e.email || '—'}</td>
+          <td class="px-6 py-4">
+            <span class="chip"><i class="fas fa-graduation-cap"></i> ${e.course_title}</span>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-500">${e.enrolled_at || '—'}</td>
+          <td class="px-6 py-4">
+            <div class="flex flex-wrap gap-2 items-center">
+              <a href="/approve_enrollment/${e.enrollment_id}" class="btn btn-blue shadow">
+                <i class="fas fa-check-circle"></i>
+                <span>Approve</span>
+              </a>
+              <button @click="openModal = '${e.enrollment_id}'" class="btn btn-red shadow">
+                <i class="fas fa-times-circle"></i>
+                <span>Reject</span>
+              </button>
+            </div>
+            <div x-cloak x-show="openModal === '${e.enrollment_id}'" x-transition.opacity
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div @click.away="openModal = null"
+                   class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-xl font-extrabold text-red-700">Reject Enrollment</h3>
+                  <button class="text-gray-500 hover:text-gray-700"
+                          @click="openModal = null" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <form method="POST" action="/delete_enrollment/${e.enrollment_id}">
+                  <label class="block mb-2 text-sm font-semibold text-slate-700">
+                    Reason for Rejection
+                  </label>
+                  <textarea name="reason" required
+                            class="w-full p-3 rounded-lg border border-slate-300 bg-white
+                                   focus:outline-none focus:ring-2 focus:ring-red-500"
+                            rows="4" placeholder="Briefly explain why this enrollment is being rejected"></textarea>
+                  <div class="flex justify-end mt-5 gap-2">
+                    <button type="button" @click="openModal = null" class="btn btn-gray">Cancel</button>
+                    <button type="submit" class="btn btn-red shadow">Submit Rejection</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    function createEmptyRow() {
+      return `
+        <tr>
+          <td colspan="8" class="py-10">
+            <div class="text-center text-slate-500">
+              <i class="fas fa-inbox text-3xl mb-2 text-slate-300"></i>
+              <p>No pending enrollments.</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    async function fetchAndUpdate() {
+      try {
+        const res = await fetch('/api/pending_enrollments');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Update count badge
+        const countEl = document.getElementById('enrollmentCount');
+        if (countEl) countEl.textContent = data.count;
+
+        // Update table body
+        const tbody = document.querySelector('table tbody');
+        if (!tbody) return;
+
+        // Get current enrollment IDs in the table
+        const currentIds = new Set(
+          [...tbody.querySelectorAll('tr[data-enrollment-id]')]
+            .map(tr => tr.dataset.enrollmentId)
+        );
+
+        // Get new enrollment IDs from API
+        const newIds = new Set(data.enrollments.map(e => String(e.enrollment_id)));
+
+        // Check if there are any changes
+        const hasChanges = data.enrollments.length !== currentIds.size ||
+          data.enrollments.some(e => !currentIds.has(String(e.enrollment_id)));
+
+        if (hasChanges) {
+          // Rebuild the table
+          if (data.enrollments.length === 0) {
+            tbody.innerHTML = createEmptyRow();
+          } else {
+            tbody.innerHTML = data.enrollments.map(createEnrollmentRow).join('');
+          }
+          // Flash indicator briefly
+          const indicator = document.getElementById('liveIndicator');
+          if (indicator) {
+            indicator.style.background = '#3b82f6';
+            setTimeout(() => {
+              indicator.style.background = '#22c55e';
+            }, 500);
+          }
+        }
+
+        lastUpdateTime = Date.now();
+        updateLastUpdateText();
+      } catch (err) {
+        console.error('Failed to fetch pending enrollments:', err);
+      }
+    }
+
+    // Poll every POLL_INTERVAL ms
+    setInterval(fetchAndUpdate, POLL_INTERVAL);
+
+    // Update "last updated" text every second
+    setInterval(updateLastUpdateText, 1000);
+
+    // Initial fetch after a short delay
+    setTimeout(fetchAndUpdate, 1000);
+  </script>
+</body>
+</html>

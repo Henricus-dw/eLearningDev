@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Session Logs | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <div>
+          <p class="text-xs text-white/70 uppercase tracking-wider">Professional Training</p>
+          <h1 class="text-xl font-bold">Session Logs</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin_live_users') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-satellite-dish"></i> Live Users
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-6" style="border-top: 4px solid #C7A434;">
+      <form method="GET" class="flex flex-wrap items-end gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">User Type</label>
+          <select name="type" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+            <option value="">All</option>
+            <option value="student" {{ 'selected' if type_filter == 'student' }}>Student</option>
+            <option value="admin" {{ 'selected' if type_filter == 'admin' }}>Admin</option>
+            <option value="company" {{ 'selected' if type_filter == 'company' }}>Company</option>
+          </select>
+        </div>
+        <div class="flex-1 max-w-sm">
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Search</label>
+          <input type="text" name="q" value="{{ search }}" placeholder="User ID, name, or IP..."
+                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-brand-blue text-white rounded-lg text-sm font-semibold hover:opacity-90 transition">
+          <i class="fas fa-filter mr-1"></i> Filter
+        </button>
+        {% if type_filter or search %}
+        <a href="{{ url_for('admin_session_logs') }}" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+          Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Results info -->
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-sm text-slate-500">
+        Showing {{ logs|length }} of {{ total }} entries
+        {% if total_pages > 1 %} &middot; Page {{ page }} of {{ total_pages }}{% endif %}
+      </p>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border-top: 4px solid #C7A434;">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-brand-blue text-white">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Timestamp</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Action</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Type</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">User</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Name</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">IP Address</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Browser</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for log in logs %}
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-4 py-3 text-slate-600 text-xs font-mono whitespace-nowrap">
+                {{ log.timestamp.strftime('%d %b %Y, %H:%M:%S') if log.timestamp else '—' }}
+              </td>
+              <td class="px-4 py-3">
+                {% if log.action == 'login' %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
+                  <i class="fas fa-sign-in-alt"></i> Login
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold
+                  {% if log.user_type == 'student' %}bg-blue-100 text-brand-blue
+                  {% elif log.user_type == 'admin' %}bg-purple-100 text-purple-700
+                  {% else %}bg-amber-100 text-amber-700{% endif %}">
+                  <i class="fas {% if log.user_type == 'student' %}fa-user-graduate
+                    {% elif log.user_type == 'admin' %}fa-user-shield
+                    {% else %}fa-building{% endif %} text-[10px]"></i>
+                  {{ log.user_type|capitalize }}
+                </span>
+              </td>
+              <td class="px-4 py-3 font-mono text-xs text-slate-700">{{ log.user_id }}</td>
+              <td class="px-4 py-3 text-slate-700">{{ log.user_name or '—' }}</td>
+              <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ log.ip_address or '—' }}</td>
+              <td class="px-4 py-3 text-xs text-slate-500 max-w-[200px] truncate" title="{{ log.user_agent or '' }}">
+                {{ log.user_agent[:60] if log.user_agent else '—' }}{% if log.user_agent and log.user_agent|length > 60 %}...{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+
+            {% if not logs %}
+            <tr>
+              <td colspan="7" class="py-12 text-center">
+                <div class="text-slate-400">
+                  <i class="fas fa-clipboard-list text-4xl mb-3"></i>
+                  <p class="font-medium">No session logs found</p>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="flex items-center justify-center gap-2 mt-6">
+      {% if page > 1 %}
+      <a href="?page={{ page - 1 }}&type={{ type_filter }}&q={{ search }}"
+         class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">
+        <i class="fas fa-chevron-left"></i> Prev
+      </a>
+      {% endif %}
+
+      {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="px-3 py-1.5 bg-brand-blue text-white rounded-lg text-sm font-bold">{{ p }}</span>
+        {% elif (p - page)|abs <= 2 or p == 1 or p == total_pages %}
+        <a href="?page={{ p }}&type={{ type_filter }}&q={{ search }}"
+           class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">{{ p }}</a>
+        {% elif (p - page)|abs == 3 %}
+        <span class="text-slate-400">...</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if page < total_pages %}
+      <a href="?page={{ page + 1 }}&type={{ type_filter }}&q={{ search }}"
+         class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition">
+        Next <i class="fas fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-auto">
+    <p class="text-sm">&copy; 2026 Professional Aviation Training</p>
+  </footer>
+</body>
+</html>

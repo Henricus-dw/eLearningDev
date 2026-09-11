@@ -1,0 +1,488 @@
+{
+  "questions": [
+    {
+      "question": "This training program is based on the IATA Dangerous Goods Regulations",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Fill in the missing words: Hazard is something that ____________ (possibility) causes _______ .",
+      "options": [
+        "Dangerous Goods & Harm",
+        "Can & Harm",
+        "Potentially & Harm",
+        "You & Harm"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Which documents must be provided the minimum by the shipper to transport fully regulated dangerous goods consignments?",
+      "options": [
+        "NOTOC & ULD TAG",
+        "Shippers Declaration & Air Waybill"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Breathing Apparatus",
+      "options": [
+        "Value",
+        "Straps",
+        "Chemical Oxygen generators",
+        "Labels"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Machinery Parts",
+      "options": [
+        "Lithium Batteries",
+        "Mercury",
+        "Paints",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Dental Apparatus",
+      "options": [
+        "Compressed Gas",
+        "Plastic",
+        "Rubber",
+        "Steel casing"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Frozen Fruit, Vegetables",
+      "options": [
+        "Cardboard",
+        "Plastic",
+        "Dry Ice",
+        "Drums"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Pharmaceuticals",
+      "options": [
+        "Radioactives",
+        "Flammable Liquids",
+        "Corrosive substances",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Packages containing dangerous goods are secured on board the aircraft to prevent damage or movement during flight.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Packages of incompatible dangerous goods do not need to be segregated when loaded into the aircraft",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Packing Group I is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "Medium, Y",
+        "Low, Z",
+        "High, X"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Packing Group II is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "High, X",
+        "Low, Z",
+        "Medium, Y"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Packing Group II is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "Medium, Y",
+        "High, X",
+        "Low, Z"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 6.1 and Class 3?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 4.3 and Class 8",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 3 and Class 8?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 5.1 and Class 3?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 3 and UN3481(Lithium-ion batteries)?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 4.1 and Division 5.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? UN3480 (Lithium Metal Batteries) and Division 4.1?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 1 and Division 2.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 5.1 and Division 4.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Div 1.4S and Division 4.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Live animals should not be loaded near...",
+      "options": [
+        "Crew meals",
+        "Vehicles",
+        "water bottles",
+        "Dry Ice"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "When a “Cargo Aircraft Only” label is required, it must be affixed on the same surface of the package near the hazard label(s).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The maintenance crew deliver a chemical oxygen generator (company material - COMAT) to the aircraft and advise that it is urgently required for an aircraft AOG at the destination. The chemical oxygen generator has not been processed by the cargo department. The flight on which it is to be loaded is a passenger aircraft. This information is provided after the captain has received and signed the NOTOC. What action should be taken?",
+      "options": [
+        "The chemical oxygen generator can be loaded onto the aircraft.",
+        "The shipment can be accepted once the captain has checked it.",
+        "The chemical oxygen generator can be processed by the cargo department after it is loaded onto the aircraft and delivered.",
+        "The shipment should be rejected, as it needs to be processed by the cargo department for a full acceptance check, to ensure compliance with the Dangerous Goods Regulations."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Use marks need to contain a proper shipping name, a UN/ID number and the full name and address of the shipper and consignee.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of the NOTOC?",
+      "options": [
+        "To provide the cabin crew with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the passengers with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the pilot-in-command with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the warehouse staff with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Passengers and crew members can carry blue-flame lighters or cigar lighters on board an aircraft.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What type of symbol that could appear on products carried by passengers?",
+      "options": [
+        "GHS Symbols",
+        "Symbols of danger",
+        "Potential DG items",
+        "All of the above"
+      ],
+      "correct_index": 3,
+      "image": "f5efd060e7ca431bb64921acb90cb824_1.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "1.4 - Explosives / Articles and substances which present no significant hazard",
+        "2.3 - Toxic gas",
+        "5.2 - Organic peroxide",
+        "8 -Corrosive Substances (also known as Corrosives)"
+      ],
+      "correct_index": 0,
+      "image": "c6298b0e5c774dc79aa79ffcee10845e_2.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "3 - Flammable Liquid (also known as Flammable Liquids)",
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)",
+        "9 - Miscellaneous Dangerous Substances",
+        "5.1 - Oxidising substance (Also known as Oxidizers)"
+      ],
+      "correct_index": 0,
+      "image": "e85bb4b7ef2e46b5877dc3894fbb91cf_3.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "1.4 - Explosives / Articles and substances which present no significant hazard",
+        "6.2 - Infectious substance",
+        "9 - Miscellaneous Dangerous Substances",
+        "4.1 - Flammable solids"
+      ],
+      "correct_index": 2,
+      "image": "5245b3a11ff44c0ab9b0fe4a44f02e18_4.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "1.4 - Explosives / Articles and substances which present no significant hazard",
+        "2.3 - Toxic gas",
+        "4.1 - Flammable solids",
+        "5.2 - Organic peroxide"
+      ],
+      "correct_index": 1,
+      "image": "b4250540d9a24a2cb071317f48bd4584_5.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)",
+        "4.1 - Flammable solids",
+        "2.3 - Toxic gas",
+        "1.4 - Explosives / Articles and substances which present no significant hazard"
+      ],
+      "correct_index": 0,
+      "image": "d65951766cd24280a71bd57aabcfcfa9_6.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "2.3 - Toxic gas",
+        "4.1 - Flammable solids",
+        "6.2 - Infectious substance",
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)"
+      ],
+      "correct_index": 2,
+      "image": "d29ed0b7a96148588785fb7b2bdd5701_7.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "6.2 - Infectious substance",
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)",
+        "4.1 - Flammable solids",
+        "5.2 - Organic peroxide"
+      ],
+      "correct_index": 2,
+      "image": "77c603126763496ba1b5e8cfad40a6f1_8.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "5.2 - Organic peroxide",
+        "4.1 - Flammable solids",
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)",
+        "4.1 - Flammable solids"
+      ],
+      "correct_index": 0,
+      "image": "d7bf2aed9838493c9696f8f5b5eb788f_9.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "4.1 - Flammable solids",
+        "6.2 - Infectious substance",
+        "2.3 - Toxic gas",
+        "8 - Corrosive Substances (also known as Corrosives)"
+      ],
+      "correct_index": 3,
+      "image": "293f612bcd7b48e9aacae1bd4db42f8a_10.jpeg"
+    },
+    {
+      "question": "Please give the correct class OR division numbers and names for the hazard labels below",
+      "options": [
+        "8 - Corrosive Substances (also known as Corrosives)",
+        "3 - Flammable Liquid (also known as Flammable Liquids)",
+        "7 - Class 7 – Radioactive Material Category III – (Yellow)",
+        "1.4 - Explosives / Articles and substances which present no significant hazard"
+      ],
+      "correct_index": 1,
+      "image": "8ebec264820a48a1957964e0b5d1ed51_11.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Battery Mark",
+        "This Way Up / Package Orientation",
+        "UN 3077 and UN 3082 Environmentally hazardous substances",
+        "Cargo Aircraft Only (CAO)"
+      ],
+      "correct_index": 3,
+      "image": "1355a76803d5448992cc99b95cd26584_12.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Limited Quantity",
+        "Excepted Quantity / Quantities",
+        "UN 3077 and UN 3082 Environmentally hazardous substances",
+        "Cargo Aircraft Only (CAO)"
+      ],
+      "correct_index": 2,
+      "image": "482552b90d6e4d34b51a5261354657ae_13.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "This Way Up / Package Orientation",
+        "UN 3245 Genetically Modified (Micro-) Organisms",
+        "Excepted Quantity / Quantities",
+        "Cargo Aircraft Only (CAO)"
+      ],
+      "correct_index": 1,
+      "image": "58493aba5cc04639a58c26be1e9b5406_14.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Limited Quantity",
+        "Cargo Aircraft Only (CAO)",
+        "This Way Up / Package Orientation",
+        "Radioactive material, Excepted Package"
+      ],
+      "correct_index": 3,
+      "image": "a0e70a4ab75c4962a9ba25f8710755c7_15.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Battery Mark",
+        "Radioactive material, Excepted Package",
+        "Limited Quantity",
+        "Magnetized Material"
+      ],
+      "correct_index": 0,
+      "image": "6987633213ab4b4299a73c7bf6cffe81_16.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Limited Quantity",
+        "This Way Up / Package Orientation",
+        "Magnetized Material",
+        "Battery Mark"
+      ],
+      "correct_index": 1,
+      "image": "b47e1b24971341259c04b1afb9c4486a_17.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "UN 3373 Biological Substances, Category B",
+        "This Way Up / Package Orientation",
+        "Radioactive material, Excepted Package",
+        "Cargo Aircraft Only (CAO)"
+      ],
+      "correct_index": 0,
+      "image": "318bbcaa699c489ebaa2b5d3a03475af_18.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "This Way Up / Package Orientation",
+        "Excepted Quantity / Quantities",
+        "Limited Quantity",
+        "Radioactive material, Excepted Package"
+      ],
+      "correct_index": 2,
+      "image": "b55d4c7c1c1b4e19acac4b016067fff8_19.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Radioactive material, Excepted Package",
+        "Excepted Quantity / Quantities",
+        "Limited Quantity",
+        "Magnetized Material"
+      ],
+      "correct_index": 3,
+      "image": "86bebebc033e486c9ea3dd9085ab31f3_20.jpeg"
+    },
+    {
+      "question": "Please select the correct names for the label / mark",
+      "options": [
+        "Excepted Quantity / Quantities",
+        "Magnetized Material",
+        "Excepted Quantity / Quantities",
+        "Cargo Aircraft Only (CAO)"
+      ],
+      "correct_index": 0,
+      "image": "ff9d20d104ce4ce697300155426509b1_21.jpeg"
+    }
+  ]
+}

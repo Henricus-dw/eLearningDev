@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <title>💳 Online Payments</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+
+  <style>
+    /* ===== Brand palette (matches dashboard) ===== */
+    :root{
+      --brand-blue:#17306B;
+      --brand-gold:#C7A434;
+
+      --ink:#0f172a;
+      --muted:#64748b;
+
+      /* light mode surfaces */
+      --panel:#ffffff;
+      --bg:#f7f9fc;
+      --ring:#cbd5e1;
+      --row:#f8fafc;
+      --hover:#eef2ff;
+
+      --blue-800: var(--brand-blue);
+      --blue-100:#e0e7ff;
+    }
+    /* Dark mode surfaces */
+    .dark:root{
+      --ink:#e6edf7;
+      --muted:#a8b3cf;
+      --panel:#0C142B;
+      --bg:#0B1226;
+      --ring:#334155;
+      --row:#0f1b37;
+      --hover:#0f224b;
+    }
+
+    /* Removed html,body {height:100%} — it can lock scrolling */
+    body{
+      margin:0;
+      min-height:100vh; /* fills viewport but still allows page to grow */
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:var(--ink);
+      /* soft aviation background */
+      background:
+        radial-gradient(60% 50% at 20% 15%, rgba(23,48,107,.10), transparent 60%),
+        radial-gradient(40% 35% at 85% 0%, rgba(199,164,52,.10), transparent 50%),
+        linear-gradient(to bottom, var(--bg), #eef2f9);
+    }
+    .dark body{
+      background:linear-gradient(to bottom, var(--bg), #050912);
+    }
+
+    /* Page width */
+    .wrap{
+      width:min(96vw, 1600px);
+      margin:24px auto;
+      padding:0 12px;
+    }
+
+    /* Top bar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .title{display:flex;align-items:center;gap:10px;font-weight:900;font-size:26px;color:var(--brand-blue)}
+    .dark .title{color:#f2f6ff}
+    .title::before{
+      content:"";
+      width:22px;height:20px;border-radius:6px;
+      background:linear-gradient(135deg, var(--brand-blue) 0%, #4f71ff 100%);
+      box-shadow:0 2px 6px rgba(35,66,179,.35)
+    }
+
+    /* Buttons */
+    .btn{
+      background:var(--brand-blue);color:#fff;font-weight:700;border:none;border-radius:10px;
+      padding:10px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+      box-shadow:0 2px 6px rgba(23,48,107,.25);
+      transition:filter .15s ease, transform .05s ease;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:translateY(1px)}
+
+    /* Card / Panel */
+    .card{
+      background:var(--panel);border-radius:14px;
+      box-shadow:0 6px 24px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.06);
+      padding:16px;border:1px solid #e2e8f0;margin-bottom:16px
+    }
+    .dark .card{border-color:rgba(255,255,255,.08);box-shadow:0 10px 24px rgba(0,0,0,.35)}
+
+    .row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+    .field{min-width:170px}
+    label{font-size:12px;font-weight:800;color:var(--brand-blue);margin:0 0 6px;display:block}
+    .dark label{color:#e6edf7}
+
+    select,input[type="date"],input[type="month"]{
+      border:1px solid var(--ring);border-radius:10px;padding:10px 12px;width:100%;
+      background:var(--panel);color:var(--ink);outline:none;font-size:14px
+    }
+    select:focus,input:focus{
+      box-shadow:0 0 0 3px rgba(23,48,107,.18);
+      border-color:#93c5fd
+    }
+    .help{color:var(--muted);font-size:12px;margin-top:6px}
+
+    .summary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 2px 0;color:var(--muted);font-size:12px}
+    .chip{
+      background:rgba(199,164,52,.12);
+      color:var(--brand-blue);
+      border:1px solid rgba(199,164,52,.4);
+      border-radius:999px;padding:6px 10px;font-weight:800;font-size:12px
+    }
+    .dark .chip{
+      background:rgba(199,164,52,.18);
+      color:#f3f2e6;
+      border-color:rgba(199,164,52,.45)
+    }
+
+    /* Table block */
+    .table-wrap{
+      background:var(--panel);
+      border-radius:14px;
+      border:1px solid #e2e8f0;
+      box-shadow:0 8px 28px rgba(15,23,42,.08);
+      overflow:auto;
+      max-width:100%;
+    }
+    .dark .table-wrap{border-color:rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+
+    table{
+      width:100%;
+      border-collapse:separate;border-spacing:0;
+      table-layout:auto;
+      font-size:14.5px;
+      color:var(--ink);
+    }
+    th,td{
+      padding:14px 16px;vertical-align:top;white-space:nowrap;
+    }
+
+    th{
+      position:sticky; top:0; z-index:1;
+      background:var(--brand-blue);
+      color:#fff; text-align:left; font-weight:900; letter-spacing:.02em; font-size:14px;
+    }
+    .dark th{background:#0f1f4a}
+
+    tbody tr:nth-child(even){background:var(--row)}
+    tbody tr:hover{background:var(--hover)}
+    .dark tbody tr:nth-child(even){background:#0d1833}
+    .dark tbody tr:hover{background:#0e2148}
+
+    td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+    .badge{
+      font-size:11px;font-weight:900;padding:4px 8px;border-radius:999px;display:inline-block;
+      background:rgba(199,164,52,.18); color:var(--brand-blue); border:1px solid rgba(199,164,52,.45)
+    }
+    .dark .badge{color:#f1f5ff}
+
+    .desc{white-space:normal;max-width:640px;overflow:hidden;text-overflow:ellipsis}
+
+    /* min column widths to avoid squish */
+    th:nth-child(1), td:nth-child(1){min-width:170px}
+    th:nth-child(2), td:nth-child(2){min-width:150px}
+    th:nth-child(3), td:nth-child(3){min-width:200px}
+    th:nth-child(4), td:nth-child(4){min-width:200px}
+    th:nth-child(5), td:nth-child(5){min-width:360px}
+    th:nth-child(6), td:nth-child(6){min-width:90px}
+    th:nth-child(7), td:nth-child(7),
+    th:nth-child(8), td:nth-child(8),
+    th:nth-child(9), td:nth-child(9),
+    th:nth-child(10), td:nth-child(10){min-width:120px}
+    th:nth-child(11), td:nth-child(11),
+    th:nth-child(12), td:nth-child(12){min-width:160px}
+
+    /* Simple theme toggle button (optional) */
+    .toggle{
+      background:#fff; color:var(--brand-blue); border:1px solid #dbeafe;
+      border-radius:10px; padding:8px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+      box-shadow:0 1px 2px rgba(0,0,0,.06);
+    }
+    .toggle:hover{filter:brightness(1.02)}
+    .dark .toggle{background:#0C142B; color:#e6edf7; border-color:#1f2a44}
+
+    /* ---- Scroll restore overrides ---- */
+    html, body {
+      height: auto !important;         /* don't pin to exactly 100% */
+      min-height: 100% !important;     /* still ensure full viewport */
+      overflow-y: auto !important;     /* allow vertical scroll */
+      -webkit-overflow-scrolling: touch; /* smooth on iOS */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">Online Payments</div>
+
+      <div style="display:flex; gap:10px; align-items:center">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn">⬅ Back</a>
+        <!-- Optional theme toggle (doesn't touch server logic) -->
+        <button type="button" id="themeToggle" class="toggle" title="Toggle theme">🌙 Theme</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card" id="filterForm">
+      <div class="row">
+        <div class="field" style="min-width:200px">
+          <label for="mode">Mode</label>
+          <select name="mode" id="mode" onchange="toggleDateInputs()">
+            <option value="range"   {% if (mode or 'range')=='range' %}selected{% endif %}>Custom Range</option>
+            <option value="daily"   {% if mode=='daily' %}selected{% endif %}>Daily</option>
+            <option value="weekly"  {% if mode=='weekly' %}selected{% endif %}>Weekly</option>
+            <option value="monthly" {% if mode=='monthly' %}selected{% endif %}>Monthly</option>
+          </select>
+          <div class="help">Pick how you want to query PayFast</div>
+        </div>
+
+        <div id="rangeFields" class="row" style="flex:1 1 auto;">
+          <div class="field">
+            <label for="from">From</label>
+            <input type="date" name="from" id="from" value="{{ from_str or '' }}">
+          </div>
+          <div class="field">
+            <label for="to">To</label>
+            <input type="date" name="to" id="to" value="{{ to_str or '' }}">
+          </div>
+        </div>
+
+        <div id="singleDayField" class="field" style="display:none; min-width:240px;">
+          <label for="date_day">Date (YYYY-MM-DD)</label>
+          <input type="date" name="date" id="date_day" value="{{ date_str or '' }}">
+        </div>
+
+        <div id="monthField" class="field" style="display:none; min-width:240px;">
+          <label for="date_month">Month (YYYY-MM)</label>
+          <input type="month" name="date" id="date_month" value="{{ date_str or '' }}">
+        </div>
+
+        <div class="field" style="min-width:120px">
+          <label>&nbsp;</label>
+          <button class="btn" type="submit">Fetch</button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <span>Showing</span>
+        {% if mode=='range' %}
+          <span class="chip">{{ from_str or '' }} → {{ to_str or '' }}</span>
+        {% elif mode=='monthly' %}
+          <span class="chip">Month: {{ date_str or '' }}</span>
+        {% else %}
+          <span class="chip">Date: {{ date_str or '' }}</span>
+        {% endif %}
+        <span id="totalNet" class="chip" style="display:none;"></span>
+      </div>
+    </form>
+
+    {% if payments and payments|length > 0 %}
+      <div class="table-wrap">
+        <table id="pfTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Party</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Currency</th>
+              <th>Gross</th>
+              <th>Fee</th>
+              <th>Net</th>
+              <th>Balance</th>
+              <th>M Payment ID</th>
+              <th>PF Payment ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in payments %}
+              <tr>
+                <td>{{ row.get('Date') }}</td>
+                <td><span class="badge">{{ row.get('Type') }}</span></td>
+                <td>{{ row.get('Party') }}</td>
+                <td>{{ row.get('Name') }}</td>
+                <td class="desc" title="{{ row.get('Description') }}">{{ row.get('Description') }}</td>
+                <td>{{ row.get('Currency') }}</td>
+                <td class="num">{{ row.get('Gross') }}</td>
+                <td class="num">{{ row.get('Fee') }}</td>
+                <td class="num">{{ row.get('Net') }}</td>
+                <td class="num">{{ row.get('Balance') }}</td>
+                <td>{{ row.get('M Payment ID') }}</td>
+                <td>{{ row.get('PF Payment ID') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="card" style="color:#475569;">No payments found for your selection.</div>
+    {% endif %}
+  </div>
+
+  <script>
+    function toggleDateInputs() {
+      const mode  = document.getElementById('mode').value;
+      document.getElementById('rangeFields').style.display = (mode === 'range') ? 'flex' : 'none';
+      document.getElementById('singleDayField').style.display = (mode === 'daily' || mode === 'weekly') ? 'block' : 'none';
+      document.getElementById('monthField').style.display = (mode === 'monthly') ? 'block' : 'none';
+    }
+    toggleDateInputs();
+
+    // Sum Net to show a total chip (unchanged logic)
+    (function summarizeNet(){
+      const tbl = document.getElementById('pfTable');
+      if(!tbl) return;
+      const heads = Array.from(tbl.tHead.rows[0].cells).map(th => th.textContent.trim().toLowerCase());
+      const netIdx = heads.indexOf('net');
+      if(netIdx >= 0){
+        let sum = 0;
+        for(const tr of tbl.tBodies[0].rows){
+          const raw = (tr.cells[netIdx].textContent || '').replace(/[\s,]/g,'');
+          const val = parseFloat(raw);
+          if(!isNaN(val)) sum += val;
+        }
+        const chip = document.getElementById('totalNet');
+        chip.textContent = 'Total Net: ' + new Intl.NumberFormat('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2}).format(sum);
+        chip.style.display = 'inline-block';
+        chip.style.background = sum >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
+        chip.style.color      = sum >= 0 ? '#065f46' : '#7f1d1d';
+        chip.style.border     = sum >= 0 ? '1px solid rgba(16,185,129,.35)' : '1px solid rgba(239,68,68,.35)';
+      }
+    })();
+
+    // Simple theme toggle (matches other pages; persists via localStorage)
+    (function(){
+      const btn = document.getElementById('themeToggle');
+      const root = document.documentElement;
+      const saved = localStorage.getItem('theme');
+      if(saved === 'dark') root.classList.add('dark');
+      if(saved === 'light') root.classList.remove('dark');
+      btn?.addEventListener('click', () => {
+        const nowDark = root.classList.toggle('dark');
+        localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      });
+    })();
+  </script>
+</body>
+</html>

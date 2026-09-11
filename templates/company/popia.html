@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>POPIA Notice — Company Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{blue:'#17306B',gold:'#C7A434'}}}}}</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+  <main class="w-full max-w-2xl bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold"></div>
+    <div class="p-6 sm:p-8">
+      <h1 class="text-xl font-semibold text-brand-blue mb-1">Protection of Personal Information Act (POPIA)</h1>
+      <p class="text-sm text-slate-500 mb-4">Please read and accept the POPIA notice to continue. Version: {{ version }}</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for c,m in messages %}<div class="text-sm px-3 py-2 rounded ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}{% endwith %}
+
+      <!-- POPIA content -->
+      <div id="popiaContent" class="border border-slate-200 rounded-xl p-4 overflow-y-auto" style="max-height: 45vh;">
+        {{ popia_html|safe }}
+      </div>
+
+      <!-- Scroll hint -->
+      <div id="scrollHint" class="text-center mt-2 text-sm text-slate-500">
+        <i class="fa-solid fa-angles-down animate-bounce"></i>
+        <span id="scrollHintText">Scroll to the bottom to enable acceptance</span>
+      </div>
+
+      <form method="post" class="mt-4">
+        <label class="flex items-center gap-2 text-sm text-slate-700">
+          <input type="checkbox" name="accept" value="on" id="acceptCheck" disabled class="rounded border-slate-300">
+          I have read and accept the POPIA notice.
+        </label>
+        <button id="submitBtn" disabled class="w-full mt-3 bg-brand-blue text-white rounded-lg py-2.5 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition">Accept & Continue</button>
+      </form>
+
+      <p class="text-xs text-center text-slate-400 mt-4">
+        <i class="fa-solid fa-shield-halved mr-1"></i>
+        Your data is protected in accordance with POPIA regulations.
+      </p>
+    </div>
+  </main>
+
+<script>
+const box = document.getElementById('popiaContent');
+const check = document.getElementById('acceptCheck');
+const btn = document.getElementById('submitBtn');
+const hint = document.getElementById('scrollHint');
+const hintText = document.getElementById('scrollHintText');
+
+function checkScroll() {
+  if (box.scrollHeight <= box.clientHeight + 20 || box.scrollTop + box.clientHeight >= box.scrollHeight - 20) {
+    check.disabled = false;
+    hint.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i> <span class="text-emerald-600">You may now accept</span>';
+  }
+}
+box.addEventListener('scroll', checkScroll);
+window.addEventListener('load', checkScroll);
+
+check.addEventListener('change', function() {
+  btn.disabled = !this.checked;
+});
+</script>
+</body></html>

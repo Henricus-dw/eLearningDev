@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Verify Your Identity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-context" data-page="Onboarding — ID Upload" data-course="" data-chapter="">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12);
+      max-width: 520px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .card-header-icon {
+      width: 70px;
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 32px;
+    }
+
+    .card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .step-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .step-dot.completed {
+      background: #10b981;
+      color: white;
+    }
+
+    .step-dot.current {
+      background: #17306B;
+      color: white;
+    }
+
+    .step-dot.pending {
+      background: #e2e8f0;
+      color: #94a3b8;
+    }
+
+    .step-line {
+      width: 30px;
+      height: 2px;
+      background: #e2e8f0;
+    }
+
+    .upload-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f8fafc;
+    }
+
+    .upload-zone:hover {
+      border-color: #17306B;
+      background: #f1f5f9;
+    }
+
+    .upload-zone.dragover {
+      border-color: #17306B;
+      background: #eff6ff;
+    }
+
+    .upload-zone.has-file {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 1rem;
+    }
+
+    .upload-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 1rem;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: #17306B;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-btn:hover {
+      background: #0e2250;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .preview-container {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .preview-container.visible {
+      display: block;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+      cursor: pointer;
+    }
+
+    .preview-hint {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      margin-bottom: 0.75rem;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+    }
+
+    .file-name {
+      font-weight: 500;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .remove-file {
+      background: none;
+      border: none;
+      color: #dc2626;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 4px;
+    }
+
+    .requirements {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 10px;
+    }
+
+    .requirements-title {
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .requirements ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: #78350f;
+      font-size: 0.9rem;
+    }
+
+    .requirements li {
+      margin-bottom: 4px;
+    }
+
+    .submit-section {
+      margin-top: 2rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(23, 48, 107, 0.35);
+    }
+
+    .submit-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .flash-messages {
+      margin-bottom: 1rem;
+    }
+
+    .flash {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .flash.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .flash.danger, .flash.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+
+    .flash.warning {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+    }
+
+    .face-warning {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .face-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .face-checking {
+      color: #64748b;
+      padding: 12px 16px;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    /* Crop modal */
+    .crop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.75);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .crop-modal {
+      max-width: 720px;
+      width: 95%;
+      max-height: 92vh;
+      background: #fff;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .crop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: #fff;
+    }
+    .crop-header-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .crop-header-close {
+      width: 30px; height: 30px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.2); color: #fff; font-size: 1.2rem; cursor: pointer;
+    }
+    .crop-header-close:hover { background: rgba(255,255,255,0.35); }
+    .crop-body {
+      flex: 1;
+      overflow: hidden;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: 65vh;
+    }
+    .crop-body img {
+      display: block;
+      max-width: 100%;
+    }
+    .crop-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+    .crop-tip {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .crop-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .crop-btn-cancel {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .crop-btn-cancel:hover { background: #f1f5f9; }
+    .crop-btn-apply {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .crop-btn-apply:hover { box-shadow: 0 4px 12px rgba(23,48,107,0.3); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon">🪪</div>
+      <h1>Verify Your Identity</h1>
+      <p>Please upload a clear photo or scan of your ID document</p>
+    </div>
+
+    <div class="card-body">
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step">
+          <span class="step-dot completed">&#10003;</span>
+          <span>Account</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot completed">&#10003;</span>
+          <span>POPIA</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot completed">&#10003;</span>
+          <span>Selfie</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot current">4</span>
+          <span>ID Upload</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot pending">5</span>
+          <span>Complete</span>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('onboarding_id_upload') }}" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-icon" id="uploadIcon">📤</div>
+          <div class="upload-title" id="uploadTitle">Drop your ID here or click to browse</div>
+          <div class="upload-subtitle">Supports JPG, PNG, PDF • Max 10MB</div>
+          <button type="button" class="upload-btn" id="browseBtn">
+            <span>📁</span>
+            <span>Choose File</span>
+          </button>
+          <input type="file" name="id_file" id="fileInput" class="file-input" accept="image/*,application/pdf,.pdf" required>
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+          <img id="previewImage" class="preview-image" src="" alt="ID Preview" onclick="openCropModal()">
+          <div class="preview-hint">Click image to re-crop</div>
+          <div class="file-info">
+            <span class="file-name">
+              <span>✓</span>
+              <span id="fileName"></span>
+            </span>
+            <button type="button" class="remove-file" id="removeFile" title="Remove file">✕</button>
+          </div>
+        </div>
+
+        <div id="idFaceMsg"></div>
+
+        <div class="requirements">
+          <div class="requirements-title">
+            <span>📋</span>
+            <span>Requirements</span>
+          </div>
+          <ul>
+            <li>Clear, legible copy of your South African ID or Passport</li>
+            <li>All four corners must be visible</li>
+            <li>No glare or shadows obscuring details</li>
+            <li>Your photo and ID number must be clearly visible</li>
+          </ul>
+        </div>
+
+        <div class="submit-section">
+          <button type="submit" class="submit-btn" id="submitBtn" disabled>
+            <span>Continue to Dashboard</span>
+            <span>→</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Crop Modal -->
+  <div class="crop-overlay" id="cropOverlay">
+    <div class="crop-modal">
+      <div class="crop-header">
+        <span class="crop-header-title">✂️ Crop Your ID Document</span>
+        <button class="crop-header-close" onclick="closeCropModal()">&times;</button>
+      </div>
+      <div class="crop-body">
+        <img id="cropImage" src="" alt="Crop">
+      </div>
+      <div class="crop-footer">
+        <span class="crop-tip">Drag to reposition. Resize the box to crop.</span>
+        <div class="crop-actions">
+          <button type="button" class="crop-btn-cancel" onclick="closeCropModal()">Cancel</button>
+          <button type="button" class="crop-btn-apply" onclick="applyCrop()">Apply Crop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  <script>
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+    const removeFile = document.getElementById('removeFile');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadTitle = document.getElementById('uploadTitle');
+    const idFaceMsg = document.getElementById('idFaceMsg');
+    const cropOverlay = document.getElementById('cropOverlay');
+    const cropImage = document.getElementById('cropImage');
+
+    let cropper = null;
+    let originalImageDataURL = null;   // full image before any crop
+    let croppedBlob = null;            // the final cropped blob to submit
+
+    // Face detection setup
+    const ID_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    let idFaceModelLoaded = false;
+
+    (async function() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(ID_MODEL_URL);
+        idFaceModelLoaded = true;
+        console.log('Face detection model loaded for ID verification.');
+      } catch (e) { console.warn('Could not load face model:', e); }
+    })();
+
+    async function detectFaceOnID(imgElement) {
+      if (!idFaceModelLoaded) return true;
+      try {
+        const detections = await faceapi.detectAllFaces(imgElement, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }));
+        return detections.length > 0;
+      } catch (e) { return true; }
+    }
+
+    // Click to browse
+    browseBtn.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('click', (e) => {
+      if (e.target !== browseBtn && !browseBtn.contains(e.target)) {
+        fileInput.click();
+      }
+    });
+
+    // Drag and drop
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // File selection
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      if (!isPDF && !file.type.startsWith('image/')) {
+        alert('Please select an image or PDF file.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB.');
+        return;
+      }
+
+      // Update UI
+      uploadZone.classList.add('has-file');
+      uploadIcon.textContent = '✓';
+      uploadTitle.textContent = 'File selected';
+      fileName.textContent = file.name;
+      submitBtn.disabled = true;
+      croppedBlob = null;
+      if (idFaceMsg) { idFaceMsg.textContent = ''; idFaceMsg.className = ''; }
+
+      if (isPDF) {
+        // PDF: render page 1 to image, then open crop modal
+        file.arrayBuffer().then(function(buf) {
+          pdfjsLib.getDocument({ data: buf }).promise.then(function(pdf) {
+            pdf.getPage(1).then(function(page) {
+              const vp = page.getViewport({ scale: 2 });
+              const canvas = document.createElement('canvas');
+              canvas.width = vp.width;
+              canvas.height = vp.height;
+              page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function() {
+                originalImageDataURL = canvas.toDataURL('image/jpeg', 0.92);
+                openCropModal();
+              });
+            });
+          }).catch(function() {
+            if (idFaceMsg) { idFaceMsg.textContent = 'Could not read PDF. Please try a different file.'; idFaceMsg.className = 'face-warning'; }
+          });
+        });
+      } else {
+        // Image: read as data URL then open crop modal
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          originalImageDataURL = e.target.result;
+          openCropModal();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function openCropModal() {
+      if (!originalImageDataURL) return;
+      cropImage.src = originalImageDataURL;
+      cropOverlay.style.display = 'flex';
+
+      // Destroy any previous cropper
+      if (cropper) { cropper.destroy(); cropper = null; }
+
+      // Wait for image to load before initialising Cropper
+      cropImage.onload = function() {
+        cropper = new Cropper(cropImage, {
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.9,
+          responsive: true,
+          background: false,
+          guides: true,
+          center: true,
+          highlight: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+    }
+
+    function closeCropModal() {
+      cropOverlay.style.display = 'none';
+      if (cropper) { cropper.destroy(); cropper = null; }
+    }
+
+    function applyCrop() {
+      if (!cropper) return;
+
+      const canvas = cropper.getCroppedCanvas({
+        maxWidth: 2400,
+        maxHeight: 2400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+
+      if (!canvas) return;
+
+      // Show cropped preview
+      const croppedDataURL = canvas.toDataURL('image/jpeg', 0.92);
+      previewImage.src = croppedDataURL;
+      previewContainer.classList.add('visible');
+
+      closeCropModal();
+
+      // Convert to blob for submission
+      if (idFaceMsg) { idFaceMsg.textContent = 'Verifying cropped ID...'; idFaceMsg.className = 'face-checking'; }
+
+      canvas.toBlob(async function(blob) {
+        croppedBlob = blob;
+
+        // Run face detection on the cropped canvas
+        const hasFace = await detectFaceOnID(canvas);
+        handleFaceResult(hasFace);
+      }, 'image/jpeg', 0.92);
+    }
+
+    function handleFaceResult(hasFace) {
+      if (hasFace) {
+        submitBtn.disabled = false;
+        if (idFaceMsg) { idFaceMsg.textContent = 'ID photo detected — ready to submit.'; idFaceMsg.className = 'face-success'; }
+      } else {
+        submitBtn.disabled = true;
+        if (idFaceMsg) {
+          idFaceMsg.textContent = 'No photo detected on this document. Please upload a clear image of your ID with your photo visible.';
+          idFaceMsg.className = 'face-warning';
+        }
+      }
+    }
+
+    // Intercept form submission to send the cropped blob instead of original file
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+      if (!croppedBlob) return; // let normal submission happen if no crop
+
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.querySelector('span').textContent = 'Uploading...';
+
+      const fd = new FormData();
+      // Send as .jpg since we converted the crop to JPEG
+      const originalName = fileInput.files[0] ? fileInput.files[0].name : 'id_document.jpg';
+      const jpgName = originalName.replace(/\.[^.]+$/, '') + '.jpg';
+      fd.append('id_file', croppedBlob, jpgName);
+
+      fetch(this.action, {
+        method: 'POST',
+        body: fd,
+      }).then(function(resp) {
+        if (resp.redirected) {
+          window.location.href = resp.url;
+        } else {
+          // Reload to show any flash messages
+          window.location.reload();
+        }
+      }).catch(function() {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Continue to Dashboard';
+        alert('Upload failed. Please try again.');
+      });
+    });
+
+    // Remove file
+    removeFile.addEventListener('click', () => {
+      fileInput.value = '';
+      previewContainer.classList.remove('visible');
+      uploadZone.classList.remove('has-file');
+      uploadIcon.textContent = '📤';
+      uploadTitle.textContent = 'Drop your ID here or click to browse';
+      submitBtn.disabled = true;
+      croppedBlob = null;
+      originalImageDataURL = null;
+      if (idFaceMsg) { idFaceMsg.textContent = ''; idFaceMsg.className = ''; }
+    });
+  </script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

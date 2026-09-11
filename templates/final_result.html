@@ -1,0 +1,321 @@
+<h6 style="position:fixed;top:6px;right:10px;z-index:9999;color:#999">tw-v1-final</h6>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ course.title }} — Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } }
+    };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0B1226] dark:text-slate-100">
+  <main class="max-w-4xl mx-auto px-4 py-10">
+    <!-- Header -->
+    <header class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          {{ course.title }} — Final Result
+        </h1>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          👤 {{ (student.name or 'N/A') }} {{ (student.surname or '') }}
+          <span class="text-slate-400">(ID Number: </span>
+          <span class="font-mono">{{ (student.national_id or 'N/A') }}</span>
+          <span class="text-slate-400">, Platform ID: </span>
+          <span class="font-mono">{{ (student.student_id or '∅') }}</span>
+          <span class="text-slate-400">)</span>
+        </p>
+      </div>
+      <div class="shrink-0 text-right">
+        <div class="text-3xl sm:text-4xl font-black {{ 'text-emerald-600' if (percentage|int) >= 80 else 'text-rose-600' }}">
+          {{ percentage|int }}%
+        </div>
+        <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Score</div>
+      </div>
+    </header>
+
+    <!-- Result Card -->
+    <section class="rounded-2xl bg-white dark:bg-[#0C142B] border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+      {% set pct = percentage|int %}
+      {# Determine banner color based on outcome #}
+      {% if passed %}
+        {% set banner_bg = 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' %}
+        {% set bar_color = 'bg-emerald-500' %}
+        {% set icon = '✅' %}
+        {% set status_text = 'PASS' %}
+        {% set status_msg = 'Congratulations! You have successfully passed the assessment.' %}
+      {% elif can_retry_automatically %}
+        {% set banner_bg = 'bg-amber-50 text-amber-700 ring-1 ring-amber-100' %}
+        {% set bar_color = 'bg-amber-500' %}
+        {% set icon = '🔄' %}
+        {% set status_text = 'RETRY AVAILABLE' %}
+        {% set status_msg = 'You still have another attempt available. Click below to retry.' %}
+      {% elif can_request_third %}
+        {% set banner_bg = 'bg-sky-50 text-sky-700 ring-1 ring-sky-100' %}
+        {% set bar_color = 'bg-sky-500' %}
+        {% set icon = '📋' %}
+        {% set status_text = 'REQUEST AVAILABLE' %}
+        {% set status_msg = 'You scored ' ~ pct ~ '% on your 2nd attempt. You may request a 3rd attempt from your dashboard.' %}
+      {% else %}
+        {% set banner_bg = 'bg-rose-50 text-rose-700 ring-1 ring-rose-100' %}
+        {% set bar_color = 'bg-rose-500' %}
+        {% set icon = '❌' %}
+        {% set status_text = 'FAIL' %}
+        {% set status_msg = 'You scored below 75% on your final attempt. Please contact your administrator if you wish to discuss further options.' %}
+      {% endif %}
+      <div class="mb-5 rounded-xl p-4 {{ banner_bg }}">
+        <div class="flex items-center gap-3">
+          <div class="text-2xl" aria-hidden="true">{{ icon }}</div>
+          <div>
+            <div class="font-semibold text-lg">{{ status_text }}</div>
+            <div class="text-sm mt-1 opacity-90">{{ status_msg }}</div>
+          </div>
+        </div>
+        <div class="mt-3 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+          <div class="h-full {{ bar_color }}" style="width: {{ pct }}%;"></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Correct</div>
+          <div class="mt-1 text-lg font-semibold">{{ score|int }} / {{ total|int }}</div>
+        </div>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Pass mark</div>
+          <div class="mt-1 text-lg font-semibold">80%</div>
+        </div>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Attempt</div>
+          <div class="mt-1 text-lg font-semibold">{{ current_attempt or 1 }}</div>
+        </div>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</div>
+          <div class="mt-1">
+            {% if passed %}
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700">PASS</span>
+            {% elif can_retry_automatically %}
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold bg-amber-100 text-amber-700">RETRY</span>
+            {% elif can_request_third %}
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold bg-sky-100 text-sky-700">REQUEST</span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold bg-rose-100 text-rose-700">FAIL</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Review</div>
+          <div class="mt-1">
+            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-[#0F1A34] dark:text-slate-300">
+              {{ review_status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {% if submitted_at %}
+        <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          Submitted: {{ submitted_at.strftime('%Y-%m-%d %H:%M') }}
+        </p>
+      {% endif %}
+
+      {% if proctor_video_url %}
+        <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+          🎥 Proctor video:
+          <a class="underline hover:text-brand-gold transition" href="{{ proctor_video_url }}" target="_blank">View</a>
+        </p>
+      {% endif %}
+
+      <!-- OUTCOME-BASED ACTIONS -->
+      {% if passed %}
+        {# Passed - Show success message #}
+        <div class="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-900/20 p-4">
+          <p class="text-emerald-700 dark:text-emerald-300 font-semibold">
+            Congratulations! You passed with {{ pct }}%.
+          </p>
+          <p class="text-emerald-600 dark:text-emerald-400 text-sm mt-2">
+            Your certificate will be available once the review is complete.
+          </p>
+        </div>
+      {% elif can_retry_automatically %}
+        {# Failed attempt but still have retries - Allow retry #}
+        <div class="mt-6 rounded-xl border border-amber-200 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-900/20 p-4">
+          <p class="text-amber-700 dark:text-amber-300 font-semibold">
+            You scored {{ pct }}%. You need at least 80% to pass.
+          </p>
+          <p class="text-amber-600 dark:text-amber-400 text-sm mt-2">
+            You still have another attempt available. Use this opportunity to review the material and try again.
+          </p>
+          <form method="POST" action="{{ url_for('retake_final_assessment', course_id=course.id) }}" class="mt-3">
+            {% if attempt_id is defined and attempt_id %}
+              <input type="hidden" name="prev_attempt_id" value="{{ attempt_id }}">
+            {% endif %}
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-amber-600 text-white hover:opacity-90 px-5 py-2 font-semibold">
+              🔁 Retry Assessment
+            </button>
+          </form>
+        </div>
+      {% elif can_request_third %}
+        {# 75-79.99% on attempt 2 - Can request 3rd attempt from dashboard #}
+        <div class="mt-6 rounded-xl border border-sky-200 dark:border-sky-700 bg-sky-50/60 dark:bg-sky-900/20 p-4">
+          <p class="text-sky-700 dark:text-sky-300 font-semibold">
+            You scored {{ pct }}% on your 2nd attempt.
+          </p>
+          <p class="text-sky-600 dark:text-sky-400 text-sm mt-2">
+            Since you scored between 75% and 79%, you are eligible to <strong>request a 3rd attempt</strong>.
+          </p>
+          <div class="mt-3 p-3 rounded-lg bg-sky-100 dark:bg-sky-900/40">
+            <p class="text-sm text-sky-800 dark:text-sky-200">
+              Go to your <strong>Dashboard</strong> and click the <strong>"Request Retry"</strong> button on your course card to submit your request.
+            </p>
+          </div>
+        </div>
+      {% else %}
+        {# Below 75% on attempt 2+ - Contact admin #}
+        <div class="mt-6 rounded-xl border border-rose-200 dark:border-rose-700 bg-rose-50/60 dark:bg-rose-900/20 p-4">
+          <p class="text-rose-700 dark:text-rose-300 font-semibold">
+            You scored {{ pct }}%. You need at least 80% to pass.
+          </p>
+          <p class="text-rose-600 dark:text-rose-400 text-sm mt-2">
+            You scored below 75% on your final attempt. Please contact your administrator if you wish to discuss further options.
+          </p>
+          <div class="mt-3 p-3 rounded-lg bg-rose-100 dark:bg-rose-900/40">
+            <p class="text-sm text-rose-800 dark:text-rose-200">
+              <strong>📧 Contact:</strong> Please email your administrator or use the support section on your dashboard.
+            </p>
+          </div>
+        </div>
+      {% endif %}
+      <!-- /OUTCOME-BASED ACTIONS -->
+
+    </section>
+
+    <!-- ===== Feedback UNDERNEATH, linked to course+student(+attempt) ===== -->
+    {% set _attempt_id = attempt_id if attempt_id is defined else None %}
+    {% set feedback_action = (
+          url_for('course_feedback', course_id=course.id, attempt_id=_attempt_id, next=request.url)
+          if (course and _attempt_id) else
+          (url_for('course_feedback', course_id=course.id, next=request.url) if course else '#')
+    ) %}
+
+    <section class="mt-8 rounded-2xl bg-white dark:bg-[#0C142B] border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div class="px-6 py-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-brand-blue dark:text-brand-gold">💬 Course Feedback</h2>
+        {% if existing_feedback %}
+          <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-xs font-semibold">
+            Thanks — feedback submitted
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="px-6 pb-6">
+        {% if not existing_feedback %}
+          <form method="POST" action="{{ feedback_action }}" class="space-y-6">
+            {# Optional CSRF if using Flask-WTF: {{ form.csrf_token }} #}
+
+            <!-- 🔗 Hidden linking fields -->
+            {% if course %}<input type="hidden" name="course_id" value="{{ course.id }}">{% endif %}
+            {% if student %}<input type="hidden" name="student_id" value="{{ student.student_id }}">{% endif %}
+            {% if _attempt_id %}<input type="hidden" name="attempt_id" value="{{ _attempt_id }}">{% endif %}
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              This feedback will be linked to <span class="font-medium">{{ course.title if course else '∅' }}</span>
+              for student <span class="font-mono">{{ student.student_id if student else '∅' }}</span>
+              {% if _attempt_id %}(attempt #{{ _attempt_id }}){% endif %}.
+            </p>
+
+            <!-- Ratings -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {% set rows = [
+                ('q_navigate',   'Ease of navigation'),
+                ('q_understand', 'Understanding of material'),
+                ('q_apply',      'Ability to apply knowledge'),
+                ('q_value',      'Overall value of the course')
+              ] %}
+              {% for name, label in rows %}
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    {{ label }} <span class="text-slate-400">(0–4)</span>
+                  </label>
+                  <div class="flex flex-wrap gap-2">
+                    {% for n in [0,1,2,3,4] %}
+                      <label class="cursor-pointer">
+                        <input type="radio" name="{{ name }}" value="{{ n }}" class="peer hidden" required>
+                        <span class="peer-checked:bg-brand-blue peer-checked:text-white inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0C142B]">
+                          {{ n }}
+                        </span>
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Comments -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Comments (optional)</label>
+              <textarea name="comments" rows="3"
+                        class="mt-1 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0C142B] px-3 py-2 text-slate-800 dark:text-slate-100"
+                        placeholder="What worked well? What can we improve?"></textarea>
+            </div>
+
+            <!-- Confirm -->
+            <div class="flex items-start gap-3">
+              <input id="confirm_own" name="confirm_own" value="accept" type="checkbox" required
+                     class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700">
+              <label for="confirm_own" class="text-sm text-slate-700 dark:text-slate-300">
+                I confirm this feedback is my own experience.
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-brand-blue text-white hover:opacity-90 px-5 py-2 font-semibold">
+              Submit Feedback
+            </button>
+          </form>
+        {% else %}
+          <div class="rounded-xl bg-emerald-50 text-emerald-700 p-3 text-sm">
+            You’ve already submitted feedback for this course. Thank you! 🙏
+          </div>
+        {% endif %}
+      </div>
+    </section>
+    <!-- ===== /Feedback ===== -->
+
+    <!-- Actions -->
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <a href="{{ url_for('dashboard') }}"
+         class="inline-flex items-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 font-semibold">
+        ← Back to Dashboard
+      </a>
+      {% if certificate_url %}
+        <a href="{{ certificate_url }}"
+           class="inline-flex items-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#0C142B] hover:bg-slate-50 dark:hover:bg-[#0F1A34] text-slate-700 dark:text-slate-200 px-5 py-2 font-semibold">
+          Download Certificate
+        </a>
+      {% endif %}
+      <button onclick="window.print()"
+              class="ml-auto inline-flex items-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#0C142B] px-5 py-2 hover:bg-slate-50 dark:hover:bg-[#0F1A34]">
+        🖨️ Print
+      </button>
+    </div>
+
+    <!-- Debug crumb -->
+    <div class="mt-6 text-[11px] text-slate-400">
+      dbg: course_id={{ course.id if course else '∅' }},
+           student_id={{ student.student_id if student else '∅' }},
+           attempt_id={{ attempt_id if attempt_id is defined else '∅' }}
+    </div>
+  </main>
+</body>
+</html>

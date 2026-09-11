@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Questions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400">🧠 Unit Questions</h2>
+    <a href="{{ url_for('manage_course', course_id=request.view_args.course_id) }}"
+       class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-600">
+      ← Back to Course
+    </a>
+  </div>
+
+  {% if questions %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow">
+      <thead class="bg-blue-600 dark:bg-blue-700 text-white">
+        <tr>
+          <th class="text-left py-3 px-4">#</th>
+          <th class="text-left py-3 px-4">Question</th>
+          <th class="text-left py-3 px-4">Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in questions %}
+        <tr class="border-t dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700">
+          <td class="py-2 px-4">{{ loop.index }}</td>
+          <td class="py-2 px-4">{{ q.question }}</td>
+          <td class="py-2 px-4">{{ q.answer }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-gray-600 dark:text-gray-300">No unit questions found.</p>
+  {% endif %}
+</div>
+
+</body>
+</html>

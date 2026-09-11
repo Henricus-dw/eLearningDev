@@ -1,0 +1,644 @@
+[
+  {
+    "id": 1,
+    "type": "tf",
+    "question": "The Local Authority in South Africa Is the South African Civil Aviation. (SACAA)",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 1
+  },
+  {
+    "id": 2,
+    "type": "mcq",
+    "question": "Which of the following is a recognised aviation security convention?",
+    "points": 1,
+    "options": {
+      "A": "The Tokyo Convention",
+      "B": "The Geneva Transport Agreement",
+      "C": "The Paris Aviation Treaty",
+      "D": "The Nairobi Air Safety Protocol"
+    },
+    "correct": "A",
+    "position": 2
+  },
+  {
+    "id": 3,
+    "type": "mcq",
+    "question": "Choose one correct abbreviation:",
+    "points": 1,
+    "options": {
+      "A": "IATA – International Air Training Association",
+      "B": "ACI – Airport Council International",
+      "C": "ICAO – International Civil Aviation Organization",
+      "D": "AUCA – African Union Civil Aviation"
+    },
+    "correct": "C",
+    "position": 3
+  },
+  {
+    "id": 4,
+    "type": "tf",
+    "question": "A countermeasure is an action taken to counteract a danger or threat.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 4
+  },
+  {
+    "id": 5,
+    "type": "tf",
+    "question": "A threat is “An implied intention to take a hostile or dishonest action against a specific target.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 5
+  },
+  {
+    "id": 6,
+    "type": "mcq",
+    "question": "Which of the following is considered a possible method of attacking the aviation industry?",
+    "points": 1,
+    "options": {
+      "A": "Sabotage of aircraft or airport facilities through catering supplies",
+      "B": "Unauthorised parking of vehicles in the airport staff parking area",
+      "C": "Delaying passengers at the airport check-in counters",
+      "D": "Hijacking of a boat"
+    },
+    "correct": "A",
+    "position": 6
+  },
+  {
+    "id": 7,
+    "type": "tf",
+    "question": "Risk is a combination of Threat x Vulnerability",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 7
+  },
+  {
+    "id": 8,
+    "type": "tf",
+    "question": "Access Permits should be valid for a specific area and time",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 8
+  },
+  {
+    "id": 9,
+    "type": "tf",
+    "question": "Catering carts and containers can be used to hide an I.E.D",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 9
+  },
+  {
+    "id": 10,
+    "type": "tf",
+    "question": "Security of catering loaded on an aircraft is a very important part in Aviation security.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 10
+  },
+  {
+    "id": 11,
+    "type": "mcq",
+    "question": "Which of the following can be used in attacks against airports:",
+    "points": 1,
+    "options": {
+      "A": "Firearms",
+      "B": "Suicide Bombers",
+      "C": "Hijacked Aircraft",
+      "D": "All of the above"
+    },
+    "correct": "D",
+    "position": 11
+  },
+  {
+    "id": 12,
+    "type": "tf",
+    "question": "Part 111.01.1 Regulations relate to catering stores, catering supplies and ground handling service providers.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 12
+  },
+  {
+    "id": 13,
+    "type": "tf",
+    "question": "Catering operations must follow strict security procedures and regulations to protect against acts of unlawful interference.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 13
+  },
+  {
+    "id": 14,
+    "type": "mcq",
+    "question": "What do Catering Stores and Catering Supplies Service Provider Security Manual include?",
+    "points": 1,
+    "options": {
+      "A": "Training",
+      "B": "Loading of Cargo",
+      "C": "Training Animals",
+      "D": "Hijacking of an Aircraft"
+    },
+    "correct": "A",
+    "position": 14
+  },
+  {
+    "id": 15,
+    "type": "tf",
+    "question": "A Vulnerability is “Those characteristics of a target which could be exploited in an attack.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 15
+  },
+  {
+    "id": 16,
+    "type": "mcq",
+    "question": "Which of the following are “Explosive device components”?",
+    "points": 1,
+    "options": {
+      "A": "Plastic box, Time delay mechanism, Detonator (initiator), Dynamite",
+      "B": "Power Source, Timer delay mechanism, Detonator (initiator), Dynamite",
+      "C": "Power Source, Time delay mechanism, Key, Dynamite",
+      "D": "None of the Above"
+    },
+    "correct": "B",
+    "position": 16
+  },
+  {
+    "id": 17,
+    "type": "tf",
+    "question": "IED stands for “Improvised Explosive Device\"",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 17
+  },
+  {
+    "id": 18,
+    "type": "tf",
+    "question": "Cyber Attacks have become a growing threat to Civil Aviation",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 18
+  },
+  {
+    "id": 19,
+    "type": "tf",
+    "question": "A Bomb Threat is “A communicated threat, anonymous or otherwise, which suggests or infers, whether true or false, that the safety of an aircraft in flight or on the ground, or any airport or civil aviation facility or any person may be in danger from an explosive or other item or device.”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 19
+  },
+  {
+    "id": 20,
+    "type": "tf",
+    "question": "A catering vehicle left unattended with its doors unlocked creates a security vulnerability.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 20
+  },
+  {
+    "id": 21,
+    "type": "tf",
+    "question": "EDD stands for “Explosive Dog Device\"",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 21
+  },
+  {
+    "id": 22,
+    "type": "mcq",
+    "question": "The abbreviation IID stands for?",
+    "points": 1,
+    "options": {
+      "A": "Improvised Incendiary Device",
+      "B": "Improvised Intellectual Diagram",
+      "C": "Improvised Instruments Device",
+      "D": "All of the above"
+    },
+    "correct": "A",
+    "position": 22
+  },
+  {
+    "id": 23,
+    "type": "tf",
+    "question": "All staff employed in the preparation and delivery of catering supplies and stores should undergo a pre-employment background check to establish their identity and previous experience, including any criminal history.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 23
+  },
+  {
+    "id": 24,
+    "type": "tf",
+    "question": "The definition of Suspicious Behavior is:\r\n\r\n\"The type of behavior or conduct which does not appear to be normal in the circumstances or situation.\"",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 24
+  },
+  {
+    "id": 25,
+    "type": "mcq",
+    "question": "In terms of aviation security requirements, which personnel must receive training before being granted access to supplies or stores designated as “known stores” for dispatch to an aircraft?",
+    "points": 1,
+    "options": {
+      "A": "Catering personnel involved in preparing or handling known stores",
+      "B": "Airport fire and rescue service personnel",
+      "C": "Aircraft cabin crew members",
+      "D": "Air traffic control staff"
+    },
+    "correct": "A",
+    "position": 25
+  },
+  {
+    "id": 26,
+    "type": "mcq",
+    "question": "Buildings used for the preparation and storage of __________ and stores must be protected with adequate physical security measures to ensure they remain secure at all times.",
+    "points": 1,
+    "options": {
+      "A": "In-flight magazines",
+      "B": "Airport retail goods",
+      "C": "Passenger baggage",
+      "D": "Catering supplies"
+    },
+    "correct": "D",
+    "position": 26
+  },
+  {
+    "id": 27,
+    "type": "mcq",
+    "question": "Choose one action to be taken on the discovery of a suspect item",
+    "points": 1,
+    "options": {
+      "A": "Do not touch it",
+      "B": "Notify your family",
+      "C": "Remain standing still",
+      "D": "All of the above"
+    },
+    "correct": "A",
+    "position": 27
+  },
+  {
+    "id": 28,
+    "type": "tf",
+    "question": "Specific zones, such as the kitchen, food storage/make-up areas and bonded stores should be considered as restricted “sterile areas” and guarded from any form of trespass, interference or product contamination.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 28
+  },
+  {
+    "id": 29,
+    "type": "tf",
+    "question": "Behavior Detection and Human Factors are important parts of an effective Security Culture",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 29
+  },
+  {
+    "id": 30,
+    "type": "tf",
+    "question": "In the context of catering operations, prohibited articles refer to items that are not permitted to be transported on an aircraft, whether in catering supplies, stores, or any form of passenger baggage, in accordance with aviation security regulations.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 30
+  },
+  {
+    "id": 31,
+    "type": "mcq",
+    "question": "What security measure is used to control the movement of people, vehicles, and goods from landside (non-restricted) areas into airside (restricted and controlled) areas of an airport?",
+    "points": 1,
+    "options": {
+      "A": "Flight scheduling",
+      "B": "Access control",
+      "C": "Passenger boarding procedures",
+      "D": "Aircraft maintenance checks"
+    },
+    "correct": "B",
+    "position": 31
+  },
+  {
+    "id": 32,
+    "type": "mcq",
+    "question": "Choose what actions should be done in receipt of a bomb threat:",
+    "points": 1,
+    "options": {
+      "A": "Complete a bomb threat form",
+      "B": "Tape record the message, if possible",
+      "C": "Panic",
+      "D": "None of the above"
+    },
+    "correct": "A",
+    "position": 32
+  },
+  {
+    "id": 33,
+    "type": "tf",
+    "question": "Incendiary devices may be concealed in any container. Packages containing incendiaries may be resealed and show little evidence of tampering.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 33
+  },
+  {
+    "id": 34,
+    "type": "mcq",
+    "question": "Staff, __________ and vehicles should be subject to strict security control within airport restricted areas.",
+    "points": 1,
+    "options": {
+      "A": "Animals",
+      "B": "Visitors",
+      "C": "Catering equipment",
+      "D": "Airport signage"
+    },
+    "correct": "B",
+    "position": 34
+  },
+  {
+    "id": 35,
+    "type": "tf",
+    "question": "We can help prevent attacks on Civil Aviation by being aware of the threats posed to Civil Aviation and having an effective Security Culture.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 35
+  },
+  {
+    "id": 36,
+    "type": "mcq",
+    "question": "Choose the correct abbreviation for RPAS.",
+    "points": 1,
+    "options": {
+      "A": "Remote Piloted Aircraft System",
+      "B": "Restricted Passenger Aviation Service",
+      "C": "Rapid Passenger Air Support",
+      "D": "Radio Protected Aircraft Security"
+    },
+    "correct": "A",
+    "position": 36
+  },
+  {
+    "id": 37,
+    "type": "mcq",
+    "question": "Choose the correct abbreviation for NASP.",
+    "points": 1,
+    "options": {
+      "A": "National Aviation Security Programme",
+      "B": "National Air Service Plan",
+      "C": "Network Aviation Safety Procedure",
+      "D": "New Airport Security Policy"
+    },
+    "correct": "A",
+    "position": 37
+  },
+  {
+    "id": 38,
+    "type": "mcq",
+    "question": "What does LAG’s stand for?",
+    "points": 1,
+    "options": {
+      "A": "Large Airside Goods",
+      "B": "Liquids, Aerosols and Gels",
+      "C": "Local Airport Ground services",
+      "D": "Loaded Aviation Gear"
+    },
+    "correct": "B",
+    "position": 38
+  },
+  {
+    "id": 39,
+    "type": "tf",
+    "question": "Catering vehicles must be secured or sealed before leaving the catering facility.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 39
+  },
+  {
+    "id": 40,
+    "type": "mcq",
+    "question": "Before loading catering onto an aircraft, what is the most important requirement?",
+    "points": 1,
+    "options": {
+      "A": "The food must be hot",
+      "B": "The items must be verified and protected from tampering",
+      "C": "The trolley must be full",
+      "D": "The driver must be fast"
+    },
+    "correct": "B",
+    "position": 40
+  },
+  {
+    "id": 41,
+    "type": "tf",
+    "question": "Catering staff can share access cards to speed up loading.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 41
+  },
+  {
+    "id": 42,
+    "type": "mcq",
+    "question": "What should you check before accepting a catering trolley for delivery?",
+    "points": 1,
+    "options": {
+      "A": "Colour of the trolley",
+      "B": "Brand of food supplier",
+      "C": "Seal or security integrity of the trolley/cart",
+      "D": "Time of day only"
+    },
+    "correct": "C",
+    "position": 42
+  },
+  {
+    "id": 43,
+    "type": "tf",
+    "question": "If a catering seal is broken, the item can still be used if it looks fine.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 43
+  },
+  {
+    "id": 44,
+    "type": "tf",
+    "question": "Catering deliveries should always be kept under supervision once they enter the secure area.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 44
+  },
+  {
+    "id": 45,
+    "type": "tf",
+    "question": "Fatigue or rushing at work can lead to mistakes that may create security risks in catering operations.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 45
+  },
+  {
+    "id": 46,
+    "type": "tf",
+    "question": "If a bomb threat is suspected in a catering area, it must be reported immediately and handled according to emergency procedures.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 46
+  },
+  {
+    "id": 47,
+    "type": "mcq",
+    "question": "Why is it important to monitor catering supplies from storage to aircraft?",
+    "points": 1,
+    "options": {
+      "A": "To reduce costs",
+      "B": "To speed up catering service",
+      "C": "To improve food quality",
+      "D": "To ensure items are not tampered with during handling or transport"
+    },
+    "correct": "D",
+    "position": 47
+  },
+  {
+    "id": 48,
+    "type": "tf",
+    "question": "Only supervisors are responsible for reporting security irregularities in catering operations.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 48
+  },
+  {
+    "id": 49,
+    "type": "mcq",
+    "question": "Why do aviation security personnel follow SACAA regulations?",
+    "points": 1,
+    "options": {
+      "A": "To ensure aviation operations remain safe and secure",
+      "B": "To increase flight ticket prices",
+      "C": "To improve catering recipes",
+      "D": "To make paperwork more difficult"
+    },
+    "correct": "A",
+    "position": 49
+  },
+  {
+    "id": 50,
+    "type": "mcq",
+    "question": "What is the best thing to bring to work every day?",
+    "points": 1,
+    "options": {
+      "A": "A positive attitude and security awareness",
+      "B": "A pillow for nap time",
+      "C": "A suitcase full of snacks",
+      "D": "Your pet giraffe"
+    },
+    "correct": "A",
+    "position": 50
+  }
+]

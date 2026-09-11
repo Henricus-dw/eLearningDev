@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Final Attempts (Admin)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandblue: '#17306B',
+            brandgold: '#C7A434'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800 p-6">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-semibold text-brandblue">Final Attempts (Admin)</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="bg-brandblue text-white px-4 py-2 rounded-lg hover:bg-brandgold hover:text-black transition">
+      Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Flashed messages -->
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}
+      {% for cat, msg in msgs %}
+        {% if 'Showing data from' not in msg %}
+        <div class="mb-3 p-3 rounded-lg {% if cat == 'danger' %}bg-red-100 text-red-800{% elif cat == 'success' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ msg }}
+        </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Rules Legend -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm">
+    <strong>Attempt Rules:</strong>
+    <span class="ml-2 inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> 80%+ = Pass (0 left)</span>
+    <span class="ml-2 inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> 75-79% = Second Chance (1 retry)</span>
+    <span class="ml-2 inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> &lt;75% = Fail (0 left, contact admin)</span>
+  </div>
+
+  <!-- Search & Course Filter -->
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="flex flex-wrap gap-4 items-end">
+      <!-- Course Filter -->
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm text-gray-600 mb-1">Filter by Course</label>
+        <select id="courseFilter" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" onchange="filterTable()">
+          <option value="">All Courses</option>
+          {% for c in all_courses %}
+            <option value="{{ c.title }}" {{ 'selected' if selected_course_id==c.id else '' }}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm text-gray-600 mb-1">Search Student</label>
+        <input type="text" id="searchInput" placeholder="Name or ID number..."
+               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+               oninput="filterTable()">
+      </div>
+
+      <!-- Stats -->
+      <div class="text-sm text-gray-600">
+        Showing <span id="visibleCount" class="font-semibold">0</span> of <span id="totalCount" class="font-semibold">0</span> students
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  {% if items and items|length %}
+  <div class="overflow-x-auto bg-white shadow-sm rounded-lg border border-gray-200">
+    <table class="min-w-full text-sm" id="attemptsTable">
+      <thead class="bg-brandblue text-white text-left">
+        <tr>
+          <th class="px-4 py-3">Course</th>
+          <th class="px-4 py-3">Student</th>
+          <th class="px-4 py-3 text-center">Score</th>
+          <th class="px-4 py-3 text-center">Used</th>
+          <th class="px-4 py-3 text-center">Left</th>
+          <th class="px-4 py-3">Last Attempt</th>
+          <th class="px-4 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200" id="tableBody">
+        {% for item in items %}
+        {% set sid = item.student_id or item.student_pk %}
+        {% set cid = item.course_id  or item.course_pk %}
+        {% set left = item.left if item.left is defined else (item.attempts_left if item.attempts_left is defined else 0) %}
+        {% set cap  = item.allowed_attempts if item.allowed_attempts is defined else 3 %}
+        <tr class="hover:bg-gray-50 data-row"
+            data-course="{{ item.course_title }}"
+            data-student="{{ item.student_name }}"
+            data-number="{{ item.student_number }}">
+          <td class="px-4 py-3">
+            <div class="font-semibold">{{ item.course_title }}</div>
+            {% if item.course_key %}
+            <div class="text-xs text-gray-500">key: <code>{{ item.course_key }}</code></div>
+            {% endif %}
+          </td>
+
+          <td class="px-4 py-3">
+            <div class="font-semibold">{{ item.student_name }}</div>
+            <div class="text-xs text-gray-500">ID: <code>{{ item.student_number }}</code></div>
+          </td>
+
+          <!-- Score -->
+          <td class="px-4 py-3 text-center">
+            {% set score = item.latest_score %}
+            {% if score is not none %}
+              <span class="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium {% if score >= 80 %}bg-green-100 text-green-800{% elif score >= 75 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                {{ "%.1f"|format(score) }}%
+              </span>
+            {% else %}
+              <span class="text-gray-400">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Used / Left -->
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800">
+              {{ item.attempts_used }}
+            </span>
+          </td>
+
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium {% if left|int > 0 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+              {{ left }}
+            </span>
+          </td>
+
+          <td class="px-4 py-3 text-xs text-gray-500">{{ item.last_attempt_at or '—' }}</td>
+
+          <!-- Actions -->
+          <td class="px-4 py-3">
+            {% if sid and cid %}
+              <form method="POST" action="{{ url_for('admin_grant_attempts') }}"
+                    class="flex items-center gap-2 justify-end"
+                    onsubmit="return confirm('Grant extra attempt(s) to {{ item.student_name }} for {{ item.course_title }}?');">
+                <input type="hidden" name="student_id" value="{{ sid }}">
+                <input type="hidden" name="course_id"  value="{{ cid }}">
+                <input type="hidden" name="source"     value="{{ used_source or '' }}">
+                {% if item.course_key %}<input type="hidden" name="course_key" value="{{ item.course_key }}">{% endif %}
+                <input type="number" name="delta" min="1" value="1" class="w-16 border border-gray-300 rounded px-2 py-1 text-sm" aria-label="Attempts to grant">
+                <input type="text" name="reason" placeholder="Reason" class="w-28 border border-gray-300 rounded px-2 py-1 text-sm" aria-label="Reason">
+                <button class="whitespace-nowrap bg-brandblue text-white rounded-md px-3 py-1.5 text-sm hover:bg-brandgold hover:text-black transition">
+                  + Grant
+                </button>
+              </form>
+            {% else %}
+              <span class="text-xs text-gray-400">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-4 flex justify-center gap-2" id="pagination"></div>
+
+  {% else %}
+  <div class="mt-6 bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500 p-4 rounded">
+    No attempts found.
+  </div>
+  {% endif %}
+
+  <script>
+    const ITEMS_PER_PAGE = 20;
+    let currentPage = 1;
+    let filteredRows = [];
+
+    function filterTable() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const courseFilter = document.getElementById('courseFilter').value.toLowerCase();
+      const rows = document.querySelectorAll('.data-row');
+
+      filteredRows = [];
+
+      rows.forEach(row => {
+        const course = (row.dataset.course || '').toLowerCase();
+        const student = (row.dataset.student || '').toLowerCase();
+        const number = (row.dataset.number || '').toLowerCase();
+
+        const matchesCourse = !courseFilter || course.includes(courseFilter);
+        const matchesSearch = !searchTerm ||
+                              student.includes(searchTerm) ||
+                              number.includes(searchTerm);
+
+        if (matchesCourse && matchesSearch) {
+          filteredRows.push(row);
+        }
+        row.style.display = 'none'; // Hide all initially
+      });
+
+      // Reset to page 1 when filtering
+      currentPage = 1;
+      renderPage();
+      updatePagination();
+      updateCounts();
+    }
+
+    function renderPage() {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+
+      // Hide all
+      filteredRows.forEach(row => row.style.display = 'none');
+
+      // Show current page
+      filteredRows.slice(start, end).forEach(row => {
+        row.style.display = '';
+      });
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredRows.length / ITEMS_PER_PAGE);
+      const paginationDiv = document.getElementById('pagination');
+
+      if (totalPages <= 1) {
+        paginationDiv.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+
+      // Previous button
+      if (currentPage > 1) {
+        html += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">← Prev</button>`;
+      }
+
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === currentPage) {
+          html += `<button class="px-3 py-1 border rounded text-sm bg-brandblue text-white">${i}</button>`;
+        } else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button onclick="goToPage(${i})" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">${i}</button>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span class="px-2">...</span>`;
+        }
+      }
+
+      // Next button
+      if (currentPage < totalPages) {
+        html += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">Next →</button>`;
+      }
+
+      paginationDiv.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderPage();
+      updatePagination();
+      // Scroll to top of table
+      document.getElementById('attemptsTable')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updateCounts() {
+      const allRows = document.querySelectorAll('.data-row');
+      document.getElementById('totalCount').textContent = allRows.length;
+      document.getElementById('visibleCount').textContent = filteredRows.length;
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      filterTable();
+    });
+  </script>
+</body>
+</html>

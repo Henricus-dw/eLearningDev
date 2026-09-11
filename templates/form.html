@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moderation Panel</title>
+    <link rel="icon" type="image/png" href="/static/professional-logo.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f5f7fa;
+        }
+
+        h1 {
+            color: #002366;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #002366;
+        }
+
+        select, input[type="text"], input[type="datetime-local"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .form-section {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .video-box {
+            flex: 1 1 300px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .submit-btn {
+            background-color: #002366;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background-color: #FFD700;
+            color: #002366;
+        }
+    </style>
+
+    <script>
+        async function onStudentChange() {
+            const studentId = document.getElementById("studentSelect").value;
+            if (!studentId) return;
+
+            // Fetch student details + completed courses from Flask
+            const res = await fetch(`/get_student_info/${studentId}`);
+            const data = await res.json();
+
+            // Populate name, ID number
+            document.getElementById("studentName").value = data.name;
+            document.getElementById("nationalId").value = data.national_id;
+
+            // Populate course dropdown
+            const courseDropdown = document.getElementById("courseSelect");
+            courseDropdown.innerHTML = `<option value="">-- Select Completed Course --</option>`;
+            data.completed_courses.forEach(course => {
+                const option = document.createElement("option");
+                option.value = course.course_id;
+                option.textContent = course.course_name;
+                courseDropdown.appendChild(option);
+            });
+        }
+
+        async function onCourseChange() {
+            const courseId = document.getElementById("courseSelect").value;
+            const studentId = document.getElementById("studentSelect").value;
+            if (!courseId || !studentId) return;
+
+            // Fetch course info + videos for this attempt
+            const res = await fetch(`/get_course_attempt/${studentId}/${courseId}`);
+            const data = await res.json();
+
+            document.getElementById("completionDate").value = data.completion_date;
+
+            // Render videos
+            const videoSection = document.getElementById("videoSection");
+            videoSection.innerHTML = "";
+            data.videos.forEach(url => {
+                const div = document.createElement("div");
+                div.classList.add("video-box");
+                div.innerHTML = `
+                    <video controls>
+                        <source src="${url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+                videoSection.appendChild(div);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Moderation Form</h1>
+
+    <form action="/submit_moderation" method="POST">
+        <div class="form-section">
+            <label for="studentSelect">Student ID</label>
+            <select id="studentSelect" name="student_id" onchange="onStudentChange()" required>
+                <option value="">-- Select Student --</option>
+                <!-- Populated dynamically by Flask -->
+                {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.id }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="studentName">Student Name</label>
+            <input type="text" id="studentName" name="student_name" readonly>
+
+            <label for="nationalId">National ID</label>
+            <input type="text" id="nationalId" name="national_id" readonly>
+
+            <label for="courseSelect">Completed Course</label>
+            <select id="courseSelect" name="course_id" onchange="onCourseChange()" required></select>
+
+            <label for="completionDate">Date Completed</label>
+            <input type="datetime-local" id="completionDate" name="completion_date" required>
+
+            <label for="moderationDate">Moderation Date</label>
+            <input type="datetime-local" name="moderation_date" required>
+        </div>
+
+        <div class="form-section">
+            <p>1. Was the assessment appropriate?</p>
+            <label><input type="radio" name="q1" value="1" required> Yes</label>
+            <label><input type="radio" name="q1" value="0"> No</label>
+
+            <p>2. Was the assessment fair?</p>
+            <label><input type="radio" name="q2" value="1" required> Yes</label>
+            <label><input type="radio" name="q2" value="0"> No</label>
+
+            <p>3. Was it manageable?</p>
+            <label><input type="radio" name="q3" value="1" required> Yes</label>
+            <label><input type="radio" name="q3" value="0"> No</label>
+
+            <p>4. Was it integrated with work/learning?</p>
+            <label><input type="radio" name="q4" value="1" required> Yes</label>
+            <label><input type="radio" name="q4" value="0"> No</label>
+
+            <p>5. Was student verified prior to final exam?</p>
+            <label><input type="radio" name="q5" value="1" required> Yes</label>
+            <label><input type="radio" name="q5" value="0"> No</label>
+
+            <p>6. Any findings during video review?</p>
+            <label><input type="radio" name="q6" value="1" required> Yes</label>
+            <label><input type="radio" name="q6" value="0"> No</label>
+
+            <label for="comments">Moderator Comments:</label>
+            <textarea name="comments" rows="8" placeholder="Write your observations..."></textarea>
+        </div>
+
+        <div class="form-section">
+            <h3>Video Evidence</h3>
+            <div id="videoSection" class="video-container">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Moderation</button>
+    </form>
+</body>
+</html>

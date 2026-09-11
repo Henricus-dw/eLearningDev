@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to PayFast…</title>
+</head>
+<body onload="document.forms[0].submit()" style="font-family:system-ui;padding:2rem;">
+  <h3>Redirecting to PayFast…</h3>
+  <p>Please wait. If nothing happens, click the button below.</p>
+  <form method="post" action="{{ action }}">
+    {% for k, v in fields.items() %}
+      <input type="hidden" name="{{ k }}" value="{{ v }}">
+    {% endfor %}
+    <button type="submit">Continue to PayFast</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>POPIA Consent (v{{ version }})</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+    }
+    .card {
+      max-width: 720px;
+      margin: auto;
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.12);
+    }
+    .card h2 {
+      margin: 0 0 0.5rem;
+      color: #17306B;
+      font-size: 1.75rem;
+    }
+    .card-subtitle {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    .scrollbox {
+      height: 45vh;
+      overflow-y: auto;
+      border: 2px solid #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 10px;
+      background: #fafafa;
+      line-height: 1.7;
+      position: relative;
+    }
+    .scrollbox::-webkit-scrollbar { width: 8px; }
+    .scrollbox::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .scrollbox::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    .scrollbox::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+
+    .scroll-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      margin-top: 1rem;
+      color: #92400e;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .scroll-hint.complete {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      border-color: #10b981;
+      color: #065f46;
+    }
+    .scroll-hint-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .consent-section {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    .consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #334155;
+    }
+    .consent-label input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: #17306B;
+      cursor: pointer;
+    }
+    .consent-label.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .consent-label.disabled input {
+      cursor: not-allowed;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 10px;
+      border: none;
+      background: #17306B;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+    .btn:hover:not(:disabled) {
+      background: #0e2250;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(23, 48, 107, 0.3);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-icon { font-size: 1.1rem; }
+
+    .footer-note {
+      color: #64748b;
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>POPIA Consent</h2>
+    <p class="card-subtitle">Version {{ version }} - Please read the entire notice before continuing</p>
+
+    <form method="POST" action="{{ url_for('popia_notice') }}" id="popiaForm">
+      <div class="scrollbox" id="popiaContent">
+        {{ popia_html|safe }}
+      </div>
+
+      <div class="scroll-hint" id="scrollHint">
+        <span class="scroll-hint-icon" id="scrollIcon">👇</span>
+        <span id="scrollText">Please scroll down to read the entire notice</span>
+      </div>
+
+      <div class="consent-section">
+        <label class="consent-label disabled" id="consentLabel">
+          <input type="checkbox" name="accept" id="acceptCheckbox" required disabled>
+          <span>I have read and accept the POPIA notice and consent to the processing of my personal information as described above.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn" disabled>
+        <span>Accept & Continue</span>
+        <span class="btn-icon">→</span>
+      </button>
+
+      <p class="footer-note">
+        <span>🔒</span>
+        <span>Your acceptance will be securely time-stamped and stored in your profile.</span>
+      </p>
+    </form>
+  </div>
+
+  <script>
+    const scrollbox = document.getElementById('popiaContent');
+    const scrollHint = document.getElementById('scrollHint');
+    const scrollIcon = document.getElementById('scrollIcon');
+    const scrollText = document.getElementById('scrollText');
+    const consentLabel = document.getElementById('consentLabel');
+    const acceptCheckbox = document.getElementById('acceptCheckbox');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let hasScrolledToBottom = false;
+
+    function checkScroll() {
+      // Check if scrolled to bottom (with small tolerance)
+      const scrollTop = scrollbox.scrollTop;
+      const scrollHeight = scrollbox.scrollHeight;
+      const clientHeight = scrollbox.clientHeight;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 20;
+
+      if (atBottom && !hasScrolledToBottom) {
+        hasScrolledToBottom = true;
+
+        // Update UI
+        scrollHint.classList.add('complete');
+        scrollIcon.textContent = '✓';
+        scrollText.textContent = 'You have read the entire notice';
+
+        // Enable checkbox
+        consentLabel.classList.remove('disabled');
+        acceptCheckbox.disabled = false;
+      }
+    }
+
+    function updateSubmitButton() {
+      submitBtn.disabled = !acceptCheckbox.checked;
+    }
+
+    // Check scroll on scroll event
+    scrollbox.addEventListener('scroll', checkScroll);
+
+    // Also check on load in case content is shorter than container
+    window.addEventListener('load', () => {
+      if (scrollbox.scrollHeight <= scrollbox.clientHeight) {
+        // Content fits without scrolling - enable immediately
+        hasScrolledToBottom = true;
+        scrollHint.classList.add('complete');
+        scrollIcon.textContent = '✓';
+        scrollText.textContent = 'Notice ready to accept';
+        consentLabel.classList.remove('disabled');
+        acceptCheckbox.disabled = false;
+      }
+    });
+
+    // Enable submit button when checkbox is checked
+    acceptCheckbox.addEventListener('change', updateSubmitButton);
+  </script>
+</body>
+</html>

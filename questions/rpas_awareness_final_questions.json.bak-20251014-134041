@@ -1,0 +1,372 @@
+[
+  {
+    "id": 1,
+    "type": "tf",
+    "question": "Both of the following are threats to civil aviation: sabotage of an aircraft; and armed attacks on / off airport facilities.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 2,
+    "type": "tf",
+    "question": "A person has been used as an Improvised Explosive Device (IED) before.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 3,
+    "type": "ms",
+    "question": "Which of the following can be used as attacks against airports?",
+    "options": { "A": "Firearms", "B": "Suicide bombers", "C": "Hijacked aircrafts", "D": "Trucks" },
+    "answer": ["A","B","C"]
+  },
+  {
+    "id": 4,
+    "type": "tf",
+    "question": "You are allowed to touch a suspicious device.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 5,
+    "type": "ms",
+    "question": "Which of the following have been used as an IED before?",
+    "options": { "A": "Shoes", "B": "A basketball", "C": "Car tyres", "D": "A can of cold drink" },
+    "answer": ["A","D"]
+  },
+  {
+    "id": 6,
+    "type": "tf",
+    "question": "Cargo must be screened before being allowed onto an aircraft.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 7,
+    "type": "mcq",
+    "question": "In which year was the Hague Convention held?",
+    "options": { "A": "1988", "B": "1963", "C": "2010", "D": "1970" },
+    "answer": "D"
+  },
+  {
+    "id": 8,
+    "type": "tf",
+    "question": "When you find a prohibited item, you must panic and run away.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 9,
+    "type": "ms",
+    "question": "Which of the following are “categories of restricted articles”?",
+    "options": { "A": "Keys", "B": "Firearms, guns and weapons", "C": "Paper clips", "D": "Blunt instruments" },
+    "answer": ["B","D"]
+  },
+  {
+    "id": 10,
+    "type": "mcq",
+    "question": "What is the likelihood that terrorists will attack civil aviation?",
+    "options": { "A": "Highly unlikely", "B": "Highly likely", "C": "Not likely at all", "D": "Moderately likely" },
+    "answer": "B"
+  },
+  {
+    "id": 11,
+    "type": "tf",
+    "question": "You can use simple items to hide an IED.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 12,
+    "type": "ms",
+    "question": "Which of the following responses are appropriate in the event of a bomb threat?",
+    "options": { "A": "Complete a bomb threat form", "B": "Tape or record the message, if possible", "C": "Panic", "D": "Ignore the threat" },
+    "answer": ["A","B"]
+  },
+  {
+    "id": 13,
+    "type": "tf",
+    "question": "Security is a concern for everyone in the industry, affecting virtually all areas of operation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 14,
+    "type": "tf",
+    "question": "A bomb threat is a communicated threat (anonymous or otherwise) suggesting danger to aircraft, airport facilities or persons from an explosive or other device.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 15,
+    "type": "tf",
+    "question": "Annex 17 (Std 3.1.1) requires each contracting state to implement a written National Civil Aviation Security Programme (NCASP).",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 16,
+    "type": "mcq",
+    "question": "What does NCASP stand for?",
+    "options": {
+      "A": "National Council Aviation Safety Programme",
+      "B": "National Council Aviation Security Programme",
+      "C": "National Civil Aviation Safety Programme",
+      "D": "National Civil Aviation Security Programme"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 17,
+    "type": "tf",
+    "question": "When you find a suspicious explosive device you should NOT open, unwrap, shake, turn/unscrew, cut strings, or lift/remove covers.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 18,
+    "type": "ms",
+    "question": "Where do you need to practice aviation security awareness?",
+    "options": { "A": "Passengers in wheelchairs", "B": "Baggage or packages left unattended", "C": "Passengers with medical conditions", "D": "Abandoned vehicles" },
+    "answer": ["B","D"]
+  },
+  {
+    "id": 19,
+    "type": "tf",
+    "question": "Drones or RPAS have been used in an attack before.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 20,
+    "type": "ms",
+    "question": "Which of the following should you be on the lookout for?",
+    "options": { "A": "Suspicious articles", "B": "Handbags", "C": "Overly inquisitive people", "D": "Desks" },
+    "answer": ["A","C"]
+  },
+  {
+    "id": 21,
+    "type": "tf",
+    "question": "Drones or RPAS are becoming a huge challenge around the world.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 22,
+    "type": "tf",
+    "question": "We can help prevent attacks on civil aviation by being aware of the threats posed to civil aviation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 23,
+    "type": "ms",
+    "question": "Which statements relate to the civil aviation industry’s regulations and standards?",
+    "options": {
+      "A": "Develop and implement legislation and procedures necessary to ensure a safe and secure environment",
+      "B": "Prosecute or extradite persons who carry out acts of lawful interference",
+      "C": "Security measures shall be consistent with ICAO standards",
+      "D": "Civil Aviation shall operate from a safe and open environment"
+    },
+    "answer": ["A","C"]
+  },
+  {
+    "id": 24,
+    "type": "tf",
+    "question": "The following are all examples of aviation security conventions: Tokyo – 1963, The Hague – 1970, Montreal – 1971, and IATA – 1962.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 25,
+    "type": "ms",
+    "question": "Which of the following are explosive device components?",
+    "options": { "A": "Plastic box", "B": "Power source", "C": "Detonator (initiator)", "D": "Timer delay mechanism" },
+    "answer": ["B","C","D"]
+  },
+  {
+    "id": 26,
+    "type": "tf",
+    "question": "The local authority in South Africa is ICAO.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 27,
+    "type": "mcq",
+    "question": "Which part does 'screening of cargo' fall under?",
+    "options": { "A": "Part 893", "B": "Part 109", "C": "Part 108", "D": "Part screening" },
+    "answer": "C"
+  },
+  {
+    "id": 28,
+    "type": "tf",
+    "question": "Man-Portable Air Defense Systems (e.g., rocket launchers) are a threat to civil aviation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 29,
+    "type": "ms",
+    "question": "Which of the following are considered “offenders” within civil aviation?",
+    "options": { "A": "Mentally challenged persons", "B": "Law-abiding citizens", "C": "Criminals", "D": "Persons seeking attention" },
+    "answer": ["A","C"]
+  },
+  {
+    "id": 30,
+    "type": "tf",
+    "question": "Permits should be valid for specific areas and times.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 31,
+    "type": "tf",
+    "question": "Former employees can be a risk to civil aviation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 32,
+    "type": "ms",
+    "question": "Which abbreviation definitions are correct?",
+    "options": {
+      "A": "ICAO - International Civil Aviation Organization",
+      "B": "ACI - Airports Council International",
+      "C": "AUCA - African Union Civil Aviation",
+      "D": "IATA - International Air Training Association"
+    },
+    "answer": ["A","B"]
+  },
+  {
+    "id": 33,
+    "type": "tf",
+    "question": "Unknown cargo must be screened.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 34,
+    "type": "tf",
+    "question": "There are a total of 19 annexures in the Chicago Convention of International Civil Aviation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 35,
+    "type": "mcq",
+    "question": "What is another name for the ICAO security manual?",
+    "options": { "A": "Doc 1007", "B": "Doc 108", "C": "Doc 109", "D": "Doc 8973" },
+    "answer": "D"
+  },
+  {
+    "id": 36,
+    "type": "mcq",
+    "question": "What is the purpose of a permit system in the aviation industry?",
+    "options": {
+      "A": "Give all airport staff access to restricted areas",
+      "B": "Identify the individuals and facilitate access",
+      "C": "Count the number of staff at an airport",
+      "D": "Vehicle permits are used only for parking"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 37,
+    "type": "ms",
+    "question": "Which actions must be taken when a suspicious article is discovered?",
+    "options": { "A": "Touch it", "B": "Clear the immediate area of all people", "C": "Remain calm", "D": "Notify your supervisor" },
+    "answer": ["B","C","D"]
+  },
+  {
+    "id": 38,
+    "type": "tf",
+    "question": "The abbreviation IED stands for Improvised Explosive Device.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 39,
+    "type": "ms",
+    "question": "Which of the following are screening levels?",
+    "options": { "A": "Level 666", "B": "Level 7", "C": "Level 1", "D": "Level 3" },
+    "answer": ["C","D"]
+  },
+  {
+    "id": 40,
+    "type": "mcq",
+    "question": "In which year did Part 108 come into effect?",
+    "options": { "A": "2009", "B": "2011", "C": "2013", "D": "2008" },
+    "answer": "A"
+  },
+  {
+    "id": 41,
+    "type": "tf",
+    "question": "Acts of Unlawful Interference may include: unlawful seizure of an aircraft; and hostage-taking on board an aircraft or on aerodromes.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 42,
+    "type": "tf",
+    "question": "Aviation security awareness is NOT being aware of your surroundings and the potential security concerns in your everyday aviation working environment.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 43,
+    "type": "tf",
+    "question": "The abbreviation ASP stands for Airport Safety Programme.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 44,
+    "type": "tf",
+    "question": "Passengers require valid boarding passes and identification to enter security-restricted areas through the passenger search area.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 45,
+    "type": "mcq",
+    "question": "How many annexures are there in total?",
+    "options": { "A": "15", "B": "19", "C": "16", "D": "18" },
+    "answer": "B"
+  },
+  {
+    "id": 46,
+    "type": "tf",
+    "question": "All people and vehicles requiring access to airside must be screened.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 47,
+    "type": "tf",
+    "question": "Terrorists attack civil aviation to gain international attention and publicity for their cause.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 48,
+    "type": "tf",
+    "question": "Suspicious behaviour is behaviour that does not appear to be normal in the circumstances.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 49,
+    "type": "tf",
+    "question": "Cyber attacks have become a growing threat to civil aviation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 50,
+    "type": "tf",
+    "question": "When searching sterile or other areas, notify the search coordinator/supervisor of progress and discovery of any suspicious objects.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  }
+]

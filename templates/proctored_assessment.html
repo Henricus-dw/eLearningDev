@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="page-context" data-page="Final Assessment (Proctored)" data-course="{{ title }}" data-chapter="" data-final-assessment-key="{{ course_key }}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="{{ url_for('static', filename='js/dragdrop_player.js') }}"></script>
+
+  <style>
+    /* === Professional Blue & Gold Theme === */
+    :root {
+      --brand-gold: #C7A434;
+      --brand-gold-dark: #b9932b;
+      --brand-blue: #17306B;
+      --brand-blue-dark: #10224E;
+      --brand-green: #059669;
+      --brand-red: #ef4444;
+      --brand-gray: #f8fafc;
+    }
+
+    /* Question cards */
+    .question-card {
+      border-left: 4px solid var(--brand-gold);
+      transition: border-color 0.25s ease;
+    }
+
+    .question-card:hover {
+      border-left-color: var(--brand-gold-dark);
+    }
+
+    /* Timer badge */
+    .timer-badge {
+      font-weight: 700;
+      font-size: 1.125rem;
+      background-color: var(--brand-blue);
+      color: #fff;
+      border: 2px solid var(--brand-gold);
+      border-radius: .5rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Missing answers */
+    .missing-outline {
+      outline: 2px solid var(--brand-red);
+      border-radius: 0.75rem;
+    }
+
+    /* Proctoring sidebar stickiness */
+    @media (min-width: 1024px) {
+      .proctor-sticky {
+        position: sticky;
+        top: 1rem;
+      }
+    }
+
+    /* Upload overlay */
+    #uploadOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      color: #fff;
+      display: none;
+      z-index: 9999;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    #uploadOverlay .inner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* Progress bar */
+    #progressBarQ {
+      background-color: var(--brand-gold) !important;
+      transition: width 0.4s ease;
+    }
+
+    /* Navigation buttons (Question numbers) */
+    #qNav button {
+      transition: all 0.2s ease;
+      border: 1px solid var(--brand-blue);
+    }
+
+    /* Current question */
+    #qNav button.bg-blue-600,
+    #qNav button.text-white.bg-blue-600 {
+      background-color: var(--brand-blue) !important;
+      color: #fff !important;
+      border-color: var(--brand-blue);
+    }
+
+    #qNav button.bg-blue-600:hover {
+      background-color: var(--brand-blue-dark) !important;
+    }
+
+    /* Answered */
+    #qNav button.bg-emerald-600 {
+      background-color: var(--brand-gold) !important;
+      border-color: var(--brand-gold);
+    }
+
+    #qNav button.bg-emerald-600:hover {
+      background-color: var(--brand-gold-dark) !important;
+    }
+
+    /* Next / Previous Buttons */
+    button.bg-blue-600 {
+      background-color: var(--brand-blue) !important;
+      border: 1px solid var(--brand-gold);
+    }
+
+    button.bg-blue-600:hover {
+      background-color: var(--brand-blue-dark) !important;
+    }
+
+    button[data-prev] {
+      color: var(--brand-blue);
+    }
+
+    /* Submit button */
+    button.bg-emerald-600 {
+      background-color: var(--brand-gold);
+      border: 2px solid var(--brand-blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button.bg-emerald-600:hover {
+      background-color: var(--brand-gold-dark);
+    }
+
+    /* Identity & layout */
+    .space-y-5>*+* {
+      margin-top: 1.25rem !important;
+    }
+
+    body {
+      background-color: var(--brand-gray);
+    }
+  </style>
+
+  <!-- Core libs (unchanged) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50">
+  <main class="max-w-7xl mx-auto px-4 py-6 lg:py-10">
+    <!-- Header / Timer -->
+    <div class="flex items-start justify-between gap-6 mb-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <h2 class="text-2xl lg:text-3xl font-semibold tracking-tight">🎓 {{ title }}</h2>
+        </div>
+        <div class="text-sm text-slate-500 mt-1">
+          Pass mark: <strong class="text-slate-700">80%</strong> • Time allowed: 1 hour
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <div id="timerDisplay" class="timer-badge inline-block rounded-md bg-slate-900 text-white px-4 py-2 shadow-sm">
+          60:00</div>
+        <div class="text-xs text-slate-500 mt-1">Time remaining</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: Form -->
+      <div class="lg:col-span-2">
+        <form id="assessmentForm" method="POST" enctype="multipart/form-data" autocomplete="off" class="space-y-5">
+          <!-- Hidden field that actually gets submitted -->
+          <input type="hidden" id="studentNumberHidden" name="student_number" value="{{ student_number or '' }}" />
+
+          <!-- Identity -->
+          <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 fw-bold">ID Number</label>
+                <input class="mt-1 w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 px-3 py-2 font-semibold"
+                  value="{{ student_national_id or 'Not provided' }}" disabled>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 fw-bold">Name</label>
+                <input class="mt-1 w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 px-3 py-2 font-semibold"
+                  value="{{ student_first_name or 'Unknown' }}" disabled>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 fw-bold">Surname</label>
+                <input class="mt-1 w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 px-3 py-2 font-semibold"
+                  value="{{ student_surname or 'Unknown' }}" disabled>
+              </div>
+            </div>
+            <input type="hidden" id="studentIdDisplay" value="{{ student_id or '' }}">
+          </section>
+
+          {% if questions %}
+          <!-- Progress + Navigator -->
+          <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-5">
+            <div class="flex flex-col lg:flex-row lg:items-start gap-5">
+              <!-- Progress -->
+              <div class="flex-1">
+                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div id="progressBarQ" class="h-2 bg-blue-600 transition-all" style="width:0%"></div>
+                </div>
+                <div class="mt-2 text-sm text-slate-600 flex items-center gap-4">
+                  <span><span id="answeredCount">0</span>/<span id="totalCount">0</span> answered</span>
+                  <span class="hidden md:inline text-xs text-slate-500">•</span>
+                  <span class="hidden md:flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center gap-1"><span
+                        class="inline-block w-3 h-3 rounded bg-slate-200 ring-1 ring-slate-200"></span>
+                      Unanswered</span>
+                    <span class="inline-flex items-center gap-1"><span
+                        class="inline-block w-3 h-3 rounded bg-blue-600"></span> Current</span>
+                    <span class="inline-flex items-center gap-1"><span
+                        class="inline-block w-3 h-3 rounded bg-emerald-600"></span> Answered</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Number grid -->
+              <div class="lg:w-[520px]">
+                <div id="qNav" class="grid grid-cols-10 gap-2"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Question container (one at a time) -->
+          <section id="questionContainer" class="space-y-4">
+            {% for q in questions %}
+            {% set qid = q.id or loop.index %}
+            {% set qtype = (q.type or 'mcq')|lower %}
+            <section class="question-card bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6 hidden"
+              data-qid="{{ qid }}" data-qtype="{{ qtype }}" data-index="{{ loop.index0 }}">
+              <div class="flex items-start gap-4">
+                <div class="shrink-0 mt-1 text-slate-500 font-semibold">Q{{ loop.index }}.</div>
+                <div class="w-full">
+                  <div class="flex items-start justify-between gap-3">
+                    <h5 class="text-slate-900 font-semibold mb-3 leading-6">{{ q.question }}</h5>
+                    {% if q.points %}
+                    <span class="shrink-0 text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+                      {{ q.points }} {{ 'mark' if q.points == 1 else 'marks' }}
+                    </span>
+                    {% endif %}
+                  </div>
+                  {% if q.image %}
+                  <div class="mb-3">
+                    <img src="{{ url_for('static', filename='uploads/questions/' + q.image) }}"
+                         alt="Question image"
+                         class="max-w-full max-h-64 rounded-lg border border-slate-200 shadow-sm">
+                  </div>
+                  {% endif %}
+
+                  {# ===== Type dispatch ===== #}
+                  {% if qtype == 'short_answer' %}
+                  {# --- Short-answer free-text input --- #}
+                  <div class="mt-1">
+                    <input type="text" name="q_{{ qid }}" autocomplete="off"
+                           placeholder="Type your answer..."
+                           class="q-answer-input w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-500">
+                    {% if q.hint %}
+                    <p class="text-xs text-slate-500 mt-1 italic">{{ q.hint }}</p>
+                    {% endif %}
+                  </div>
+
+                  {% elif qtype == 'table_fill' %}
+                  {# --- Grid of graded cells --- #}
+                  <div class="mt-1 overflow-x-auto">
+                    <table class="w-full text-sm border border-slate-200 rounded-lg">
+                      <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+                        <tr>
+                          {% if q.rows and q.rows[0].prompt is defined %}
+                          <th class="text-left px-3 py-2 font-semibold border-b border-slate-200">&nbsp;</th>
+                          {% endif %}
+                          {% for col in q.columns %}
+                          <th class="text-left px-3 py-2 font-semibold border-b border-slate-200">{{ col.label }}</th>
+                          {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in q.rows %}
+                        <tr class="border-b border-slate-100 last:border-b-0">
+                          {% if row.prompt is defined %}
+                          <td class="px-3 py-2 font-semibold text-slate-700 bg-slate-50/50">{{ row.prompt }}</td>
+                          {% endif %}
+                          {% for col in q.columns %}
+                          {% set field_name = 'q_' ~ qid ~ '_' ~ row.id ~ '_' ~ col.id %}
+                          <td class="px-2 py-2">
+                            {% if col.kind == 'select' %}
+                              <select name="{{ field_name }}"
+                                      class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                                <option value="">--</option>
+                                {% for opt in col.options or [] %}
+                                <option value="{{ opt }}">{{ opt }}</option>
+                                {% endfor %}
+                              </select>
+                            {% elif col.kind == 'yesno' %}
+                              <select name="{{ field_name }}"
+                                      class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                                <option value="">--</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                              </select>
+                            {% else %}
+                              <input type="text" name="{{ field_name }}" autocomplete="off"
+                                     class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                            {% endif %}
+                          </td>
+                          {% endfor %}
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {% elif qtype == 'drag_drop' %}
+                  {# --- Drag-and-drop (background image with target zones) --- #}
+                  {# q.get('items') invokes the dict.get() method. Both q.items
+                     and q['items'] fall back to the dict.items method object
+                     when the items key is missing, which crashes iteration. #}
+                  {% set safe_items = q.get('items') | strip_correct_zone %}
+                  {# Single-quoted attribute is required: Jinja's tojson does not
+                     escape the inner " characters in the JSON output, so a
+                     double-quoted x-data attribute is terminated by the first
+                     inner quote and Alpine sees a syntax error. #}
+                  <div x-data='dragdropQuestion({{ qid|tojson }}, {{ safe_items|tojson }}, {{ q.zones|tojson }})'
+                       x-init="init()">
+                    <p class="text-xs text-slate-500 italic mb-3">
+                      Tap an item below to select it, then tap a zone on the image to place it.
+                      On desktop you can also drag items directly. Leave items in the tray if they don't belong anywhere.
+                    </p>
+
+                    {# Adaptive layout: wide images get the tray BELOW, taller /
+                       square images keep the tray on the right. Decided by
+                       onImageLoad() based on the background's aspect ratio. #}
+                    <div class="gap-4 items-start"
+                         :class="layout === 'bottom' ? 'flex flex-col' : 'flex flex-col lg:flex-row'">
+
+                      <div class="relative w-full select-none"
+                           :class="layout === 'bottom' ? '' : 'lg:flex-1'"
+                           style="touch-action: manipulation;">
+                        <img src="{{ url_for('static', filename='uploads/questions/' + q.background) }}"
+                             alt="Drag-and-drop target image"
+                             class="w-full h-auto rounded-lg border border-slate-200 pointer-events-none"
+                             draggable="false"
+                             @load="onImageLoad($event.target.naturalWidth, $event.target.naturalHeight)">
+
+                        <template x-for="zone in zones" :key="zone.id">
+                          <div class="absolute border-2 border-dashed rounded transition-colors flex items-center justify-center"
+                               :class="(selected_item_id ? 'border-purple-500 bg-purple-100/30 cursor-pointer' : 'border-slate-400/60 bg-slate-100/10 hover:bg-slate-100/30')"
+                               :style="`left: ${zone.x}%; top: ${zone.y}%; width: ${zone.w}%; height: ${zone.h}%;`"
+                               :title="zone.label || ''"
+                               @click="onZoneTap(zone.id)"
+                               @dragover.prevent
+                               @drop.prevent="onZoneDrop(zone.id, $event)">
+                            <template x-for="item in items.filter(it => placements[it.id] === zone.id)" :key="item.id">
+                              <div class="absolute inset-0 flex items-center justify-center p-1 cursor-move"
+                                   draggable="true"
+                                   @click.stop="onItemTap(item.id)"
+                                   @dragstart="onDragStart(item.id, $event)">
+                                <template x-if="item.image">
+                                  <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                                       :alt="item.label || 'item'"
+                                       class="max-w-full max-h-full object-contain pointer-events-none"
+                                       draggable="false">
+                                </template>
+                                <template x-if="!item.image && item.label">
+                                  <span class="text-[10px] sm:text-xs font-semibold text-center text-slate-800 leading-tight whitespace-pre-line" x-text="item.label"></span>
+                                </template>
+                              </div>
+                            </template>
+                          </div>
+                        </template>
+                      </div>
+
+                      <div class="w-full"
+                           :class="layout === 'bottom' ? '' : 'lg:w-56 lg:flex-shrink-0 lg:sticky lg:top-4'">
+                        <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Items</p>
+                        <div class="flex flex-row flex-wrap gap-2 p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg min-h-[88px]"
+                             :class="layout === 'bottom' ? '' : 'lg:flex-col'"
+                             @dragover.prevent
+                             @drop.prevent="onTrayDrop($event)">
+                          <template x-for="item in items.filter(it => !placements[it.id])" :key="item.id">
+                            <button type="button"
+                                    class="flex flex-col items-center text-center border-2 rounded-lg p-2 bg-white shadow-sm cursor-pointer transition hover:border-purple-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 max-w-[8rem]"
+                                    :class="[
+                                      selected_item_id === item.id ? 'border-purple-600 ring-2 ring-purple-400' : 'border-slate-300',
+                                      layout === 'bottom' ? '' : 'lg:max-w-none lg:w-full'
+                                    ]"
+                                    draggable="true"
+                                    @click="onItemTap(item.id)"
+                                    @dragstart="onDragStart(item.id, $event)">
+                              <template x-if="item.image">
+                                <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                                     :alt="item.label || 'item'"
+                                     class="w-16 h-16 object-contain pointer-events-none"
+                                     draggable="false">
+                              </template>
+                              <template x-if="item.label">
+                                <span class="block text-xs font-medium text-slate-700 mt-1 whitespace-pre-line" x-text="item.label"></span>
+                              </template>
+                            </button>
+                          </template>
+                          <template x-if="items.filter(it => !placements[it.id]).length === 0">
+                            <p class="text-sm text-slate-400 italic self-center">All items placed. Tap an item in a zone to pick it back up.</p>
+                          </template>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <template x-for="item in items" :key="item.id">
+                      <input type="hidden"
+                             class="q-answer-input dragdrop-input"
+                             :name="`q_${qid}_${item.id}`"
+                             :value="placements[item.id] || ''">
+                    </template>
+                  </div>
+
+                  {% else %}
+                  {# --- Legacy MCQ / True-False --- #}
+                  <div class="space-y-3">
+                    {% if q.options is mapping %}
+                    {% for key, text in q.options.items() %}
+                    <label
+                      class="flex items-start gap-3 cursor-pointer rounded-lg ring-1 ring-slate-200 p-3 hover:bg-slate-50">
+                      <input class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 q-option"
+                        type="radio" name="q_{{ qid }}" id="q{{ qid }}_{{ key }}" value="{{ key }}">
+                      <span class="text-slate-800"><strong class="text-slate-900">{{ key }})</strong> {{ text }}</span>
+                    </label>
+                    {% endfor %}
+                    {% else %}
+                    {% for opt in q.options %}
+                    {% if opt is mapping %}
+                    {% set key = opt.get('key', opt.get('value', loop.index|string)) %}
+                    {% set text = opt.get('text', opt.get('label', opt|string)) %}
+                    {% elif opt is sequence %}
+                    {% set key = opt[0] %}
+                    {% set text = (opt[1] if opt|length > 1 else opt[0]) %}
+                    {% else %}
+                    {% set key = loop.index|string %}
+                    {% set text = opt|string %}
+                    {% endif %}
+                    <label
+                      class="flex items-start gap-3 cursor-pointer rounded-lg ring-1 ring-slate-200 p-3 hover:bg-slate-50">
+                      <input class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 q-option"
+                        type="radio" name="q_{{ qid }}" id="q{{ qid }}_{{ key }}" value="{{ key }}">
+                      <span class="text-slate-800"><strong class="text-slate-900">{{ key }})</strong> {{ text }}</span>
+                    </label>
+                    {% endfor %}
+                    {% endif %}
+                  </div>
+                  {% endif %}
+
+                  <!-- Controls -->
+                  <div class="mt-7 flex items-center justify-between">
+                    <button type="button" class="px-4 py-2 rounded-lg ring-1 ring-slate-200 hover:bg-slate-50"
+                      data-prev>← Previous</button>
+                    <div class="text-slate-500 text-sm"><span data-counter></span></div>
+                    <button type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                      data-next>Next →</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+            {% endfor %}
+          </section>
+
+          <!-- Submit (NOW DISABLED UNTIL FINAL QUESTION ANSWERED) -->
+          <div class="pt-2">
+            <button id="submitBtn" type="submit" disabled
+              class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold px-5 py-3 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600">
+              Submit Assessment
+            </button>
+          </div>
+          {% else %}
+          <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4 text-blue-900">
+            ℹ️ No questions loaded — only proctoring video will be submitted.
+          </div>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- Right: Proctoring (unchanged) -->
+      <aside class="proctor-sticky">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-5">
+          <h5 class="text-slate-800 font-semibold mb-3">📹 Proctoring</h5>
+          <video id="preview" class="w-full h-auto mb-3 rounded-lg ring-1 ring-slate-200" autoplay muted></video>
+          <p id="recording-status" class="text-red-600 font-semibold">⏺ Recording in progress...</p>
+          <div id="upload-status"
+            class="hidden mt-3 rounded-md bg-amber-50 ring-1 ring-amber-200 px-3 py-2 text-amber-800">
+            ⏳ Uploading… Please do not close your browser.
+          </div>
+          <progress id="progressBar" value="0" max="100" class="hidden w-full mt-2"></progress>
+          <hr class="my-4 border-slate-200">
+          <ul class="text-sm text-slate-500 space-y-1">
+            <li>Keep your face in frame.</li>
+            <li>Ensure good lighting.</li>
+            <li>Do not switch tabs during the assessment.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Full-screen upload overlay -->
+  <div id="uploadOverlay">
+    <div class="inner">
+      <div class="mx-auto mb-4 w-14 h-14 rounded-full border-4 border-white/30 border-t-white animate-spin"></div>
+      <h2 class="text-2xl font-semibold mb-2">⏳ Don’t close your browser</h2>
+      <p class="text-lg mb-1">Your assessment is being uploaded…</p>
+      <p class="text-lg opacity-90">Please be patient…</p>
+    </div>
+  </div>
+
+  {% include 'partials/chunked_upload.html' %}
+
+  <!-- JS -->
+  <script>
+    // ===== Local model path (unchanged) =====
+    const MODEL_BASE = './static/model/';
+
+    // ===== Identity sync (unchanged) =====
+    const hiddenSN = document.getElementById('studentNumberHidden');
+    const inputSN = document.getElementById('studentNumberInput');
+    const idDisplay = document.getElementById('studentIdDisplay');
+    function seedStudentNumber() {
+      if (!hiddenSN.value?.trim()) {
+        const fallback = (inputSN?.value || idDisplay?.value || '').trim();
+        hiddenSN.value = fallback;
+      }
+    }
+    seedStudentNumber();
+    inputSN?.addEventListener('input', () => { hiddenSN.value = (inputSN.value || '').trim(); });
+
+    // ===== Violation Reporter (dedup + throttle) =====
+    const VIOLATION_ENDPOINT = "/api/proctor/log";
+    const COURSE_KEY = "{{ course_key or '' }}";
+    const STUDENT_ID = "{{ student_number or student_id or '' }}";
+
+    const _sentCache = new Map();
+    function _key(reason, detail) {
+      try { return reason + "::" + JSON.stringify(detail || {}); } catch { return reason; }
+    }
+    function _shouldSend(k, ms = 10000) {
+      const now = Date.now(), last = _sentCache.get(k) || 0;
+      if (now - last < ms) return false;
+      _sentCache.set(k, now); return true;
+    }
+    async function reportViolation(reason, detail = {}) {
+      const k = _key(reason, detail);
+      if (!_shouldSend(k)) return;
+      try {
+        const res = await fetch(VIOLATION_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            reason,
+            detail,
+            course_key: COURSE_KEY || undefined,
+            student_id: STUDENT_ID || undefined,
+            timer_remaining: secondsLeft,
+            ts_client: new Date().toISOString(),
+            url: location.pathname
+          })
+        });
+        const data = await res.json();
+        if (data.threshold_reached) {
+          showFatal("You have accumulated too many proctoring violations. You have been removed from the assessment.", "threshold_reached");
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    // ===== One-at-a-time controller (same logic, improved UI) =====
+    let currentIndex = 0;
+    let questionCards = [];
+    const questionContainer = document.getElementById('questionContainer');
+    const progressBarQ = document.getElementById('progressBarQ');
+    const answeredCountEl = document.getElementById('answeredCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const nav = document.getElementById('qNav');
+
+    // NEW: submit button handle
+    const submitBtn = document.getElementById('submitBtn');
+
+    function setButtonEnabled(btn, enabled) {
+      if (!btn) return;
+      btn.disabled = !enabled;
+      btn.classList.toggle('opacity-50', !enabled);
+      btn.classList.toggle('cursor-not-allowed', !enabled);
+      // keep your existing brand styles, just soften when disabled
+      if (!enabled) {
+        btn.classList.add('bg-slate-300', 'text-slate-600');
+        btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+      } else {
+        btn.classList.remove('bg-slate-300', 'text-slate-600');
+        // (Next button already has these classes in markup)
+      }
+    }
+
+    function navBtnBase(i) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'h-9 w-9 md:h-8 md:w-8 flex items-center justify-center rounded-lg ring-1 transition-colors text-sm select-none';
+      b.textContent = i + 1;
+      b.setAttribute('data-jump', i.toString());
+      b.setAttribute('aria-label', 'Question ' + (i + 1));
+      return b;
+    }
+    function setBtnState(btn, state) {
+      btn.classList.remove('bg-blue-600', 'text-white', 'ring-blue-600', 'bg-emerald-600', 'ring-emerald-600', 'bg-white', 'text-slate-700', 'ring-slate-200');
+      const check = btn.querySelector('span[role="img"]'); if (check) check.remove();
+      if (state === 'current') {
+        btn.classList.add('bg-blue-600', 'text-white', 'ring-blue-600');
+      } else if (state === 'answered') {
+        btn.classList.add('bg-emerald-600', 'text-white', 'ring-emerald-600');
+        const mark = document.createElement('span'); mark.setAttribute('role', 'img'); mark.className = 'ml-1 text-[11px] leading-none'; mark.textContent = '✓'; btn.appendChild(mark);
+      } else {
+        btn.classList.add('bg-white', 'text-slate-700', 'ring-slate-200');
+      }
+    }
+
+    function initStepper() {
+      questionCards = Array.from(document.querySelectorAll('.question-card'));
+      totalCountEl.textContent = questionCards.length.toString();
+
+      // Submit always starts disabled
+      if (submitBtn) submitBtn.disabled = true;
+
+      // Build number grid
+      nav.innerHTML = '';
+      questionCards.forEach((_, i) => nav.appendChild(navBtnBase(i)));
+
+      // Auto-next and controls
+      questionCards.forEach((card, i) => {
+        const isLast = (i === questionCards.length - 1);
+        // Legacy MCQ: auto-advance on radio change (unchanged behaviour)
+        card.querySelectorAll('input.q-option').forEach(r => {
+          r.addEventListener('change', () => {
+            updateProgress();
+            if (!isLast) {
+              setTimeout(() => goNext(), 120);
+            }
+          });
+        });
+        // New types (short_answer, table_fill): update progress on input/change,
+        // but DO NOT auto-advance — the student may still be typing.
+        card.querySelectorAll('.q-answer-input').forEach(el => {
+          el.addEventListener('input', updateProgress);
+          el.addEventListener('change', updateProgress);
+        });
+        // Card-level delegated listeners catch events from inputs that Alpine
+        // renders AFTER this setup runs (e.g. drag_drop hidden inputs created
+        // inside an x-for template), and from synthetic events dispatched by
+        // Alpine components when their reactive bindings update programmatically.
+        card.addEventListener('input', updateProgress);
+        card.addEventListener('change', updateProgress);
+        card.querySelector('[data-prev]')?.addEventListener('click', () => goPrev());
+        card.querySelector('[data-next]')?.addEventListener('click', () => goNext());
+        const counter = card.querySelector('[data-counter]');
+        if (counter) counter.textContent = `Question ${i + 1} of ${questionCards.length}`;
+      });
+
+      nav.addEventListener('click', (e) => {
+        const t = e.target.closest('button[data-jump]'); if (!t) return;
+        const idx = parseInt(t.getAttribute('data-jump'), 10);
+        showQuestion(idx);
+      });
+
+      showQuestion(0);
+      updateProgress();
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') goNext();
+        if (e.key === 'ArrowLeft') goPrev();
+      });
+    }
+
+    function showQuestion(index) {
+      if (!questionCards.length) return;
+      currentIndex = Math.max(0, Math.min(index, questionCards.length - 1));
+      questionCards.forEach((c, i) => c.classList.toggle('hidden', i !== currentIndex));
+
+      const activeCard = questionCards[currentIndex];
+      const focusTarget = activeCard.querySelector('input[type="radio"]:not(:checked)')
+        || activeCard.querySelector('input[type="radio"]')
+        || activeCard.querySelector('.q-answer-input');
+      focusTarget?.focus();
+
+      Array.from(nav.children).forEach((btn, i) => {
+        const card = questionCards[i];
+        const state = i === currentIndex ? 'current' : (isAnswered(card) ? 'answered' : 'idle');
+        setBtnState(btn, state === 'idle' ? 'idle' : state);
+      });
+
+      // NEW: disable Next button if this is last question
+      const card = questionCards[currentIndex];
+      const nextBtn = card.querySelector('[data-next]');
+      const isLast = (currentIndex === questionCards.length - 1);
+      if (nextBtn) {
+        if (isLast) {
+          setButtonEnabled(nextBtn, false);
+        } else {
+          setButtonEnabled(nextBtn, true);
+          // restore original visual classes (since we might have removed them when disabled)
+          nextBtn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+        }
+      }
+    }
+
+    function isAnswered(card) {
+      const qid = card.getAttribute('data-qid');
+      const qtype = (card.getAttribute('data-qtype') || 'mcq').toLowerCase();
+      if (qtype === 'mcq' || qtype === 'tf') {
+        return !!card.querySelector(`input[name="q_${qid}"]:checked`);
+      }
+      if (qtype === 'short_answer') {
+        const el = card.querySelector(`input[name="q_${qid}"]`);
+        return !!(el && el.value && el.value.trim().length > 0);
+      }
+      if (qtype === 'table_fill') {
+        // Consider answered when EVERY gradable cell has a non-empty value.
+        const inputs = card.querySelectorAll('.q-answer-input');
+        if (!inputs.length) return false;
+        for (const el of inputs) {
+          if (!el.value || !String(el.value).trim().length) return false;
+        }
+        return true;
+      }
+      if (qtype === 'drag_drop') {
+        // Consider answered as soon as the learner has placed AT LEAST ONE item.
+        // We deliberately don't require every item placed, because some items
+        // are decoys that the learner is expected to leave in the tray, and
+        // the partial does not (and must not) know which items are decoys.
+        const inputs = card.querySelectorAll('.dragdrop-input');
+        if (!inputs.length) return false;
+        for (const el of inputs) {
+          if (el.value && String(el.value).trim().length) return true;
+        }
+        return false;
+      }
+      // Unknown type — fall back to the MCQ behaviour.
+      return !!card.querySelector(`input[name="q_${qid}"]:checked`);
+    }
+
+    function goNext() { if (currentIndex < questionCards.length - 1) showQuestion(currentIndex + 1); }
+    function goPrev() { if (currentIndex > 0) showQuestion(currentIndex - 1); }
+
+    function updateProgress() {
+      const answered = questionCards.filter(isAnswered).length;
+      const total = questionCards.length || 1;
+      const pct = Math.round((answered / total) * 100);
+      progressBarQ.style.width = pct + '%';
+      answeredCountEl.textContent = answered.toString();
+
+      Array.from(nav.children).forEach((btn, i) => {
+        const card = questionCards[i];
+        const state = i === currentIndex ? 'current' : (isAnswered(card) ? 'answered' : 'idle');
+        setBtnState(btn, state === 'idle' ? 'idle' : state);
+      });
+
+      // NEW: submit only becomes enabled when ALL questions answered (final question answered implies this)
+      const allAnswered = (answered === questionCards.length && questionCards.length > 0);
+      if (submitBtn) submitBtn.disabled = !allAnswered;
+    }
+
+    // ===== Proctoring (record + checks) — unchanged behavior, plus logging =====
+    let mediaRecorder, recordedChunks = [];
+    // Compliance flag. Flips to true the moment ChunkedRecorder.init() has
+    // successfully started a recording, and back to false the moment the
+    // camera/mic stream dies (track ended, permission revoked, device
+    // unplugged). doUpload() and the time-up auto-submit BOTH refuse to send
+    // an attempt while this is false, because a submission without video
+    // breaks CAA compliance and we can't have ungoverned passing attempts.
+    let cameraOk = false;
+    const preview = document.getElementById('preview');
+    const upProgressBar = document.getElementById('progressBar');
+    const statusMsg = document.getElementById('upload-status');
+    const form = document.getElementById('assessmentForm');
+    const uploadOverlay = document.getElementById('uploadOverlay');
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let detector, noFaceCounter = 0, darkCounter = 0;
+    let brightnessInterval = null, faceLoopRunning = false, streamRef = null;
+
+    const WARN_THRESHOLD = 3;
+    const FATAL_THRESHOLD = 8;
+    let lastWarningAt = 0;
+
+    function playAlertSound() { new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play().catch(() => { }); }
+    function showWarning(msg) {
+      const now = Date.now(); if (now - lastWarningAt < 5000) return; lastWarningAt = now; alert(msg);
+    }
+    let bootInProgress = false;
+    function showFatal(msg, reason, forceNoLoseAttempt) {
+      playAlertSound();
+      stopProctoring();
+
+      // If no reason, this is a technical error (camera/mic/init), not a violation boot.
+      // Just show alert and disable submit — don't boot.
+      if (!reason) {
+        alert(msg);
+        return;
+      }
+
+      if (bootInProgress) return;
+      bootInProgress = true;
+
+      // Determine if attempt should be lost:
+      // - threshold_reached: ALWAYS lose attempt
+      // - face/dark fatal: lose attempt only if timer <= 30 minutes
+      // - forceNoLoseAttempt: caller has decided this is a compliance/hardware
+      //   issue (camera died, mic permission revoked, no usable video). The
+      //   student couldn't actually take the assessment, so we hard-override
+      //   to FALSE regardless of timer. They get to fix their setup and retry.
+      const BOOT_CUTOFF = 30 * 60;
+      let loseAttempt = (reason === "threshold_reached") || (secondsLeft <= BOOT_CUTOFF);
+      if (forceNoLoseAttempt === true) {
+        loseAttempt = false;
+      }
+
+      // Block the UI immediately so student can't interact
+      const overlay = document.getElementById('uploadOverlay');
+      if (overlay) {
+        overlay.style.display = 'block';
+        const statusEl = document.getElementById('upload-status');
+        if (statusEl) { statusEl.classList.remove('hidden'); statusEl.textContent = msg; }
+      }
+
+      // Stop the timer
+      clearInterval(timerInterval);
+
+      // Call boot endpoint
+      fetch("/api/proctor/boot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          course_key: COURSE_KEY,
+          reason: reason,
+          timer_remaining: secondsLeft,
+          lose_attempt: loseAttempt
+        })
+      }).then(r => r.json()).then(data => {
+        if (data.redirect) { allowNavigation = true; window.location.href = data.redirect; }
+        else { allowNavigation = true; window.location.href = "/dashboard"; }
+      }).catch(() => {
+        allowNavigation = true;
+        window.location.href = "/dashboard";
+      });
+    }
+
+    async function initRecording() {
+      cameraOk = false;
+      if (!navigator.mediaDevices?.getUserMedia) {
+        showFatal("Your browser doesn't support camera/microphone. This attempt cannot start.", "camera_unavailable", true);
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        streamRef = stream;
+        preview.srcObject = stream;
+
+        // Mid-test camera-loss detection. If any track (video OR audio) ends
+        // unexpectedly (camera unplugged, OS permission revoked, browser tab
+        // refresh on the camera permission, etc.) we flip cameraOk to false
+        // and hard-fail. The student cannot continue without a recorded video
+        // because the attempt would be uncompliant.
+        stream.getTracks().forEach(track => {
+          track.addEventListener('ended', () => {
+            cameraOk = false;
+            reportViolation("camera_track_ended", { kind: track.kind });
+            showFatal("❌ Camera or microphone stopped during the assessment. This attempt cannot be submitted because there is no video evidence. Please reconnect your camera and start a fresh attempt.", "camera_lost", true);
+          });
+        });
+
+        brightnessInterval = setInterval(checkBrightness, 1000);
+        await initFaceDetection();
+
+        mediaRecorder = ChunkedRecorder.init(stream);
+        // Only treat recording as live once the recorder has actually started.
+        // ChunkedRecorder.init returns the recorder instance synchronously; we
+        // trust state === 'recording' as the green light.
+        if (mediaRecorder && (mediaRecorder.state === 'recording' || mediaRecorder.state === 'inactive')) {
+          // 'inactive' here just means it has not been started yet by the host
+          // page; some chunked-recorder implementations start it lazily. We
+          // mark cameraOk true because the stream is healthy.
+          cameraOk = true;
+        } else {
+          cameraOk = true; // Stream exists, give the recorder benefit of the doubt.
+        }
+        document.getElementById('recording-status').textContent = "🔴 Recording in progress...";
+      } catch (err) {
+        cameraOk = false;
+        reportViolation("getUserMedia_error", { message: err?.message, name: err?.name });
+        console.error("getUserMedia error:", err);
+        // Treat camera permission denial / hardware unavailable as a fatal,
+        // attempt-killing event so the student cannot grind through the
+        // assessment and produce a video-less submission.
+        //
+        // Say WHICH device and how to recover. A blocked permission is
+        // remembered per site in Edge/Chrome, so "try again" alone loops the
+        // student forever. This assessment needs the microphone as well as the
+        // camera, and students routinely allow one and block the other.
+        var _n = err?.name || '', _m = err?.message || '';
+        var _msg;
+        if (_n === 'NotAllowedError' || /denied|dismiss/i.test(_m)) {
+          _msg = "❌ Camera or microphone access was blocked. This assessment " +
+                 "records both video and audio. Click the camera icon in your " +
+                 "browser address bar, set Camera AND Microphone to Allow, " +
+                 "reload this page, then start a fresh attempt.";
+        } else if (_n === 'NotFoundError' || _n === 'DevicesNotFoundError') {
+          _msg = "❌ No camera or microphone was found. This assessment records " +
+                 "both video and audio. Please connect them and start a fresh attempt.";
+        } else if (_n === 'NotReadableError' || _n === 'TrackStartError') {
+          _msg = "❌ Your camera or microphone is already in use by another app " +
+                 "(Teams, Zoom, Meet). Close that app, reload this page, then " +
+                 "start a fresh attempt.";
+        } else {
+          _msg = "❌ Camera/microphone error: " + (_m || 'access denied') +
+                 ". This attempt cannot continue without a working camera and microphone.";
+        }
+        showFatal(_msg, "camera_unavailable", true);
+        form.querySelector("button[type=submit]").disabled = true;
+        form.querySelector("button[type=submit]").classList.add("opacity-50", "cursor-not-allowed");
+      }
+    }
+    function stopProctoring() {
+      try { if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop(); } catch (_) { }
+      faceLoopRunning = false;
+      if (brightnessInterval) { clearInterval(brightnessInterval); brightnessInterval = null; }
+      try { if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); streamRef = null; } preview.srcObject = null; } catch (_) { }
+    }
+    function checkBrightness() {
+      if (!preview || preview.videoWidth === 0) return;
+      canvas.width = preview.videoWidth; canvas.height = preview.videoHeight;
+      ctx.drawImage(preview, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let total = 0; for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      const avg = total / (data.length / 4);
+      if (avg < 10) {
+        darkCounter++;
+        if (darkCounter === WARN_THRESHOLD) { reportViolation("too_dark_warn", { avg }); showWarning("Your camera looks too dark. Adjust lighting."); }
+        if (darkCounter >= FATAL_THRESHOLD) { reportViolation("too_dark_fatal", { avg, frames: darkCounter }); showFatal("Camera too dark for too long. You have been removed from the assessment.", "too_dark_fatal"); }
+      } else {
+        if (darkCounter >= WARN_THRESHOLD) reportViolation("too_dark_recovered", { avg });
+        darkCounter = 0;
+      }
+    }
+
+    async function initFaceDetection() {
+      if (!window.faceDetection) { showFatal("❌ Face detection library failed to load."); return; }
+      const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+      try {
+        detector = await faceDetection.createDetector(model, { runtime: 'mediapipe', solutionPath: MODEL_BASE, modelType: 'short', maxFaces: 1 });
+        faceLoopRunning = true; detectFaceLoop(); return;
+      } catch (e) { reportViolation("mediapipe_init_failed", { message: e?.message }); console.warn("Local model failed, fallback to tfjs", e); }
+      try {
+        detector = await faceDetection.createDetector(model, { runtime: 'tfjs', modelType: 'short', maxFaces: 1 });
+        faceLoopRunning = true; detectFaceLoop();
+      } catch (e2) { reportViolation("tfjs_init_failed", { message: e2?.message }); console.error("Detector init failed:", e2); showFatal("❌ Could not initialize face detection."); }
+    }
+
+    async function detectFaceLoop() {
+      if (!faceLoopRunning) return;
+      if (!detector || preview.readyState < 2) { setTimeout(detectFaceLoop, 1000); return; }
+      try {
+        const faces = await detector.estimateFaces(preview);
+        if (faces.length === 0) {
+          noFaceCounter++;
+          if (noFaceCounter === WARN_THRESHOLD) { reportViolation("no_face_warn", { count: noFaceCounter }); showWarning("We can't see your face. Please return to view."); }
+          if (noFaceCounter >= FATAL_THRESHOLD) { reportViolation("no_face_fatal", { count: noFaceCounter }); showFatal("Your face was not detected for too long. You have been removed from the assessment.", "no_face_fatal"); return; }
+        } else {
+          if (noFaceCounter >= WARN_THRESHOLD) reportViolation("no_face_recovered", { count: noFaceCounter });
+          noFaceCounter = 0;
+        }
+      } catch (e) {
+        console.error("Face detection error:", e);
+      }
+      setTimeout(detectFaceLoop, 1000);
+    }
+
+    function validateAllAnswered() {
+      const cards = document.querySelectorAll('.question-card');
+      for (const card of cards) {
+        const answered = isAnswered(card);
+        card.classList.toggle('missing-outline', !answered);
+        if (!answered) {
+          showQuestion(parseInt(card.getAttribute('data-index'), 10));
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          playAlertSound();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function ensureStudentNumberBeforeUpload() {
+      if (!hiddenSN.value.trim()) {
+        const fallback = (inputSN?.value || idDisplay?.value || '').trim();
+        hiddenSN.value = fallback;
+      }
+    }
+
+    const MIN_VIDEO_BYTES = 50000; // 50 KB — any real recording is several MB
+
+    function doUpload() {
+      // Compliance gate: never submit an attempt without a confirmed live
+      // recording. If camera/mic ever failed during this session we bail out
+      // here. The server has its own gate as the final defence, but catching
+      // this client-side gives the student a clean error instead of a 400.
+      if (!cameraOk) {
+        const uploadOverlay = document.getElementById('uploadOverlay');
+        if (uploadOverlay) uploadOverlay.style.display = 'none';
+        showFatal("❌ This attempt cannot be submitted because no video was recorded. Please check your camera and microphone and start a fresh attempt.", "no_video_on_submit", true);
+        return;
+      }
+
+      const uploadOverlay = document.getElementById('uploadOverlay');
+      if (uploadOverlay) uploadOverlay.style.display = 'block';
+      const statusMsg = document.getElementById('upload-status') || document.createElement('div');
+      const upProgressBar = document.getElementById('progressBar') || document.createElement('progress');
+      statusMsg.classList.remove("hidden");
+      statusMsg.textContent = "⏳ Finishing recording...";
+      upProgressBar.classList.remove("hidden");
+
+      // ChunkedRecorder.stop() already called by the submit handler
+      // We're called after stop resolves
+
+      const fd = new FormData(formEl);
+
+      if (ChunkedRecorder.isChunkedMode()) {
+        fd.append('video_session_id', ChunkedRecorder.getSessionId());
+        statusMsg.textContent = "⏳ Submitting...";
+      } else {
+        const blob = ChunkedRecorder.getFallbackBlob();
+        const MIN_VIDEO_BYTES = 50000;
+        if (blob.size < MIN_VIDEO_BYTES) {
+          if (uploadOverlay) uploadOverlay.style.display = 'none';
+          statusMsg.textContent = "";
+          upProgressBar.classList.add("hidden");
+          alert("❌ Your camera recording failed or is too short. Please ensure your camera is working and try again.");
+          return;
+        }
+        fd.append('video', blob, 'airside_assessment.webm');
+        statusMsg.textContent = "⏳ Uploading video...";
+      }
+
+      AssessmentSafeguard.saveAnswers();
+      AssessmentSafeguard.submitWithRetry(fd, window.location.pathname, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        onProgress: function(e) {
+          if (e.lengthComputable) upProgressBar.value = Math.round((e.loaded / e.total) * 100);
+        },
+        onSuccess: function(xhr) {
+          try {
+            var res = JSON.parse(xhr.responseText || "{}");
+            if (res.error) {
+              if (uploadOverlay) uploadOverlay.style.display = 'none';
+              alert(res.error);
+              return;
+            }
+            if (res.redirect) { window.location.href = res.redirect; return; }
+          } catch (_) {}
+          window.location.reload();
+        },
+        onRetrying: function(n, max) {
+          statusMsg.textContent = 'Upload failed. Retrying (' + n + '/' + max + ')...';
+        }
+      });
+    }
+
+    const formEl = document.getElementById("assessmentForm");
+    AssessmentSafeguard.init(formEl, 'proctored_' + (document.querySelector('[name="course_key"]') || {}).value + '_' + (document.querySelector('[name="student_number"]') || {}).value);
+
+    formEl.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!validateAllAnswered()) return;
+
+      // Prevent double-submit: disable the submit button immediately so the
+      // student cannot click again while the upload is still in progress.
+      // Server-side idempotency catches network-retry duplicates; this catches
+      // panicked manual re-clicks.
+      const submitBtn = formEl.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      allowNavigation = true;
+      ensureStudentNumberBeforeUpload();
+
+      ChunkedRecorder.stop().then(() => {
+        doUpload();
+      });
+    });
+
+    // 60-minute timer (unchanged)
+    const timerDisplay = document.getElementById('timerDisplay');
+    let secondsLeft = 60 * 60;
+    function fmt(s) { const m = Math.floor(s / 60), ss = s % 60; return `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`; }
+    function tick() {
+      secondsLeft--; timerDisplay.textContent = fmt(secondsLeft);
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        reportViolation("time_up");
+        // Compliance gate: if the camera failed at any point during the
+        // session, the auto-submit on time-up MUST NOT proceed. Previously
+        // this branch fired regardless of camera state, producing video-less
+        // attempts that still scored and printed a certificate.
+        if (!cameraOk) {
+          showFatal("❌ Time is up, but this attempt cannot be submitted because no video was recorded. Please reconnect your camera and start a fresh attempt.", "no_video_at_timeup", true);
+          return;
+        }
+        const uploadOverlay = document.getElementById('uploadOverlay');
+        if (uploadOverlay) uploadOverlay.style.display = 'block';
+        const statusMsg = document.getElementById('upload-status');
+        statusMsg.classList.remove("hidden");
+        statusMsg.textContent = "⏳ Time is up — uploading your assessment…";
+        ensureStudentNumberBeforeUpload();
+        ChunkedRecorder.stop().then(() => {
+          doUpload();
+        });
+      }
+    }
+    let timerInterval = setInterval(tick, 1000);
+    timerDisplay.textContent = fmt(secondsLeft);
+
+    // Page/tab focus signals
+    document.addEventListener("visibilitychange", () => {
+      reportViolation(document.hidden ? "tab_hidden" : "tab_visible");
+    });
+    window.addEventListener("blur", () => reportViolation("window_blur"));
+    window.addEventListener("focus", () => reportViolation("window_focus"));
+
+    window.onload = () => {
+      seedStudentNumber();
+      initStepper();   // one-at-a-time
+      initRecording();
+      initBackButtonProtection();
+    };
+
+    // ===== Back Button Protection =====
+    const currentAttempt = {{ current_attempt|default(1) }};
+    let allowNavigation = false;
+
+    function initBackButtonProtection() {
+      // Push a state so we have something to go "back" to
+      history.pushState({ page: 'assessment' }, '', window.location.href);
+
+      // Handle browser back button
+      window.addEventListener('popstate', function(e) {
+        if (allowNavigation) return;
+
+        // Push state again to prevent actual navigation
+        history.pushState({ page: 'assessment' }, '', window.location.href);
+
+        // Check if on attempt 2 - block completely
+        if (currentAttempt >= 2) {
+          showBackBlockedModal();
+        } else {
+          showBackConfirmModal();
+        }
+      });
+
+      // Warn on page unload (refresh, close tab, navigate away)
+      window.addEventListener('beforeunload', function(e) {
+        if (allowNavigation) return;
+        e.preventDefault();
+        e.returnValue = 'You have an assessment in progress. Are you sure you want to leave?';
+        return e.returnValue;
+      });
+    }
+
+    function showBackConfirmModal() {
+      const modal = document.getElementById('backConfirmModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function hideBackConfirmModal() {
+      const modal = document.getElementById('backConfirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmLeaveAssessment() {
+      allowNavigation = true;
+      hideBackConfirmModal();
+      window.location.href = '/dashboard';
+    }
+
+    function showBackBlockedModal() {
+      const modal = document.getElementById('backBlockedModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function hideBackBlockedModal() {
+      const modal = document.getElementById('backBlockedModal');
+      if (modal) modal.style.display = 'none';
+    }
+  </script>
+
+  <!-- Back Button Confirmation Modal -->
+  <div id="backConfirmModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div class="bg-amber-500 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">⚠️</span>
+          <h3 class="text-xl font-bold text-white">Leave Assessment?</h3>
+        </div>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-slate-700 mb-4">
+          You are about to leave this assessment. Your progress will be <strong>lost</strong> and you may not be able to return.
+        </p>
+        <p class="text-slate-600 text-sm">
+          Are you sure you want to go back?
+        </p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button type="button" onclick="hideBackConfirmModal()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition">
+          Stay Here
+        </button>
+        <button type="button" onclick="confirmLeaveAssessment()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-white bg-rose-600 hover:bg-rose-700 transition">
+          Yes, Leave
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Blocked Modal (Attempt 2) -->
+  <div id="backBlockedModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div class="bg-rose-600 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🚫</span>
+          <h3 class="text-xl font-bold text-white">Navigation Blocked</h3>
+        </div>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-slate-700 mb-4">
+          You are on your <strong>second attempt</strong>. Going back is not allowed.
+        </p>
+        <p class="text-slate-600 text-sm">
+          Please complete this assessment. You cannot return to your previous attempt.
+        </p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 flex justify-end">
+        <button type="button" onclick="hideBackBlockedModal()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-white bg-slate-700 hover:bg-slate-800 transition">
+          Continue Assessment
+        </button>
+      </div>
+    </div>
+  </div>
+  {% include 'partials/heartbeat.html' %}
+</body>
+
+</html>

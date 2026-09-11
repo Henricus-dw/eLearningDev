@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Course</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Your palette -->
+  <style>
+    :root{
+      --brand-blue:#212D65;
+      --brand-gold:#EDAB1E;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#5b6478;
+      --border:rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(900px 500px at -10% -10%, rgba(237,171,30,.08), transparent 60%),
+        radial-gradient(800px 500px at 110% 0%, rgba(33,45,101,.10), transparent 55%),
+        linear-gradient(#f9fbff, var(--bg));
+      color:#1a2234; padding:32px;
+    }
+    .container{max-width:1000px;margin:0 auto}
+    .header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px;
+    }
+    .title{
+      display:flex; align-items:center; gap:12px; color:var(--brand-blue);
+      font-weight:800; font-size:clamp(22px,3vw,30px);
+    }
+    .title-badge{
+      width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
+      background:linear-gradient(135deg,var(--brand-gold),#ffd978); color:#1a1a1a; font-size:20px;
+      box-shadow:0 6px 18px rgba(237,171,30,.25);
+    }
+
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,.06);
+    }
+    .card-body{ padding:20px; }
+    .row{ display:grid; grid-template-columns:1fr; gap:16px; }
+    .field{ display:flex; flex-direction:column; gap:6px; }
+    .label{ font-weight:700; color:var(--brand-blue); }
+    .help{ font-size:12px; color:var(--muted); }
+
+    input[type="text"], input[type="url"], textarea, select{
+      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px;
+      background:#fff; font-size:14px; transition:border-color .15s, box-shadow .15s;
+    }
+    input:focus, textarea:focus, select:focus{
+      outline:none; border-color:var(--brand-blue);
+      box-shadow:0 0 0 3px rgba(33,45,101,.12);
+    }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 8px;
+    }
+    .btn{
+      appearance:none; border:none; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer;
+      display:inline-flex; align-items:center; gap:10px; transition:transform .06s ease, filter .15s ease, box-shadow .15s ease;
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btn-blue{ background:var(--brand-blue); color:#fff; }
+    .btn-blue:hover{ filter:brightness(.96); }
+    .btn-gold{ background:var(--brand-gold); color:#1a1a1a; }
+    .btn-gold:hover{ filter:brightness(.97); }
+    .btn-ghost{ background:#fff; color:#1a2234; border:1px solid var(--border); }
+    .btn-ghost:hover{ filter:brightness(.98); }
+    .btn-danger{ background:#d43f3f; color:#fff; }
+    .btn-danger:hover{ filter:brightness(.95); }
+
+    .builder{ display:grid; gap:14px; margin-top:10px; }
+    .block{
+      background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px;
+      box-shadow:0 6px 14px rgba(0,0,0,.05); position:relative;
+    }
+    .block-head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;
+    }
+    .handle{
+      user-select:none; cursor:grab; font-weight:800; color:var(--brand-blue);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .handle::before{ content:"⠿"; font-size:18px; }
+    .block-type{
+      font-size:12px; padding:4px 8px; border-radius:999px; background:#f5f7fc; color:#31406b; border:1px solid var(--border);
+    }
+    .block-actions{ display:flex; gap:8px; }
+    .preview-img{ max-width:240px; display:block; margin-top:8px; border-radius:10px; border:1px solid var(--border); }
+    .spacer{ height:8px; }
+
+    .footer-actions{
+      display:flex; gap:10px; justify-content:flex-end; padding:16px; border-top:1px solid var(--border);
+      background:linear-gradient(#fff,#fafbff);
+      position:sticky; bottom:-1px; border-bottom-left-radius:16px; border-bottom-right-radius:16px;
+    }
+
+    @media (min-width: 720px){
+      .row{ grid-template-columns:1fr 2fr; }
+    }
+  </style>
+
+  <!-- Editor.js (kept, even if not used directly) -->
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">
+        <span class="title-badge">📘</span>
+        Create New Course
+      </div>
+      <a href="{{ url_for('manage_courses') }}" class="btn btn-ghost">← Back</a>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_course') }}" enctype="multipart/form-data" class="card">
+      <div class="card-body">
+        <!-- Core fields (unchanged names) -->
+        <div class="row">
+          <div class="field">
+            <label class="label"><strong>Course Title</strong></label>
+            <input type="text" name="title" required>
+            <div class="help">Make it short and human, not a ransom note.</div>
+          </div>
+          <div class="field">
+            <label class="label"><strong>Description</strong></label>
+            <textarea name="description" rows="4" required></textarea>
+            <div class="help">One or two sentences is plenty.</div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <h2 class="label" style="font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+          📦 Course Builder
+          <span class="help" style="font-weight:500;">Drag blocks by the grip. All field names are unchanged.</span>
+        </h2>
+
+        <div class="toolbar">
+          <button type="button" class="btn btn-blue" onclick="addBlock('text')">➕ Add Text</button>
+          <button type="button" class="btn btn-gold" onclick="addBlock('image')">🖼️ Add Image</button>
+          <button type="button" class="btn btn-blue" onclick="addBlock('video')">🎥 Add YouTube Video</button>
+          <button type="button" class="btn btn-ghost" onclick="addBlock('quiz')">❓ Add Quiz</button>
+        </div>
+
+        <div id="block-builder" class="builder"></div>
+      </div>
+
+      <div class="footer-actions">
+        <button type="submit" class="btn btn-blue">✅ Create Course</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let blockIndex = 0;
+
+    function addBlock(type){
+      blockIndex++;
+      const builder = document.getElementById('block-builder');
+      const block = document.createElement('div');
+      block.className = 'block';
+      block.setAttribute('data-index', String(blockIndex));
+
+      // Header
+      const head = document.createElement('div');
+      head.className = 'block-head';
+
+      const left = document.createElement('div');
+      left.innerHTML = `<span class="handle" title="Drag to reorder"></span> <span class="block-type">${type.toUpperCase()}</span>`;
+
+      const right = document.createElement('div');
+      right.className = 'block-actions';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn-danger';
+      del.textContent = 'Remove';
+      del.onclick = () => block.remove();
+      right.appendChild(del);
+
+      head.appendChild(left);
+      head.appendChild(right);
+
+      // Body (keep original field names)
+      const body = document.createElement('div');
+
+      // Hidden type
+      const typeInput = document.createElement('input');
+      typeInput.type = 'hidden';
+      typeInput.name = `blocks[${blockIndex}][type]`;
+      typeInput.value = type;
+      body.appendChild(typeInput);
+
+      if (type === 'text'){
+        body.insertAdjacentHTML('beforeend', `
+          <label class="label">📝 Text</label>
+          <textarea name="blocks[${blockIndex}][content]" rows="4" required></textarea>
+        `);
+      }
+
+      if (type === 'image'){
+        body.insertAdjacentHTML('beforeend', `
+          <label class="label">📷 Upload Image</label>
+          <input type="file" name="blocks[${blockIndex}][media]" accept="image/*" required>
+          <img class="preview-img" id="preview-${blockIndex}" alt="" style="display:none;">
+        `);
+        // Preview
+        setTimeout(() => {
+          const input = block.querySelector(`input[name="blocks[${blockIndex}][media]"]`);
+          const img = block.querySelector(`#preview-${blockIndex}`);
+          input?.addEventListener('change', e => {
+            const file = e.target.files?.[0];
+            if (!file) { img.style.display='none'; return; }
+            const url = URL.createObjectURL(file);
+            img.src = url; img.style.display = 'block';
+          });
+        }, 0);
+      }
+
+      if (type === 'video'){
+        body.insertAdjacentHTML('beforeend', `
+          <label class="label">🎥 YouTube URL</label>
+          <input type="url" name="blocks[${blockIndex}][content]" placeholder="https://youtube.com/..." required>
+          <div class="help">We’ll embed it server-side like civilized people.</div>
+        `);
+      }
+
+      if (type === 'quiz'){
+        body.insertAdjacentHTML('beforeend', `
+          <label class="label">❓ Question</label>
+          <input type="text" name="blocks[${blockIndex}][question]" required>
+
+          <div class="row" style="grid-template-columns:1fr 1fr;">
+            <div class="field">
+              <label class="label">Option 1</label>
+              <input type="text" name="blocks[${blockIndex}][options][]" placeholder="Option 1" required>
+            </div>
+            <div class="field">
+              <label class="label">Option 2</label>
+              <input type="text" name="blocks[${blockIndex}][options][]" placeholder="Option 2" required>
+            </div>
+            <div class="field">
+              <label class="label">Option 3</label>
+              <input type="text" name="blocks[${blockIndex}][options][]" placeholder="Option 3">
+            </div>
+            <div class="field">
+              <label class="label">Option 4</label>
+              <input type="text" name="blocks[${blockIndex}][options][]" placeholder="Option 4">
+            </div>
+          </div>
+
+          <label class="label">Correct Answer (Option Number)</label>
+          <input type="number" name="blocks[${blockIndex}][correct]" min="1" max="4" required>
+        `);
+      }
+
+      block.appendChild(head);
+      block.appendChild(body);
+      builder.appendChild(block);
+    }
+
+    // Drag & drop ordering with a nice handle
+    new Sortable(document.getElementById('block-builder'), {
+      animation: 150,
+      handle: '.handle',
+      ghostClass: 'drag-ghost'
+    });
+  </script>
+</body>
+</html>

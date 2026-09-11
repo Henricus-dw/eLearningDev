@@ -1,0 +1,150 @@
+{#
+  Drag-and-drop question player (v1.1.0 Phase 3d).
+
+  Renders a background image with target zones overlaid on it (zone coordinates
+  are percentages of the background dimensions, so the layout is resolution-
+  independent). Below the image is a tray of draggable items. The learner
+  places items by:
+    - tap-to-select (tap an item, then tap a zone) — works on all devices
+    - drag-and-drop on desktop (HTML5 native)
+  Zones are single-occupancy; dropping on an occupied zone bumps the previous
+  item back to the tray. Decoys are items with no correct_zone server-side;
+  the learner is meant to leave them in the tray.
+
+  Context: `q` (question dict) with:
+    - id, question (or text), points (optional)
+    - background  — path under static/uploads/questions/
+    - zones[]     — [{id, x, y, w, h, label}], x/y/w/h as percentages 0-100
+    - items[]     — [{id, image?, label?}]   (correct_zone stripped server-side)
+
+  Hidden form fields: q_{qid}_{item_id} = zone_id or empty (item unplaced).
+#}
+{# q.get('items') invokes the dict.get() method correctly. Both q.items and
+   q['items'] fall back to the dict.items method object when the key is
+   missing, which then crashes any downstream iteration. #}
+{% set safe_items = q.get('items') | strip_correct_zone %}
+<div class="rounded-xl border border-slate-200 bg-white shadow-sm mb-3 question-card"
+     data-qid="{{ q.id }}"
+     data-qtype="drag_drop">
+  {# Single-quoted attribute required: Jinja's tojson does not escape the inner "
+     characters of JSON, so a double-quoted x-data is terminated by the first
+     inner quote. Single quotes work because tojson does escape ' as '. #}
+  <div class="p-4 border-l-4 border-purple-600 rounded-l-xl"
+       x-data='dragdropQuestion({{ q.id|tojson }}, {{ safe_items|tojson }}, {{ q.zones|tojson }})'
+       x-init="init()">
+
+    <div class="flex items-start justify-between gap-3">
+      <h5 class="font-semibold">Q{{ loop.index }}.</h5>
+      {% if q.points %}
+      <span class="text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-2 py-0.5">
+        {{ q.points }} {{ 'mark' if q.points == 1 else 'marks' }}
+      </span>
+      {% endif %}
+    </div>
+    <p class="mt-1">{{ q.question or q.text or '' }}</p>
+
+    <p class="text-xs text-slate-500 italic mt-2">
+      Tip: tap an item below to select it, then tap a zone on the image to place it.
+      On desktop you can also drag items directly. Leave items in the tray if you
+      believe they do not belong anywhere.
+    </p>
+
+    {# ===== Layout chooses itself when the background image loads:
+         - Wider-than-4:3 images (e.g. landscape diagrams) get the items tray
+           BELOW the image so the image keeps its full width and the zones
+           stay big enough to tap.
+         - Taller / squarer images keep the side-by-side layout (image left,
+           tray right) so the picture isn't dwarfed by an oversized image.
+       The mobile layout (<lg) is always stacked for usability on phones. ===== #}
+    <div class="mt-3 gap-4 items-start"
+         :class="layout === 'bottom' ? 'flex flex-col' : 'flex flex-col lg:flex-row'">
+
+      {# Background image with overlaid zones #}
+      <div class="relative w-full select-none"
+           :class="layout === 'bottom' ? '' : 'lg:flex-1'"
+           style="touch-action: manipulation;">
+        <img src="{{ url_for('static', filename='uploads/questions/' + q.background) }}"
+             alt="Drag-and-drop target image"
+             class="w-full h-auto rounded-lg border border-slate-200 pointer-events-none"
+             draggable="false"
+             @load="onImageLoad($event.target.naturalWidth, $event.target.naturalHeight)">
+
+        <template x-for="zone in zones" :key="zone.id">
+          <div class="absolute border-2 border-dashed rounded transition-colors flex items-center justify-center"
+               :class="(selected_item_id ? 'border-purple-500 bg-purple-100/30 cursor-pointer' : 'border-slate-400/60 bg-slate-100/10 hover:bg-slate-100/30')"
+               :style="`left: ${zone.x}%; top: ${zone.y}%; width: ${zone.w}%; height: ${zone.h}%;`"
+               :title="zone.label || ''"
+               @click="onZoneTap(zone.id)"
+               @dragover.prevent
+               @drop.prevent="onZoneDrop(zone.id, $event)">
+            <template x-for="item in items.filter(it => placements[it.id] === zone.id)" :key="item.id">
+              <div class="absolute inset-0 flex items-center justify-center p-1 cursor-move"
+                   draggable="true"
+                   @click.stop="onItemTap(item.id)"
+                   @dragstart="onDragStart(item.id, $event)">
+                <template x-if="item.image">
+                  <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                       :alt="item.label || 'item'"
+                       class="max-w-full max-h-full object-contain pointer-events-none"
+                       draggable="false">
+                </template>
+                <template x-if="!item.image && item.label">
+                  <span class="text-[10px] sm:text-xs font-semibold text-center text-slate-800 leading-tight whitespace-pre-line" x-text="item.label"></span>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      {# Items tray. Width and inner orientation flip based on `layout`. #}
+      <div class="w-full"
+           :class="layout === 'bottom' ? '' : 'lg:w-56 lg:flex-shrink-0 lg:sticky lg:top-4'">
+        <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Items</p>
+        <div class="flex flex-row flex-wrap gap-2 p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg min-h-[88px]"
+             :class="layout === 'bottom' ? '' : 'lg:flex-col'"
+             @dragover.prevent
+             @drop.prevent="onTrayDrop($event)">
+          <template x-for="item in items.filter(it => !placements[it.id])" :key="item.id">
+            <button type="button"
+                    class="flex flex-col items-center text-center border-2 rounded-lg p-2 bg-white shadow-sm cursor-pointer transition hover:border-purple-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 max-w-[8rem]"
+                    :class="[
+                      selected_item_id === item.id ? 'border-purple-600 ring-2 ring-purple-400' : 'border-slate-300',
+                      layout === 'bottom' ? '' : 'lg:max-w-none lg:w-full'
+                    ]"
+                    draggable="true"
+                    @click="onItemTap(item.id)"
+                    @dragstart="onDragStart(item.id, $event)">
+              <template x-if="item.image">
+                <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                     :alt="item.label || 'item'"
+                     class="w-16 h-16 object-contain pointer-events-none"
+                     draggable="false">
+              </template>
+              <template x-if="item.label">
+                <span class="block text-xs font-medium text-slate-700 mt-1 whitespace-pre-line" x-text="item.label"></span>
+              </template>
+            </button>
+          </template>
+          <template x-if="items.filter(it => !placements[it.id]).length === 0">
+            <p class="text-sm text-slate-400 italic self-center">All items placed. Tap an item in a zone to pick it back up.</p>
+          </template>
+        </div>
+      </div>
+
+    </div>
+
+    {# ===== Hidden form fields, updated reactively as placements change ===== #}
+    <template x-for="item in items" :key="item.id">
+      <input type="hidden"
+             class="q-answer-input dragdrop-input"
+             :name="`q_${qid}_${item.id}`"
+             :value="placements[item.id] || ''">
+    </template>
+  </div>
+</div>
+{#
+  The Alpine component definition lives in static/js/dragdrop_player.js so it
+  can be loaded once by the host template (proctored_assessment.html or
+  final_assessment_proctor.html) instead of being inlined per partial include.
+#}

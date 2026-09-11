@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Take a Selfie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-context" data-page="Onboarding — Selfie" data-course="" data-chapter="">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12);
+      max-width: 520px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .card-header-icon {
+      width: 70px;
+      height: 70px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 32px;
+    }
+
+    .card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .step-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    .step-dot.completed { background: #10b981; color: white; }
+    .step-dot.current { background: #17306B; color: white; }
+    .step-dot.pending { background: #e2e8f0; color: #94a3b8; }
+
+    .step-line {
+      width: 20px;
+      height: 2px;
+      background: #e2e8f0;
+    }
+
+    .camera-zone {
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      overflow: hidden;
+      text-align: center;
+      background: #0f172a;
+      position: relative;
+    }
+
+    .camera-zone video {
+      width: 100%;
+      display: block;
+      border-radius: 14px;
+    }
+
+    .camera-zone canvas {
+      display: none;
+    }
+
+    .camera-zone.captured {
+      border-color: #10b981;
+    }
+
+    .preview-img {
+      width: 100%;
+      display: none;
+      border-radius: 14px;
+    }
+
+    .preview-img.visible {
+      display: block;
+    }
+
+    .camera-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 1.25rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-capture {
+      background: #17306B;
+      color: white;
+    }
+
+    .btn-capture:hover { background: #0e2250; }
+
+    .btn-retake {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .btn-retake:hover { background: #e2e8f0; }
+
+    .camera-error {
+      padding: 2rem;
+      color: #f87171;
+      text-align: center;
+    }
+
+    .camera-error p { margin-bottom: 0.5rem; }
+
+    .requirements {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #eff6ff;
+      border: 1px solid #93c5fd;
+      border-radius: 10px;
+    }
+
+    .requirements-title {
+      font-weight: 600;
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .requirements ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: #1e3a5f;
+      font-size: 0.9rem;
+    }
+
+    .requirements li { margin-bottom: 4px; }
+
+    .submit-section { margin-top: 2rem; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #17306B 0%, #1e3a8a 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(23, 48, 107, 0.35);
+    }
+
+    .submit-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .flash-messages { margin-bottom: 1rem; }
+
+    .flash {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .flash.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+    .flash.danger, .flash.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    .flash.warning { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+
+    .face-warning {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 500;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon">📸</div>
+      <h1>Take a Selfie</h1>
+      <p>We need a photo of you for identity verification</p>
+    </div>
+
+    <div class="card-body">
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step">
+          <span class="step-dot completed">&#10003;</span>
+          <span>Account</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot completed">&#10003;</span>
+          <span>POPIA</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot current">3</span>
+          <span>Selfie</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot pending">4</span>
+          <span>ID Upload</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-dot pending">5</span>
+          <span>Complete</span>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('onboarding_selfie') }}" id="selfieForm">
+        <input type="hidden" name="selfie" id="selfie-input">
+
+        <div class="camera-zone" id="cameraZone">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas"></canvas>
+          <img id="preview" class="preview-img" alt="Selfie preview">
+          <div id="cameraError" class="camera-error" style="display:none;">
+            <p><strong>Camera access denied</strong></p>
+            <p style="font-size:0.85rem;color:#94a3b8;">Please allow camera access in your browser settings and refresh the page.</p>
+          </div>
+        </div>
+
+        <div class="camera-actions">
+          <button type="button" class="btn btn-capture" id="captureBtn" onclick="captureSelfie()">
+            <span>📸</span> Capture Selfie
+          </button>
+          <button type="button" class="btn btn-retake" id="retakeBtn" onclick="retakeSelfie()" style="display:none;">
+            <span>🔄</span> Retake
+          </button>
+        </div>
+
+        <div style="text-align:center; margin-top:0.75rem;">
+          <span style="color:#64748b; font-size:0.85rem;">— or —</span>
+        </div>
+
+        <div style="text-align:center; margin-top:0.75rem;">
+          <label for="photoUpload" class="btn btn-capture" style="cursor:pointer; background:#475569;">
+            <span>📁</span> Upload a Photo
+          </label>
+          <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="handlePhotoUpload(this)">
+        </div>
+
+        <div id="faceCheckMsg" style="margin-top:1rem;"></div>
+
+        <div class="requirements">
+          <div class="requirements-title">
+            <span>💡</span>
+            <span>Tips for a good selfie</span>
+          </div>
+          <ul>
+            <li>Look directly at the camera</li>
+            <li>Ensure your face is well-lit and clearly visible</li>
+            <li>Remove sunglasses or hats</li>
+            <li>Keep a neutral or friendly expression</li>
+          </ul>
+        </div>
+
+        <div class="submit-section">
+          <button type="submit" class="submit-btn" id="submitBtn" disabled>
+            <span>Continue to ID Upload</span>
+            <span>→</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script>
+    const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    let faceModelLoaded = false;
+
+    async function loadFaceModel() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        faceModelLoaded = true;
+        console.log('Face detection model loaded.');
+      } catch (e) {
+        console.warn('Could not load face detection model:', e);
+      }
+    }
+    loadFaceModel();
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    const selfieInput = document.getElementById('selfie-input');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const cameraZone = document.getElementById('cameraZone');
+    const cameraError = document.getElementById('cameraError');
+
+    let stream = null;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error('Camera access error:', err);
+        video.style.display = 'none';
+        cameraError.style.display = 'block';
+        captureBtn.disabled = true;
+      }
+    }
+
+    let faceCheckMsg = document.getElementById('faceCheckMsg');
+
+    async function detectFace(canvas) {
+      if (!faceModelLoaded) return true; // allow if model failed to load
+      try {
+        const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }));
+        return detections.length > 0;
+      } catch (e) {
+        console.warn('Face detection error:', e);
+        return true;
+      }
+    }
+
+    async function captureSelfie() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      preview.src = dataUrl;
+      preview.classList.add('visible');
+      video.style.display = 'none';
+      cameraZone.classList.add('captured');
+
+      captureBtn.style.display = 'none';
+      retakeBtn.style.display = 'inline-flex';
+
+      // Check for a face before enabling submit
+      submitBtn.disabled = true;
+      if (faceCheckMsg) { faceCheckMsg.textContent = 'Checking for face...'; faceCheckMsg.className = ''; }
+      const hasFace = await detectFace(canvas);
+      if (hasFace) {
+        selfieInput.value = dataUrl;
+        submitBtn.disabled = false;
+        if (faceCheckMsg) { faceCheckMsg.textContent = ''; faceCheckMsg.className = ''; }
+      } else {
+        selfieInput.value = '';
+        submitBtn.disabled = true;
+        if (faceCheckMsg) {
+          faceCheckMsg.textContent = 'No face detected. Please retake your selfie with your face clearly visible.';
+          faceCheckMsg.className = 'face-warning';
+        }
+      }
+
+      // Stop camera to save resources
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+    }
+
+    function retakeSelfie() {
+      selfieInput.value = '';
+      preview.src = '';
+      preview.classList.remove('visible');
+      video.style.display = 'block';
+      cameraZone.classList.remove('captured');
+
+      captureBtn.style.display = 'inline-flex';
+      retakeBtn.style.display = 'none';
+      submitBtn.disabled = true;
+      if (faceCheckMsg) { faceCheckMsg.textContent = ''; faceCheckMsg.className = ''; }
+
+      // Reset file input so the same file can be re-selected
+      const photoInput = document.getElementById('photoUpload');
+      if (photoInput) photoInput.value = '';
+
+      startCamera();
+    }
+
+    async function handlePhotoUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        input.value = '';
+        return;
+      }
+
+      // Stop camera if running
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          // Draw to canvas for face detection
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          // Show preview
+          preview.src = e.target.result;
+          preview.classList.add('visible');
+          video.style.display = 'none';
+          cameraZone.classList.add('captured');
+          captureBtn.style.display = 'none';
+          retakeBtn.style.display = 'inline-flex';
+
+          // Face detection
+          submitBtn.disabled = true;
+          if (faceCheckMsg) { faceCheckMsg.textContent = 'Checking for face...'; faceCheckMsg.className = ''; }
+          const hasFace = await detectFace(canvas);
+          if (hasFace) {
+            selfieInput.value = canvas.toDataURL('image/jpeg', 0.85);
+            submitBtn.disabled = false;
+            if (faceCheckMsg) { faceCheckMsg.textContent = ''; faceCheckMsg.className = ''; }
+          } else {
+            selfieInput.value = '';
+            submitBtn.disabled = true;
+            if (faceCheckMsg) {
+              faceCheckMsg.textContent = 'No face detected. Please upload a photo with your face clearly visible.';
+              faceCheckMsg.className = 'face-warning';
+            }
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Start camera on load
+    startCamera();
+  </script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

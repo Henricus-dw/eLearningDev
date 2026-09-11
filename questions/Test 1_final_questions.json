@@ -1,0 +1,455 @@
+{
+  "questions": [
+    {
+      "question": "One of the reasons that terrorists attack civil aviation is because: There is no reaction from governments and organizations",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "A technical standard means a standard published under the authority of the Director of Civil Aviation who speciﬁes the technical requirements, data, information or guidance relating to an acceptable means of compliance with such regulations.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose one correct answer from the statements below:",
+      "options": [
+        "a.) 80% of cargo will end up on a passenger aircraft",
+        "b.) 40% of cargo will end up on a passenger aircraft",
+        "c.) 70% of cargo will end up on a passenger aircraft",
+        "d.) 50% of cargo will end up on a passenger aircraft"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following are considered “attackers” within Civil Aviation?",
+      "options": [
+        "a.) Unhappy Employees (Insiders)",
+        "b.) Criminals",
+        "c.) Terrorists",
+        "d.) All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Terrorists attack Civil Aviation to gain International attention and publicity for their cause.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The following are all examples of Aviation security conventions - Tokyo – 1963, The Hague – 1970, Montreal – 1971",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "There are a total of 19 Annexes to the Chicago Convention on International Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "8.\tChoose one correct abbreviation:",
+      "options": [
+        "a.) IATA – International Air Training Association",
+        "b.) ACI – Airport Council International",
+        "c.) ICAO – International Civil Aviation Organization",
+        "d.) AUCA – African Union Civil Aviation"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Which of the following items could potentially conceal components of an IID if not properly screened?",
+      "options": [
+        "Sealed paint containers, flammable liquids, or modified electronic devices",
+        "Official airport identification cards",
+        "Empty plastic water bottles with no contents",
+        "Boarding passes presented at security screening"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A threat is “An implied intention to take a hostile or dishonest action against a\nspeciﬁc target.”",
+      "options": [
+        "a.) Waving at passengers",
+        "b.) Hijacking of aircraft",
+        "c.) Running over the street",
+        "d.) Hijacking of a boat"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Risk is a combination of Threat x Vulnerability",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The purpose of a permit system, is to:",
+      "options": [
+        "a.) To identify the individuals and facilitate access",
+        "b.) To give all airport staff access to restricted areas",
+        "c.) Vehicle permits are issued and used for similar purposes as persons to allow vehicular access",
+        "d.) All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Man-Portable Air Défense Systems (MANPADS) can be a threat to civil aviation",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Access Permits should be valid for speciﬁc area and time period",
+      "options": [
+        "True",
+        "False",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Have the following items been used as an I.E.D (Improvised Explosive Device) before?",
+      "options": [
+        "Basketball",
+        "Car Tyres",
+        "Make up",
+        "Shoes"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Complex electronic items e.g. laptops can be used to hide an I.E.D.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A person can be used to carry an Improvised Explosive Device onto an aircraft.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The following are BOTH, threats to Civil Aviation:",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following can be used in attacks against airport:",
+      "options": [
+        "Firearms",
+        "Suicide Bombers",
+        "Car Bombs",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Unknown cargo must always be screened before been allowed onto an aircraft",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "When ﬁnding a suspect explosive device, YOU: \n\n-\tDO NOT OPEN\n-\tDO NOT UNWRAP\n-\tDO NOT SHAKE OR HANDLE\n-\tDO NOT TURN OR UNSCREW\n-\tDO NOT CUT STRINGS, ETC.\n-\tDO NOT LIFT OR REMOVE COVERS",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following are “categories of prohibited (restricted) articles”?",
+      "options": [
+        "a.) Blunt instruments",
+        "b.) Firearms, Guns and weapons",
+        "c.) Paper cup",
+        "d.) Car Keys"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A Vulnerability is “Those characteristics of a target which could be exploited in an attack.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which the following are “Explosive device components”?",
+      "options": [
+        "a.) Power source",
+        "b.) Timer delay mechanism",
+        "c.) Detonator (initiator)",
+        "d.) All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "IED stands for “Improvised Explosive Device\"",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Cyber Attacks have become a growing threat to civil aviation",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A Bomb Threat is “A communicated threat, anonymous or otherwise, which suggests or infers, whether true or false, that the safety of an aircraft in ﬂight or on the ground, or any airport or civil aviation facility or any person may be in danger from an explosive or other item or device.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Known cargo does not have to be kept safe from interference",
+      "options": [
+        "True",
+        "False",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "A countermeasure is NOT an action taken to counter act a danger or threat",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Every shipment must have a CSD (Consignment Security Declaration)",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The local authority in South Africa is ICAO (International Civil Aviation Organisation)",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Which of the following methods can be used to screen cargo?",
+      "options": [
+        "a.) X-Ray",
+        "b.) Explosive Detection Dogs",
+        "c.) Physical Search",
+        "d.) Metal Detection",
+        "A & B",
+        "C & D"
+      ],
+      "correct_index": 4
+    },
+    {
+      "question": "33.\tEDD stands for “Explosive Dog Device\"",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Which of the following are examples of Exempted Cargo?",
+      "options": [
+        "a.) Tungsten Carbide",
+        "b.) Nuclear Materials",
+        "c.) Live Animals",
+        "d.) Lead Bars",
+        "A & D",
+        "B & C"
+      ],
+      "correct_index": 5
+    },
+    {
+      "question": "Choose a method of Access control used in cargo operations",
+      "options": [
+        "a.) Access controlled entrances",
+        "b.) Low fencing",
+        "c.) Surveillance",
+        "d.) No permits for staff members",
+        "A & C",
+        "B & D"
+      ],
+      "correct_index": 4
+    },
+    {
+      "question": "Known Consignors and Regulated Agents are part of the Secure Supply Chain.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What methods are used to protect the airport or cargo operations?",
+      "options": [
+        "a.) Effective boundary fencing",
+        "b.) Patrols",
+        "c.) Buildings protected by physical means (door locks, window bars, alarm systems)",
+        "d.) All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Part 108 is the section of the Civil Aviation Regulations that governs Air Cargo Security.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The deﬁnition of Suspicious Behavior is –\n\n•\t'The type of behavior or conduct which does not appear to be normal in the circumstances or situation.’",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose one reason why attackers would choose to attack cargo operations:",
+      "options": [
+        "a.) It is fun",
+        "b.) You will be famous",
+        "c.) Cargo is easy to compromise",
+        "d.) easy money"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Explain why security is difficult to apply in air cargo.",
+      "options": [
+        "a.) There are differences in the size, nature and density of consignments",
+        "b.) Air cargo is urgent by nature",
+        "c.) Tonnage carried continues to increase year by year",
+        "d.) All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Choose one action to be taken on discovery of a suspect item",
+      "options": [
+        "a.) Do not touch it",
+        "b.) Notify Supervisor",
+        "c.) Remain Calm",
+        "d.) Clear the immediate area from all persons",
+        "e.) All of the above"
+      ],
+      "correct_index": 4
+    },
+    {
+      "question": "The deﬁnition of a regulated agent is:\nA commercial air transport operator, a freight forwarder, cargo handling agent, postal agency and any other person approved by the Director as a regulated agent involved in the carriage of cargo by air.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Behavior Detection and Human Factors are important parts of an effective Security Culture",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Prohibited articles are:\n\nArticles that are prohibited from being transported on an aircraft, either in passenger luggage or as cargo.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose what actions should be done in receipt of a bomb threat:",
+      "options": [
+        "a.) have a conversation about the weekend",
+        "b.) Tape record the message, if possible",
+        "c.) Panic",
+        "d.) None of above"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is the primary responsibility of aviation personnel regarding suspected Improvised Incendiary Devices (IID)?",
+      "options": [
+        "Attempt to open and inspect the item to confirm the contents",
+        "Ignore the item if it appears to be a common household product",
+        "Immediately report the suspicious item according to airport security procedures",
+        "Remove the item and place it in a waste container"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What is the ﬁrst option of screening High Risk Cargo?",
+      "options": [
+        "a.) X-ray and EDD",
+        "b.) Hand Search and X-ray",
+        "c.) EDD and ETD",
+        "d.) X-Ray and ETD"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "We can help prevent attacks on Civil Aviation by being aware of the threats posed to Civil Aviation and having an effective Security Culture.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Only Known Cargo may be loaded onto an aircraft",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

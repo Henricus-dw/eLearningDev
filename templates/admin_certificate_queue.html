@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Certificate Queue</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .tab-btn {
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem 0.5rem 0 0;
+      border: 1px solid #e2e8f0;
+      border-bottom: none;
+      background: #f1f5f9;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--brand-blue);
+      border-color: #cbd5e1;
+    }
+
+    .badge-green  { background: #16a34a; color: #fff; }
+    .badge-amber  { background: #d97706; color: #fff; }
+    .badge-red    { background: #dc2626; color: #fff; }
+    .badge-dark   { background: #7f1d1d; color: #fff; }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for cat, msg in messages %}
+            <div class="px-4 py-3 rounded-lg border
+              {{ 'border-green-400 bg-green-50 text-green-700' if cat=='success'
+                 else 'border-red-400 bg-red-50 text-red-700' if cat=='danger'
+                 else 'border-amber-400 bg-amber-50 text-amber-700' if cat=='warning'
+                 else 'border-blue-400 bg-blue-50 text-blue-700' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Overdue alert -->
+    {% if overdue_count > 0 %}
+    <div class="mb-6 px-3 py-3 rounded-xl bg-red-600 text-white flex items-center gap-3 shadow-lg">
+      <i class="fas fa-exclamation-triangle text-2xl"></i>
+      <div>
+        <strong>{{ overdue_count }} certificate{{ 's' if overdue_count != 1 }} overdue!</strong>
+        <span class="ml-1 opacity-90">These have exceeded the 24-hour creation deadline.</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Title row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-certificate text-[var(--brand-gold)]"></i> Certificate Queue
+        </h1>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold"
+              style="background: var(--brand-gold); color: var(--brand-blue);">
+          {{ pending|length }} pending
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Manual enqueue -->
+        <button onclick="document.getElementById('manualEnqueueDialog').showModal()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white shadow transition"
+                style="background:var(--brand-gold); color:var(--brand-blue)"
+                onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+          <i class="fas fa-plus"></i> Manual Add
+        </button>
+        <!-- Export completed certificates -->
+        <a href="{{ url_for('certificate_queue_export') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white shadow transition"
+           style="background:var(--brand-blue)"
+           onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+          <i class="fas fa-file-excel"></i> Export Completed (Excel)
+        </a>
+        <!-- Debug email button -->
+        <form method="POST" action="{{ url_for('certificate_queue_test_reminder') }}" class="inline">
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-slate-300 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-50 transition"
+                  onclick="return confirm('Send a test reminder email to all configured certificate_queue recipients?')">
+            <i class="fas fa-bug"></i> Send Test Reminder Email
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-0">
+      <a href="?tab=pending" class="tab-btn {{ 'active' if tab == 'pending' }}">
+        <i class="fas fa-clock mr-1"></i> Pending
+        {% if pending|length > 0 %}
+          <span class="ml-1 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-red-500 text-white">{{ pending|length }}</span>
+        {% endif %}
+      </a>
+      <a href="?tab=done" class="tab-btn {{ 'active' if tab == 'done' }}">
+        <i class="fas fa-check-circle mr-1"></i> Done
+        {% if done_total and done_total > 0 %}
+          <span class="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full text-xs font-bold bg-green-500 text-white">{{ done_total }}</span>
+        {% endif %}
+      </a>
+    </div>
+
+    {# Filter bar for the Done tab. Pending tab is unfiltered (never had a row cap). #}
+    {% if tab == 'done' %}
+    <div class="card mt-0 mb-3">
+      <form method="GET" action="" class="p-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+        <input type="hidden" name="tab" value="done">
+
+        <div class="md:col-span-4">
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Search</label>
+          <input type="text" name="q" value="{{ filter_q or '' }}"
+                 placeholder="Name, email, ID, company, course"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+        </div>
+
+        <div class="md:col-span-3">
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Course</label>
+          <select name="course_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+            <option value="">All courses</option>
+            {% for cid, ctitle in course_options %}
+              <option value="{{ cid }}" {% if filter_course_id == cid %}selected{% endif %}>{{ ctitle }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Done from</label>
+          <input type="date" name="from" value="{{ filter_from or '' }}"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Done to</label>
+          <input type="date" name="to" value="{{ filter_to or '' }}"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+        </div>
+
+        <div class="md:col-span-1 flex flex-col gap-2">
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-1 px-3 py-2 text-white font-semibold rounded-lg text-sm transition" style="background:var(--brand-blue)">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+          <a href="?tab=done" class="w-full text-center inline-flex items-center justify-center gap-1 px-3 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">
+            Reset
+          </a>
+        </div>
+      </form>
+
+      <div class="px-4 pb-3 text-xs text-slate-500 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          {% if filter_q or filter_course_id or filter_from or filter_to %}
+            Showing <strong>{{ done|length }}</strong> of <strong>{{ done_total }}</strong> filtered result{{ '' if done_total == 1 else 's' }}
+            {% if done_total > done_per_page %} (page {{ done_page }} of {{ done_total_pages }}){% endif %}.
+          {% else %}
+            {{ done_total }} certificate{{ '' if done_total == 1 else 's' }} on record
+            {% if done_total > done_per_page %} &middot; page {{ done_page }} of {{ done_total_pages }}{% endif %}.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Table -->
+    <div class="card">
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-fixed">
+          <thead>
+            <tr class="bg-[var(--brand-blue)] text-white">
+              {% if tab == 'pending' %}
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[15%]">Student</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[12%]">Company</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[12%]">ID No</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[14%]">Course</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[6%]">Score</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[10%]">Passed At</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[10%]">Time Left</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold">Actions</th>
+              {% else %}
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[14%]">Student</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[10%]">Company</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[10%]">ID No</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[13%]">Course</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[5%]">Score</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[8%]">Passed</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[8%]">Done</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[7%]">By</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[14%]">Certificate</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold w-[8%]">Expiry</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+
+            {% if tab == 'pending' %}
+              {% if pending %}
+                {% for e in pending %}
+                {% set deadline = e.passed_at + timedelta(hours=24) %}
+                {% set remaining = (deadline - now).total_seconds() %}
+                <tr class="hover:bg-slate-50 transition {{ 'bg-red-50' if remaining <= 0 }}">
+                  <td class="px-3 py-3">
+                    <div class="font-semibold">{{ e.student_name }}</div>
+                    <div class="text-xs text-slate-500">{{ e.student_email }}</div>
+                  </td>
+                  <td class="px-3 py-3 text-sm text-slate-600">{{ e.company or '—' }}</td>
+                  <td class="px-3 py-3 font-mono text-sm">{{ e.national_id or '—' }}</td>
+                  <td class="px-3 py-3">
+                    <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md text-white" style="background:var(--brand-blue)">
+                      <i class="fas fa-graduation-cap"></i> {{ e.course_title }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 font-semibold">{{ '%.0f' % e.score }}%</td>
+                  <td class="px-3 py-3 text-sm text-slate-500">
+                    {{ e.passed_at.strftime('%d %b %Y, %H:%M') }}
+                  </td>
+                  <td class="px-3 py-3">
+                    {% if remaining <= 0 %}
+                      {% set overdue_h = ((-remaining) / 3600)|round(1) %}
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold badge-dark">
+                        <i class="fas fa-exclamation-circle"></i> {{ overdue_h }}h OVERDUE
+                      </span>
+                    {% elif remaining <= 6 * 3600 %}
+                      {% set hours_left = (remaining / 3600)|round(1) %}
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold badge-red">
+                        <i class="fas fa-clock"></i> {{ hours_left }}h left
+                      </span>
+                    {% elif remaining <= 12 * 3600 %}
+                      {% set hours_left = (remaining / 3600)|round(1) %}
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold badge-amber">
+                        <i class="fas fa-clock"></i> {{ hours_left }}h left
+                      </span>
+                    {% else %}
+                      {% set hours_left = (remaining / 3600)|round(1) %}
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold badge-green">
+                        <i class="fas fa-clock"></i> {{ hours_left }}h left
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td class="px-3 py-3">
+                    <form method="POST" action="{{ url_for('certificate_queue_done', entry_id=e.id) }}" enctype="multipart/form-data" class="inline flex items-center gap-2">
+                      <label class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold border border-slate-300 bg-white cursor-pointer hover:bg-slate-50 transition">
+                        <i class="fas fa-file-pdf text-red-500"></i>
+                        <span id="file-label-{{ e.id }}">Attach PDF</span>
+                        <input type="file" name="certificate_pdf" accept=".pdf" class="hidden"
+                               onchange="document.getElementById('file-label-{{ e.id }}').textContent = this.files[0]?.name || 'Attach PDF'">
+                      </label>
+                      <button type="submit"
+                              class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold text-white shadow transition"
+                              style="background:var(--brand-blue)"
+                              onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        <i class="fas fa-check"></i> Mark As Done
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10" class="py-10">
+                    <div class="text-center text-slate-500">
+                      <i class="fas fa-check-circle text-3xl mb-2 text-green-400"></i>
+                      <p>No pending certificates. All caught up!</p>
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+
+            {% else %}
+              {% if done %}
+                {% for e in done %}
+                <tr class="hover:bg-slate-50 transition">
+                  <td class="px-3 py-3">
+                    <div class="font-semibold">{{ e.student_name }}</div>
+                    <div class="text-xs text-slate-500">{{ e.student_email }}</div>
+                  </td>
+                  <td class="px-3 py-3 text-sm text-slate-600">{{ e.company or '—' }}</td>
+                  <td class="px-3 py-3 font-mono text-sm">{{ e.national_id or '—' }}</td>
+                  <td class="px-3 py-3">
+                    <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md text-white" style="background:var(--brand-blue)">
+                      <i class="fas fa-graduation-cap"></i> {{ e.course_title }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 font-semibold">{{ '%.0f' % e.score }}%</td>
+                  <td class="px-3 py-3 text-sm text-slate-500">
+                    {{ e.passed_at.strftime('%d %b %Y, %H:%M') }}
+                  </td>
+                  <td class="px-3 py-3 text-sm text-slate-500">
+                    {{ e.done_at.strftime('%d %b %Y, %H:%M') if e.done_at else '—' }}
+                  </td>
+                  <td class="px-3 py-3 text-sm text-slate-600">
+                    {{ e.done_by or '—' }}
+                  </td>
+                  <td class="px-3 py-3">
+                    {% if e.certificate_pdf %}
+                      <div class="flex items-center gap-2">
+                        <a href="{{ url_for('download_certificate_pdf', entry_id=e.id) }}"
+                           class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold bg-green-50 text-green-700 ring-1 ring-green-200 hover:bg-green-100 transition">
+                          <i class="fas fa-download"></i> Download
+                        </a>
+                        <form method="POST" action="{{ url_for('certificate_queue_delete_pdf', entry_id=e.id) }}" class="inline"
+                              onsubmit="return confirm('Delete this certificate PDF?')">
+                          <button type="submit" class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100 transition">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <span class="text-xs text-slate-400">No PDF</span>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('certificate_queue_upload_pdf', entry_id=e.id) }}" enctype="multipart/form-data"
+                          class="mt-1 flex items-center gap-1">
+                      <label class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border border-slate-300 bg-white cursor-pointer hover:bg-slate-50 transition">
+                        <i class="fas fa-upload text-blue-500"></i>
+                        <span id="done-file-{{ e.id }}">{{ 'Replace' if e.certificate_pdf else 'Upload' }}</span>
+                        <input type="file" name="certificate_pdf" accept=".pdf" class="hidden"
+                               onchange="this.closest('form').querySelector('[type=submit]').classList.remove('hidden'); document.getElementById('done-file-{{ e.id }}').textContent = this.files[0]?.name || '{{ 'Replace' if e.certificate_pdf else 'Upload' }}'">
+                      </label>
+                      <button type="submit" class="hidden inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-white shadow transition"
+                              style="background:var(--brand-blue)">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </form>
+                  </td>
+                  <td class="px-3 py-3">
+                    {% if e.done_at %}
+                      {% set expiry = e.done_at + timedelta(days=730) %}
+                      {% if now < expiry %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold bg-green-100 text-green-700">
+                          <i class="fas fa-shield-alt"></i> Valid
+                        </span>
+                        <div class="text-[10px] text-slate-400 mt-0.5">{{ expiry.strftime('%d %b %Y') }}</div>
+                      {% else %}
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold bg-red-100 text-red-700">
+                          <i class="fas fa-exclamation-triangle"></i> Expired
+                        </span>
+                        <div class="text-[10px] text-slate-400 mt-0.5">{{ expiry.strftime('%d %b %Y') }}</div>
+                      {% endif %}
+                    {% else %}
+                      <span class="text-xs text-slate-400">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10" class="py-10">
+                    <div class="text-center text-slate-500">
+                      <i class="fas fa-inbox text-3xl mb-2 text-slate-300"></i>
+                      {% if filter_q or filter_course_id or filter_from or filter_to %}
+                        <p>No certificates match the current filters.</p>
+                        <a href="?tab=done" class="inline-block mt-2 text-blue-600 hover:underline text-sm">Clear filters</a>
+                      {% else %}
+                        <p>No archived certificates yet.</p>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            {% endif %}
+
+          </tbody>
+        </table>
+      </div>
+
+      {# Pagination footer for the Done tab. Only rendered when there's more
+         than one page of results so it stays out of the way on small datasets. #}
+      {% if tab == 'done' and done_total_pages and done_total_pages > 1 %}
+      {% set qs_base = [] %}
+      {% if filter_q %}{% set _ = qs_base.append('q=' ~ filter_q|urlencode) %}{% endif %}
+      {% if filter_course_id %}{% set _ = qs_base.append('course_id=' ~ filter_course_id) %}{% endif %}
+      {% if filter_from %}{% set _ = qs_base.append('from=' ~ filter_from|urlencode) %}{% endif %}
+      {% if filter_to %}{% set _ = qs_base.append('to=' ~ filter_to|urlencode) %}{% endif %}
+      {% set qs_prefix = '?tab=done' ~ ('&' ~ (qs_base|join('&')) if qs_base else '') %}
+      <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm">
+        <div class="text-slate-500">
+          Page <strong>{{ done_page }}</strong> of <strong>{{ done_total_pages }}</strong>
+          <span class="text-xs">({{ done_total }} total)</span>
+        </div>
+        <div class="flex items-center gap-1">
+          {% if done_page > 1 %}
+            <a href="{{ qs_prefix }}&page=1" class="px-2.5 py-1.5 border border-slate-300 rounded hover:bg-slate-50 text-xs">&laquo; First</a>
+            <a href="{{ qs_prefix }}&page={{ done_page - 1 }}" class="px-2.5 py-1.5 border border-slate-300 rounded hover:bg-slate-50 text-xs">&lsaquo; Prev</a>
+          {% else %}
+            <span class="px-2.5 py-1.5 border border-slate-200 rounded text-slate-300 text-xs cursor-not-allowed">&laquo; First</span>
+            <span class="px-2.5 py-1.5 border border-slate-200 rounded text-slate-300 text-xs cursor-not-allowed">&lsaquo; Prev</span>
+          {% endif %}
+          {% if done_page < done_total_pages %}
+            <a href="{{ qs_prefix }}&page={{ done_page + 1 }}" class="px-2.5 py-1.5 border border-slate-300 rounded hover:bg-slate-50 text-xs">Next &rsaquo;</a>
+            <a href="{{ qs_prefix }}&page={{ done_total_pages }}" class="px-2.5 py-1.5 border border-slate-300 rounded hover:bg-slate-50 text-xs">Last &raquo;</a>
+          {% else %}
+            <span class="px-2.5 py-1.5 border border-slate-200 rounded text-slate-300 text-xs cursor-not-allowed">Next &rsaquo;</span>
+            <span class="px-2.5 py-1.5 border border-slate-200 rounded text-slate-300 text-xs cursor-not-allowed">Last &raquo;</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Certificate Management</span>
+    </div>
+  </footer>
+
+  <!-- Auto-refresh countdown badges every 60 seconds -->
+  <!-- Manual Enqueue Dialog -->
+  <dialog id="manualEnqueueDialog" class="w-full max-w-lg rounded-2xl shadow-2xl p-0 backdrop:bg-slate-900/40">
+    <div style="height:4px;background:linear-gradient(90deg,var(--brand-gold),#e0c04a);border-radius:12px 12px 0 0;"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold" style="color:var(--brand-blue);">Manual Certificate Enqueue</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <!-- Student Search -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Search Student</label>
+        <input id="meqSearch" type="text" placeholder="Name, email, student ID, or national ID..."
+               class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300" autocomplete="off">
+        <div id="meqResults" class="mt-1 rounded-lg border border-slate-200 bg-white max-h-40 overflow-y-auto hidden"></div>
+      </div>
+
+      <!-- Selected Student -->
+      <div id="meqSelected" class="hidden mb-4 bg-blue-50 rounded-lg p-3 flex items-center justify-between">
+        <div>
+          <div id="meqName" class="text-sm font-semibold text-slate-800"></div>
+          <div id="meqEmail" class="text-xs text-slate-500"></div>
+        </div>
+        <button onclick="meqClear()" class="text-xs text-slate-400 hover:text-red-500">Clear</button>
+      </div>
+
+      <!-- Attempts -->
+      <div id="meqAttempts" class="hidden">
+        <label class="block text-sm font-medium text-slate-700 mb-2">Passing Assessments</label>
+        <div id="meqAttemptList" class="space-y-2"></div>
+        <div id="meqNoAttempts" class="hidden text-sm text-slate-400 text-center py-4">No passing attempts found for this student.</div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    setInterval(() => location.reload(), 60000);
+
+    // Manual Enqueue logic
+    let _meqStudentId = null;
+    const meqSearch = document.getElementById('meqSearch');
+    const meqResults = document.getElementById('meqResults');
+    let _meqTimer = null;
+
+    meqSearch.addEventListener('input', function() {
+      clearTimeout(_meqTimer);
+      const q = this.value.trim();
+      if (q.length < 2) { meqResults.classList.add('hidden'); return; }
+      _meqTimer = setTimeout(() => {
+        fetch('/api/certificate-queue/search-student?q=' + encodeURIComponent(q))
+          .then(r => r.json())
+          .then(data => {
+            if (!data.students.length) {
+              meqResults.innerHTML = '<div class="px-3 py-2 text-xs text-slate-400">No students found</div>';
+            } else {
+              meqResults.innerHTML = data.students.map(s =>
+                `<div class="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-50" onclick="meqSelect(${s.id},'${s.name.replace(/'/g,"\\'")}','${(s.email||'').replace(/'/g,"\\'")}')">
+                  <span class="font-medium">${s.name}</span>
+                  <span class="text-xs text-slate-400 ml-1">#${s.student_id} &bull; ${s.email||''}</span>
+                </div>`
+              ).join('');
+            }
+            meqResults.classList.remove('hidden');
+          });
+      }, 300);
+    });
+
+    function meqSelect(id, name, email) {
+      _meqStudentId = id;
+      document.getElementById('meqName').textContent = name;
+      document.getElementById('meqEmail').textContent = email;
+      document.getElementById('meqSelected').classList.remove('hidden');
+      meqResults.classList.add('hidden');
+      meqSearch.value = '';
+      // Load attempts
+      fetch('/api/certificate-queue/student-attempts/' + id)
+        .then(r => r.json())
+        .then(data => {
+          const list = document.getElementById('meqAttemptList');
+          const noAtt = document.getElementById('meqNoAttempts');
+          document.getElementById('meqAttempts').classList.remove('hidden');
+          if (!data.attempts.length) {
+            list.innerHTML = '';
+            noAtt.classList.remove('hidden');
+            return;
+          }
+          noAtt.classList.add('hidden');
+          list.innerHTML = data.attempts.map(a => {
+            if (a.already_queued) {
+              return `<div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 ring-1 ring-slate-200">
+                <div>
+                  <div class="text-sm font-medium text-slate-500">${a.course_title}</div>
+                  <div class="text-xs text-slate-400">${a.score}% &bull; ${a.date}</div>
+                </div>
+                <span class="text-xs text-slate-400 italic">Already in queue</span>
+              </div>`;
+            }
+            return `<div class="flex items-center justify-between p-3 rounded-lg bg-white ring-1 ring-slate-200">
+              <div>
+                <div class="text-sm font-medium text-slate-800">${a.course_title}</div>
+                <div class="text-xs text-slate-400">${a.score}% &bull; ${a.date}</div>
+              </div>
+              <form method="POST" action="/admin/certificate-queue/manual-enqueue">
+                <input type="hidden" name="student_id" value="${_meqStudentId}">
+                <input type="hidden" name="course_id" value="${a.course_id}">
+                <input type="hidden" name="score" value="${a.score}">
+                <button class="text-xs px-3 py-1.5 rounded-lg text-white font-semibold" style="background:var(--brand-blue)">Add to Queue</button>
+              </form>
+            </div>`;
+          }).join('');
+        });
+    }
+
+    function meqClear() {
+      _meqStudentId = null;
+      document.getElementById('meqSelected').classList.add('hidden');
+      document.getElementById('meqAttempts').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

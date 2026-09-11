@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moderation | Professional Training</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#17306B',
+              gold: '#C7A434'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    .card { border-top: 4px solid #C7A434; }
+    .table-header { background: #17306B; }
+
+    .form-input {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      color: #0f172a;
+      transition: all 0.15s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #17306B;
+      box-shadow: 0 0 0 3px rgba(23, 48, 107, 0.1);
+      background: white;
+    }
+
+    .form-input[readonly] {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .question-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1rem;
+      border-left: 3px solid #C7A434;
+    }
+
+    .question-box p {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .question-box label {
+      margin-right: 1.5rem;
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+
+    .question-box input[type="radio"] {
+      accent-color: #17306B;
+      margin-right: 0.25rem;
+    }
+
+    .video-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .score-box {
+      background: linear-gradient(135deg, #17306B 0%, #1e3a5f 100%);
+      border-radius: 10px;
+      padding: 1rem;
+      color: white;
+    }
+
+    .list-group-item-action {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border: 1px solid #e2e8f0;
+      background: white;
+      margin-bottom: 2px;
+      border-radius: 6px;
+    }
+
+    .list-group-item-action:hover {
+      background: #f1f5f9;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-bottom: 3px solid transparent;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: #17306B;
+    }
+
+    .tab-btn.active {
+      color: #17306B;
+      border-bottom-color: #C7A434;
+    }
+
+    .details-row { display: none; }
+    .clickable { cursor: pointer; }
+
+    .soft-box {
+      border: 1px solid rgba(23, 48, 107, 0.2);
+      background: rgba(23, 48, 107, 0.04);
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    .toast-container { z-index: 1055; }
+  </style>
+
+  <script>
+    const REASON_LABELS = {
+      tab_visible: "Tab became visible (returned to exam tab)",
+      tab_hidden: "Tab hidden (switched away/minimized)",
+      window_focus: "Window focused (returned to exam window)",
+      window_blur: "Window lost focus (clicked away)",
+      no_face_warn: "Face not detected (warning)",
+      no_face_recovered: "Face detected again",
+      camera_dark: "Camera too dark",
+      media_denied: "Camera/microphone permission denied",
+      media_error: "Camera/microphone error",
+    };
+
+    async function onStudentChange() {
+      const studentId = document.getElementById("studentSelect").value;
+      if (!studentId) return;
+      const res = await fetch(`/get_student_info/${studentId}`);
+      const data = await res.json();
+      document.getElementById("studentName").value = data.name || "";
+      document.getElementById("nationalId").value = data.national_id || "";
+      const courseDropdown = document.getElementById("courseSelect");
+      courseDropdown.innerHTML = `<option value="">-- Select Completed Course --</option>`;
+      (data.completed_courses || []).forEach(course => {
+        const option = document.createElement("option");
+        option.value = course.course_id;
+        option.textContent = course.course_name;
+        courseDropdown.appendChild(option);
+      });
+    }
+
+    async function onCourseChange() {
+      const courseId  = document.getElementById("courseSelect").value;
+      const studentId = document.getElementById("studentSelect").value;
+      if (!courseId || !studentId) return;
+
+      const res  = await fetch(`/get_course_attempt/${studentId}/${courseId}`);
+      const data = await res.json();
+
+      document.getElementById("completionDate").value = data.completion_date || "";
+
+      const videoSection = document.getElementById("videoSection");
+      const scoreBox     = document.getElementById("scoreInfo");
+      videoSection.innerHTML = "";
+      scoreBox.innerHTML     = "";
+
+      const hidPath   = document.getElementById("videoPath");
+      const hidFile   = document.getElementById("videoFilename");
+      const hidStudNo = document.getElementById("studentNumber");
+
+      let videoSrc = null;
+      let videoFilename = null;
+
+      if (data.video_url) {
+        videoSrc = data.video_url;
+        const last = videoSrc.split("/").pop();
+        videoFilename = last || null;
+      } else if (data.video_filename && data.student_number) {
+        videoFilename = data.video_filename;
+        videoSrc = `/uploads/${data.student_number}/${data.video_filename}`;
+      }
+
+      if (videoSrc) {
+        if (hidPath)   hidPath.value   = videoSrc;
+        if (hidFile)   hidFile.value   = videoFilename || "";
+        if (hidStudNo) hidStudNo.value = data.student_number || "";
+
+        const ext = (videoFilename || videoSrc).split(".").pop()?.toLowerCase() || "";
+        const mime = ext === "mp4"  ? "video/mp4"
+                  : ext === "webm" ? "video/webm"
+                  : ext === "mov"  ? "video/quicktime"
+                  : "video/mp4";
+
+        videoSection.innerHTML = `
+          <div class="video-card">
+            <div class="flex items-center justify-between mb-3">
+              <p class="font-semibold text-slate-700"><i class="fas fa-video text-brand-gold mr-2"></i>Video Evidence</p>
+              <a href="${videoSrc}" target="_blank" class="text-sm text-brand-blue hover:underline">
+                <i class="fas fa-external-link-alt"></i> Open in new tab
+              </a>
+            </div>
+            <video controls preload="metadata" class="w-full rounded-lg shadow">
+              <source src="${videoSrc}" type="${mime}">
+              Your browser does not support the video tag. <a href="${videoSrc}" class="underline">Download</a>.
+            </video>
+          </div>
+        `;
+      } else {
+        if (hidPath)   hidPath.value   = "";
+        if (hidFile)   hidFile.value   = "";
+        if (hidStudNo) hidStudNo.value = "";
+      }
+
+      if (data.score != null || data.percentage != null) {
+        const score = data.score != null ? data.score : "—";
+        const pct   = data.percentage != null ? `${data.percentage}%` : "—";
+        scoreBox.innerHTML = `
+          <div class="score-box">
+            <p class="font-bold text-sm mb-1"><i class="fas fa-chart-line mr-2"></i>Assessment Score</p>
+            <p class="text-2xl font-bold">${pct}</p>
+            <p class="text-sm opacity-80">Raw Score: ${score}</p>
+          </div>`;
+      }
+
+      renderViolations(studentId, courseId);
+    }
+
+    async function renderViolations(studentId, courseId) {
+      const panel = document.getElementById("violationsPanel");
+      if (!panel) return;
+
+      panel.innerHTML = `<p class="text-sm text-slate-500">Loading violations...</p>`;
+
+      try {
+        const url = `/api/violations?student_id=${encodeURIComponent(studentId)}&course_id=${encodeURIComponent(courseId)}&limit=50`;
+        const res = await fetch(url);
+        const logs = await res.json();
+
+        if (!Array.isArray(logs) || logs.length === 0) {
+          panel.innerHTML = `
+            <div class="flex items-center gap-2 text-emerald-600">
+              <i class="fas fa-check-circle"></i>
+              <span class="text-sm">No violations recorded for this attempt.</span>
+            </div>`;
+          return;
+        }
+
+        const rows = logs.map(log => `
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="px-3 py-2 text-sm">${log.timestamp || ''}</td>
+            <td class="px-3 py-2 text-sm">${log.student_id || ''}</td>
+            <td class="px-3 py-2 text-sm">
+              <span class="font-semibold">${log.reason_label || REASON_LABELS[log.reason] || log.reason || '—'}</span>
+            </td>
+            <td class="px-3 py-2 text-sm">${log.ip || '—'}</td>
+          </tr>
+        `).join("");
+
+        panel.innerHTML = `
+          <div class="overflow-x-auto">
+            <div class="flex items-center gap-2 mb-3 text-amber-600">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="font-semibold text-sm">Proctoring Violations (${logs.length})</span>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-brand-blue text-white">
+                <tr>
+                  <th class="px-3 py-2 text-left rounded-tl-lg">Timestamp</th>
+                  <th class="px-3 py-2 text-left">Student #</th>
+                  <th class="px-3 py-2 text-left">Reason</th>
+                  <th class="px-3 py-2 text-left rounded-tr-lg">IP</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white">${rows}</tbody>
+            </table>
+          </div>`;
+      } catch (e) {
+        panel.innerHTML = `<p class="text-sm text-red-600">Failed to load violations.</p>`;
+      }
+    }
+
+    function prepareEscalationForm() {
+      const studentId = document.getElementById("studentSelect").value;
+      const courseSelect = document.getElementById("courseSelect");
+      const courseId = courseSelect.value;
+      if (!studentId || !courseId) {
+        alert("Please select a student and course first.");
+        return;
+      }
+      const reason = prompt("Why are you escalating this moderation?");
+      if (!reason || reason.trim() === "") {
+        alert("Escalation cancelled. Reason is required.");
+        return;
+      }
+      const courseName = courseSelect.options[courseSelect.selectedIndex]?.text || "";
+      document.getElementById("escalateStudentId").value = studentId;
+      document.getElementById("escalateCourseId").value = courseId;
+      document.getElementById("escalateCourseName").value = courseName;
+      document.getElementById("escalationReason").value = reason.trim();
+
+      const getRadioValue = (name) => {
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        return checked ? (checked.value === "1" ? "Yes" : "No") : "";
+      };
+      document.getElementById("escalateQ1").value = getRadioValue("q1");
+      document.getElementById("escalateQ2").value = getRadioValue("q2");
+      document.getElementById("escalateQ3").value = getRadioValue("q3");
+      document.getElementById("escalateQ4").value = getRadioValue("q4");
+      document.getElementById("escalateQ5").value = getRadioValue("q5");
+      document.getElementById("escalateQ6").value = getRadioValue("q6");
+
+      const commentsEl = document.getElementById("comments");
+      document.getElementById("escalateAdminNote").value = commentsEl ? commentsEl.value : "";
+
+      document.getElementById("escalateForm").submit();
+    }
+
+    // Completed tab functions
+    function filterTable() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      document.querySelectorAll(".data-row").forEach(row => {
+        const next = row.nextElementSibling;
+        const match = row.innerText.toLowerCase().includes(input);
+        row.style.display = match ? "" : "none";
+        if (next && next.classList.contains("details-row")) next.style.display = "none";
+      });
+    }
+
+    function filterByCourse() {
+      const selected = document.getElementById("courseFilter").value;
+      window.location.href = selected ? `/moderation?tab=completed&course=${encodeURIComponent(selected)}` : '/moderation?tab=completed';
+    }
+
+    function toggleDetails(id) {
+      const row = document.getElementById(`details-${id}`);
+      row.style.display = (row.style.display === "table-row") ? "none" : "table-row";
+    }
+
+    function toggleEscalationOnly() {
+      const checked = document.getElementById("escalationOnly").checked;
+      document.querySelectorAll(".data-row").forEach(row => {
+        const isEscalated = row.classList.contains("escalated-row");
+        row.style.display = (checked && !isEscalated) ? "none" : "";
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains("details-row")) next.style.display = "none";
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("escalated") === "1") {
+        const toastEl = document.getElementById("escalationToast");
+        if (toastEl) {
+          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+          toast.show();
+        }
+      }
+      if (params.get("submitted") === "1") {
+        const toastEl = document.getElementById("submitSuccessToast");
+        if (toastEl) {
+          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+          toast.show();
+          setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("submitted");
+            window.history.replaceState({}, document.title, url.toString());
+          }, 3100);
+        }
+      }
+
+      const search = document.getElementById("studentSearch");
+      const suggestions = document.getElementById("studentSuggestions");
+      search?.addEventListener("input", async function () {
+        const query = this.value.trim();
+        suggestions.innerHTML = "";
+        if (query.length < 2) return;
+        const res = await fetch(`/search_student?q=${encodeURIComponent(query)}`);
+        const results = await res.json();
+        results.forEach(student => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "list-group-item-action w-full text-left";
+          item.textContent = `${student.student_id} - ${student.name} (${student.email})`;
+          item.addEventListener("click", () => {
+            search.value = student.name;
+            document.getElementById("studentSelect").value = student.id;
+            suggestions.innerHTML = "";
+            onStudentChange();
+          });
+          suggestions.appendChild(item);
+        });
+      });
+    });
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+          <i class="fas fa-gavel text-brand-gold text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-brand-blue">Moderation</h1>
+          <p class="text-sm text-slate-500">Review student assessments and manage moderations</p>
+        </div>
+      </div>
+      {% if active_tab == 'completed' %}
+      <a href="/export_moderations" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-blue-900 text-white rounded-lg text-sm font-medium transition">
+        <i class="fas fa-file-export"></i>
+        Export to Excel
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="flex border-b border-slate-200">
+        <a href="{{ url_for('moderation', tab='new') }}" class="tab-btn {% if active_tab == 'new' %}active{% endif %}">
+          <i class="fas fa-plus-circle mr-2"></i>New Moderation
+        </a>
+        <a href="{{ url_for('moderation', tab='completed') }}" class="tab-btn {% if active_tab == 'completed' %}active{% endif %}">
+          <i class="fas fa-check-circle mr-2"></i>Completed
+          {% if moderations %}<span class="ml-1 px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-xs">{{ moderations|length }}</span>{% endif %}
+        </a>
+      </div>
+
+      {% if active_tab == 'new' %}
+      <!-- New Moderation Tab Content -->
+      <form action="/submit_moderation" method="POST" class="p-6 space-y-6">
+        <!-- Student & Course Section -->
+        <div>
+          <h2 class="text-base font-bold text-brand-blue border-l-4 border-brand-gold pl-3 mb-4">Student & Course</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Search Student</label>
+              <input type="text" id="studentSearch" placeholder="Name, Email, ID..." class="form-input">
+              <input type="hidden" id="studentSelect" name="student_id" required>
+              <div id="studentSuggestions" class="mt-2"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Student Name</label>
+              <input type="text" id="studentName" name="student_name" readonly class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">National ID</label>
+              <input type="text" id="nationalId" name="national_id" readonly class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Completed Course</label>
+              <select id="courseSelect" name="course_id" onchange="onCourseChange()" required class="form-input">
+                <option value="">-- Select Completed Course --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Date Completed</label>
+              <input type="datetime-local" id="completionDate" name="completion_date" required class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Moderation Date</label>
+              <input type="datetime-local" id="moderationDate" name="moderation_date" required class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Video & Score Section -->
+        <div>
+          <h2 class="text-base font-bold text-brand-blue border-l-4 border-brand-gold pl-3 mb-4">Video Evidence</h2>
+          <div id="videoSection" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <p class="text-sm text-slate-500">Select a student and course to load video evidence.</p>
+          </div>
+          <div id="scoreInfo" class="mt-4"></div>
+        </div>
+
+        <!-- Violations Section -->
+        <div>
+          <h2 class="text-base font-bold text-brand-blue border-l-4 border-brand-gold pl-3 mb-4">Proctoring Violations</h2>
+          <div id="violationsPanel">
+            <p class="text-sm text-slate-500">Select a student and course to load violations.</p>
+          </div>
+        </div>
+
+        <!-- Quality Checks Section -->
+        <div>
+          <h2 class="text-base font-bold text-brand-blue border-l-4 border-brand-gold pl-3 mb-4">Moderation Questions</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="question-box">
+              <p>1. Was the student verified by ID and Video Evidence?</p>
+              <label><input type="radio" name="q1" value="1" required> Yes</label>
+              <label><input type="radio" name="q1" value="0"> No</label>
+            </div>
+            <div class="question-box">
+              <p>2. Does the assessment effectively measure the stated learning outcomes?</p>
+              <label><input type="radio" name="q2" value="1" required> Yes</label>
+              <label><input type="radio" name="q2" value="0"> No</label>
+            </div>
+            <div class="question-box">
+              <p>3. Are the assessment methods appropriate for e-learning platform?</p>
+              <label><input type="radio" name="q3" value="1" required> Yes</label>
+              <label><input type="radio" name="q3" value="0"> No</label>
+            </div>
+            <div class="question-box">
+              <p>4. Was there enough time given for the learner to complete the assessment?</p>
+              <label><input type="radio" name="q4" value="1" required> Yes</label>
+              <label><input type="radio" name="q4" value="0"> No</label>
+            </div>
+            <div class="question-box">
+              <p>5. Were there any background interferences during the final assessment?</p>
+              <label><input type="radio" name="q5" value="1" required> Yes</label>
+              <label><input type="radio" name="q5" value="0"> No</label>
+            </div>
+            <div class="question-box">
+              <p>6. Are there any findings during video review?</p>
+              <label><input type="radio" name="q6" value="1" required> Yes</label>
+              <label><input type="radio" name="q6" value="0"> No</label>
+            </div>
+          </div>
+          <div class="mt-4">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Admin Note</label>
+            <textarea id="comments" name="comments" rows="3" placeholder="Write your observations..." class="form-input"></textarea>
+          </div>
+        </div>
+
+        <!-- Hidden fields -->
+        <input type="hidden" name="video_path" id="videoPath">
+        <input type="hidden" name="video_filename" id="videoFilename">
+        <input type="hidden" name="student_number" id="studentNumber">
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-200">
+          <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+            <i class="fas fa-check"></i> Submit Moderation
+          </button>
+          <button type="button" class="inline-flex items-center gap-2 px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg text-sm transition" onclick="prepareEscalationForm()">
+            <i class="fas fa-exclamation-triangle"></i> Escalate
+          </button>
+        </div>
+      </form>
+
+      {% else %}
+      <!-- Completed Tab Content -->
+      <div class="p-6">
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+          <div class="relative flex-1 max-w-sm">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input id="searchInput" onkeyup="filterTable()" class="form-input pl-9" placeholder="Search logs...">
+          </div>
+          <select id="courseFilter" onchange="filterByCourse()" class="form-input max-w-xs">
+            <option value="">-- Filter by Course --</option>
+            {% for course in courses %}
+            <option value="{{ course }}" {% if request.args.get('course') == course %}selected{% endif %}>{{ course }}</option>
+            {% endfor %}
+          </select>
+          <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input id="escalationOnly" type="checkbox" onclick="toggleEscalationOnly()" class="h-4 w-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue">
+            Only Escalated
+          </label>
+        </div>
+
+        <!-- Table -->
+        {% if moderations %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="table-header text-white">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Student</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Student ID</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Course</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Moderator</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Completed</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Moderated</th>
+                <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Details</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for m in moderations %}
+              {% set is_escalated = m.feedback and '[Escalated Review]' in m.feedback %}
+              <tr class="clickable data-row hover:bg-slate-50 transition {% if is_escalated %}escalated-row{% endif %}" onclick="toggleDetails({{ m.id }})">
+                <td class="px-4 py-3">
+                  <span class="font-medium text-brand-blue">{{ m.studentname }}</span>
+                  {% if is_escalated %}
+                  <span class="ml-2 inline-flex items-center rounded-full bg-red-500 text-white text-[10px] px-2 py-0.5">Escalated</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 text-slate-600">{{ m.studentid }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ m.coursename }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ m.moderatorname }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ m.coursecompletiondate }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ m.moderationdate }}</td>
+                <td class="px-4 py-3 text-brand-blue"><i class="fas fa-chevron-down"></i></td>
+              </tr>
+              <tr id="details-{{ m.id }}" class="details-row">
+                <td colspan="7" class="px-4 py-4 bg-slate-50">
+                  <div class="soft-box space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div><span class="font-semibold">1. Student verified by ID and Video Evidence?</span> <span class="{{ 'text-emerald-600' if m.question1 == 'Yes' else 'text-rose-600' }}">{{ m.question1 or '—' }}</span></div>
+                      <div><span class="font-semibold">2. Assessment effectively measures learning outcomes?</span> <span class="{{ 'text-emerald-600' if m.question2 == 'Yes' else 'text-rose-600' }}">{{ m.question2 or '—' }}</span></div>
+                      <div><span class="font-semibold">3. Assessment methods appropriate for e-learning?</span> <span class="{{ 'text-emerald-600' if m.question3 == 'Yes' else 'text-rose-600' }}">{{ m.question3 or '—' }}</span></div>
+                      <div><span class="font-semibold">4. Enough time given to complete the assessment?</span> <span class="{{ 'text-emerald-600' if m.question4 == 'Yes' else 'text-rose-600' }}">{{ m.question4 or '—' }}</span></div>
+                      <div><span class="font-semibold">5. Background interferences during the assessment?</span> <span class="{{ 'text-emerald-600' if m.question5 == 'Yes' else 'text-rose-600' }}">{{ m.question5 or '—' }}</span></div>
+                      <div><span class="font-semibold">6. Any findings during video review?</span> <span class="{{ 'text-emerald-600' if m.question6 == 'Yes' else 'text-rose-600' }}">{{ m.question6 or '—' }}</span></div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      <p class="font-semibold text-amber-700 text-sm">Moderator Comments</p>
+                      <p class="text-sm text-slate-700 mt-1">{{ m.feedback or 'None' }}</p>
+                    </div>
+                    {% set video_src = (m.video_url if (m.video_url is defined and m.video_url) else (('/uploads/' ~ m.studentid ~ '/' ~ m.video_filename) if ((m.studentid is defined and m.video_filename is defined and m.video_filename)) else none)) %}
+                    {% if video_src %}
+                    <div class="bg-white border border-slate-200 rounded-lg p-3">
+                      <div class="flex items-center justify-between mb-2">
+                        <p class="font-semibold text-sm">Video Evidence</p>
+                        <a href="{{ video_src }}" target="_blank" class="text-brand-blue underline text-sm">Open in new tab</a>
+                      </div>
+                      <video controls preload="metadata" class="w-full max-w-2xl rounded-lg shadow" src="{{ video_src }}"></video>
+                    </div>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-folder-open text-slate-400 text-3xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">No Completed Moderations</h3>
+          <p class="text-slate-500 text-sm">Completed moderations will appear here.</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Escalate Form (hidden) -->
+  <form id="escalateForm" action="/escalate_moderation" method="POST" style="display: none;">
+    <input type="hidden" name="student_id" id="escalateStudentId">
+    <input type="hidden" name="course_id" id="escalateCourseId">
+    <input type="hidden" name="course_name" id="escalateCourseName">
+    <input type="hidden" name="escalation_note" id="escalationReason">
+    <input type="hidden" name="q1" id="escalateQ1">
+    <input type="hidden" name="q2" id="escalateQ2">
+    <input type="hidden" name="q3" id="escalateQ3">
+    <input type="hidden" name="q4" id="escalateQ4">
+    <input type="hidden" name="q5" id="escalateQ5">
+    <input type="hidden" name="q6" id="escalateQ6">
+    <input type="hidden" name="admin_note" id="escalateAdminNote">
+  </form>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <!-- Toasts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="escalationToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">Escalation submitted. Student account suspended & admin notified.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="submitSuccessToast" class="toast align-items-center text-white bg-success border-0 position-fixed top-50 start-50 translate-middle shadow-lg" role="alert" style="z-index: 1055; min-width: 300px;">
+    <div class="d-flex">
+      <div class="toast-body text-center fw-bold fs-6">Moderation submitted successfully!</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

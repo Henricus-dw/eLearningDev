@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Developer Testing Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      border-left: 4px solid var(--brand-gold);
+      padding-left: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-blue {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+
+    .btn-blue:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-red {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+
+    .btn-green {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: #15803d;
+      transform: translateY(-2px);
+    }
+
+    .input, select {
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      background: #fff;
+      padding: 0.6rem 0.75rem;
+      outline: none;
+      transition: all 0.15s;
+      width: 100%;
+      color: #0f172a;
+    }
+
+    .input:focus, select:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(23, 48, 107, 0.15);
+    }
+
+    .warning-banner {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 2px solid #f59e0b;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .preset-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid;
+    }
+
+    .preset-pass {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #22c55e;
+    }
+
+    .preset-pass:hover {
+      background: #bbf7d0;
+    }
+
+    .preset-second {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: #eab308;
+    }
+
+    .preset-second:hover {
+      background: #fef08a;
+    }
+
+    .preset-fail {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #ef4444;
+    }
+
+    .preset-fail:hover {
+      background: #fecaca;
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Pending OTPs: support tool for students stuck at the verification step -->
+    <div class="rounded-xl bg-white ring-1 ring-amber-300 shadow p-5">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div class="text-base font-semibold text-slate-800">
+            <i class="fas fa-key text-amber-500 mr-1"></i> Pending registration OTPs
+          </div>
+          <p class="text-sm text-slate-600 mt-1 max-w-2xl">
+            See the verification code for anyone stuck at sign-up, or verify them
+            directly so they can log in without it. Use this when a student says
+            their code never arrived.
+          </p>
+        </div>
+        <a href="{{ url_for('admin_dev_otps') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold whitespace-nowrap">
+          Open OTP lookup
+        </a>
+      </div>
+    </div>
+
+    <!-- Page Title -->
+    <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+      <i class="fas fa-flask text-[var(--brand-gold)]"></i> Developer Testing Tools
+    </h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="p-4 rounded-lg shadow-sm {% if category == 'success' %}bg-green-100 border border-green-300 text-green-800{% elif category == 'danger' %}bg-red-100 border border-red-300 text-red-800{% else %}bg-blue-100 border border-blue-300 text-blue-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Warning Banner -->
+    <div class="warning-banner">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-exclamation-triangle text-2xl text-amber-600"></i>
+        <div>
+          <p class="font-bold text-amber-800">Developer Tools - For Testing Only</p>
+          <p class="text-sm text-amber-700">
+            These tools create simulated assessment records. Use only in development/testing environments.
+            Simulated records are marked with "DEV_SIMULATED" status.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulate Assessment Result -->
+    <div class="card">
+      <h3 class="section-title">
+        <i class="fas fa-magic text-[var(--brand-gold)]"></i> Simulate Assessment Result
+      </h3>
+      <p class="text-sm text-slate-600 mb-4">
+        Create a fake assessment submission with your chosen score to test blocking logic, result pages, etc.
+      </p>
+
+      <form method="POST" action="{{ url_for('admin_dev_simulate_result') }}" class="space-y-4">
+        <!-- Student Selection -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Select Student</label>
+          <select name="student_id" required class="input">
+            <option value="">-- Choose a Student --</option>
+            {% for s in students %}
+              <option value="{{ s.id }}">{{ s.name }} {{ s.surname }} ({{ s.student_id }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Course Selection -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Select Course</label>
+          <select name="course_id" required class="input">
+            <option value="">-- Choose a Course --</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}">{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Percentage Input with Presets -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Score Percentage</label>
+          <div class="flex gap-2 mb-2">
+            <button type="button" class="preset-btn preset-pass" onclick="document.getElementById('pct').value='85'">
+              85% (Pass)
+            </button>
+            <button type="button" class="preset-btn preset-second" onclick="document.getElementById('pct').value='77'">
+              77% (Second Chance)
+            </button>
+            <button type="button" class="preset-btn preset-fail" onclick="document.getElementById('pct').value='60'">
+              60% (Fail)
+            </button>
+          </div>
+          <input type="number" id="pct" name="percentage" min="0" max="100" step="0.1" required
+                 class="input" placeholder="Enter percentage (0-100)">
+          <p class="text-xs text-slate-500 mt-1">
+            80%+ = Pass | 75-79% = Second Chance | Below 75% = Fail (contact admin)
+          </p>
+        </div>
+
+        <button type="submit" class="btn btn-green shadow">
+          <i class="fas fa-plus-circle"></i>
+          <span>Create Simulated Result</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Course Progress Control -->
+    <div class="card">
+      <h3 class="section-title">
+        <i class="fas fa-tasks text-[var(--brand-gold)]"></i> Course Progress Control
+      </h3>
+      <p class="text-sm text-slate-600 mb-4">
+        Set a student's course progress to 100% so they can access the final assessment without completing all chapters.
+        Or reset to 0% to test the full course flow from the beginning.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- Set to 100% -->
+        <form method="POST" action="{{ url_for('admin_dev_set_progress_100') }}" class="space-y-3 p-4 rounded-lg border border-green-200 bg-green-50/50">
+          <h4 class="font-semibold text-green-700"><i class="fas fa-forward"></i> Skip to Final Assessment</h4>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Student</label>
+            <select name="student_id" required class="input text-sm py-2">
+              <option value="">-- Student --</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.name }} {{ s.surname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Course</label>
+            <select name="course_id" required class="input text-sm py-2">
+              <option value="">-- Course --</option>
+              {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-green shadow w-full justify-center">
+            <i class="fas fa-check-double"></i>
+            <span>Set Progress to 100%</span>
+          </button>
+        </form>
+
+        <!-- Reset to 0% -->
+        <form method="POST" action="{{ url_for('admin_dev_reset_progress') }}"
+              onsubmit="return confirm('Reset this student\\'s progress to 0%?')"
+              class="space-y-3 p-4 rounded-lg border border-slate-200 bg-slate-50/50">
+          <h4 class="font-semibold text-slate-700"><i class="fas fa-undo"></i> Reset Progress to 0%</h4>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Student</label>
+            <select name="student_id" required class="input text-sm py-2">
+              <option value="">-- Student --</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.name }} {{ s.surname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Course</label>
+            <select name="course_id" required class="input text-sm py-2">
+              <option value="">-- Course --</option>
+              {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-blue shadow w-full justify-center">
+            <i class="fas fa-redo"></i>
+            <span>Reset to 0%</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reset Everything (One-Click Full Reset) -->
+    <div class="card">
+      <h3 class="section-title">
+        <i class="fas fa-sync-alt text-[var(--brand-gold)]"></i> Reset Everything (Full Reset)
+      </h3>
+      <p class="text-sm text-slate-600 mb-4">
+        <strong>One-click full reset:</strong> Clears progress to 0%, deletes all assessment attempts,
+        and resets enrollment flags. Student can start completely fresh.
+      </p>
+
+      <form method="POST" action="{{ url_for('admin_dev_reset_everything') }}"
+            onsubmit="return confirm('FULL RESET: This will delete ALL progress AND all assessment attempts. The student will need to start from scratch. Continue?')"
+            class="space-y-4">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Student</label>
+            <select name="student_id" required class="input">
+              <option value="">-- Choose --</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.name }} {{ s.surname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Course</label>
+            <select name="course_id" required class="input">
+              <option value="">-- Choose --</option>
+              {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-red shadow w-full justify-center">
+          <i class="fas fa-redo-alt"></i>
+          <span>Reset Everything (Progress + Attempts)</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Reset Assessment Attempts Only -->
+    <div class="card">
+      <h3 class="section-title">
+        <i class="fas fa-trash-restore text-[var(--brand-gold)]"></i> Reset Assessment Attempts Only
+      </h3>
+      <p class="text-sm text-slate-600 mb-4">
+        Delete assessment attempts but keep course progress. Student can retake the final assessment
+        without redoing the course content.
+      </p>
+
+      <form method="POST" action="{{ url_for('admin_dev_reset_all_attempts') }}"
+            onsubmit="return confirm('Delete all assessment attempts for this student in the selected course?')"
+            class="space-y-4">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Student</label>
+            <select name="student_id" required class="input">
+              <option value="">-- Choose --</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.name }} {{ s.surname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Course</label>
+            <select name="course_id" required class="input">
+              <option value="">-- Choose --</option>
+              {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-blue shadow">
+          <i class="fas fa-redo"></i>
+          <span>Reset Attempts Only</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Direct Links to Final Assessments -->
+    <div class="card">
+      <h3 class="section-title">
+        <i class="fas fa-external-link-alt text-[var(--brand-gold)]"></i> Direct Links to Final Assessments
+      </h3>
+      <p class="text-sm text-slate-600 mb-4">
+        Use these links to go directly to a final assessment (as the logged-in student).
+        Make sure you're logged in as the test student first!
+      </p>
+
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+        {% for c in courses %}
+          <a href="{{ url_for('final_assessment', course_id=c.id) }}"
+             target="_blank"
+             class="block p-3 rounded-lg border border-slate-200 hover:border-[var(--brand-gold)] hover:bg-slate-50 transition">
+            <div class="font-semibold text-sm text-[var(--brand-blue)] truncate">{{ c.title }}</div>
+            <div class="text-xs text-slate-500 mt-1">/final_assessment/{{ c.id }}</div>
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+        <p class="text-sm text-amber-800">
+          <i class="fas fa-lightbulb text-amber-600"></i> <strong>Tip:</strong> Open a new incognito/private window, log in as your test student,
+          then click these links to access final assessments directly.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Info -->
+    <div class="p-4 rounded-lg bg-slate-100 border border-slate-200">
+      <h4 class="font-bold text-sm mb-2 text-[var(--brand-blue)]"><i class="fas fa-info-circle"></i> Score Rules Reminder</h4>
+      <ul class="text-sm text-slate-600 space-y-1">
+        <li><span class="font-semibold text-green-600">80%+</span> = PASS - Student passed, no retake needed</li>
+        <li><span class="font-semibold text-amber-600">75-79%</span> = SECOND CHANCE - One automatic retry allowed on first attempt</li>
+        <li><span class="font-semibold text-red-600">Below 75%</span> = FAIL - Must contact admin for another attempt</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Developer Tools</span>
+    </div>
+  </footer>
+
+</body>
+</html>

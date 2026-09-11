@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Enrollments | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#17306B',
+              gold: '#C7A434'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .card { border-top: 4px solid #C7A434; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+        <i class="fas fa-user-graduate text-brand-gold text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-brand-blue">Manage Enrollments</h1>
+        <p class="text-sm text-slate-500">View and manage student course enrollments. Virtual training is managed from the <a href="{{ url_for('admin_virtual_training') }}" class="text-brand-blue underline">Virtual Training</a> page.</p>
+      </div>
+    </div>
+
+    <!-- Search Card -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-search text-brand-gold"></i>
+          Search Students
+        </h2>
+      </div>
+      <div class="p-6">
+        <div class="relative max-w-md">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="searchInput" placeholder="Search by name, student ID, national ID, email, or course..."
+                 class="w-full pl-11 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+        </div>
+      </div>
+    </div>
+
+    <!-- Students Container -->
+    <div class="space-y-4" id="studentContainer">
+      {% set grouped = {} %}
+      {% for enrollment, student, course in enrollments %}
+        {% set key = student.id %}
+        {% if key not in grouped %}
+          {% set _ = grouped.update({key: {'student': student, 'courses': []}}) %}
+        {% endif %}
+        {% set _ = grouped[key]['courses'].append((enrollment, course)) %}
+      {% endfor %}
+
+      {% for group in grouped.values() %}
+      <div x-data="{ open: false }" class="bg-white rounded-xl shadow-sm card overflow-hidden student-block"
+           data-search="{{ group.student.name|lower }} {{ group.student.surname|lower }} {{ group.student.email|lower if group.student.email else '' }} {{ group.student.student_id|lower if group.student.student_id else '' }} {{ group.student.national_id|lower if group.student.national_id else '' }} {% for _enr, _c in group.courses %}{{ (_c.title if _c else '')|lower }} {% endfor %}">
+        <!-- Student Header -->
+        <div class="px-6 py-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-brand-blue/10 rounded-full flex items-center justify-center">
+              <i class="fas fa-user text-brand-blue text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-brand-blue student-name">
+                {{ group.student.name }} {{ group.student.surname }}
+              </h3>
+              <p class="text-sm text-slate-500">{{ group.student.email }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center px-3 py-1 bg-brand-gold/10 text-brand-blue border border-brand-gold/30 rounded-full text-xs font-semibold">
+              <i class="fas fa-book-open mr-1.5"></i>
+              {{ group.courses|length }} Course{% if group.courses|length != 1 %}s{% endif %}
+            </span>
+            <button @click="open = !open"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+              <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              <span x-text="open ? 'Hide' : 'Show'"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Enrollment Details -->
+        <div x-show="open" x-transition x-cloak class="border-t border-slate-100">
+          {% for enrollment, course in group.courses %}
+          <div x-data="{ vmodal: false }" class="px-6 py-4 {% if not loop.last %}border-b border-slate-100{% endif %} hover:bg-slate-50 transition">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <!-- Course Info -->
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                  <h4 class="text-base font-bold text-slate-800">{{ course.title }}</h4>
+                  <span class="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-mono">
+                    <i class="fas fa-id-card mr-1 text-slate-400"></i>
+                    {{ group.student.student_id }}
+                  </span>
+                  {% if enrollment.delivery_mode == 'virtual' %}
+                  <span class="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-300 rounded text-xs font-semibold">
+                    <i class="fab fa-microsoft mr-1"></i>Virtual
+                  </span>
+                    {% if enrollment.assessment_unlocked %}
+                    <span class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 border border-green-300 rounded text-xs font-semibold">
+                      <i class="fas fa-unlock mr-1"></i>Assessment Unlocked
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-300 rounded text-xs font-semibold">
+                      <i class="fas fa-lock mr-1"></i>Assessment Locked
+                    </span>
+                    {% endif %}
+                  {% else %}
+                  <span class="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-300 rounded text-xs font-semibold">
+                    <i class="fas fa-chalkboard-user mr-1"></i>Normal
+                  </span>
+                  {% endif %}
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <div class="flex items-center gap-2 text-slate-600">
+                    <i class="fas fa-calendar-plus text-brand-gold w-4"></i>
+                    <span><strong>Enrolled:</strong> {{ progress_data[enrollment.id].date_enrolled }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-slate-600">
+                    <i class="fas fa-clock text-brand-gold w-4"></i>
+                    <span><strong>Last Accessed:</strong>
+                      {% if progress_data[enrollment.id].last_accessed %}
+                        {{ progress_data[enrollment.id].last_accessed.strftime('%Y-%m-%d %H:%M') }}
+                      {% else %}
+                        <span class="text-slate-400 italic">Never</span>
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-semibold text-slate-600">Progress</span>
+                    <span class="text-xs font-bold text-brand-blue">{{ progress_data[enrollment.id].progress }}%</span>
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-brand-gold to-brand-blue h-2 rounded-full transition-all duration-300"
+                         style="width: {{ progress_data[enrollment.id].progress }}%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="lg:ml-4 flex-shrink-0 flex flex-col sm:flex-row gap-2">
+                <button type="button" @click="vmodal = true"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+                  <i class="fas fa-sliders"></i>
+                  Delivery Mode
+                </button>
+                <form method="POST"
+                      action="{{ url_for('unenroll_student', student_id=enrollment.student_id, course_id=enrollment.course_id) }}"
+                      onsubmit="return confirm('Are you sure you want to unenroll {{ group.student.name }} from {{ course.title }}?');">
+                  <button type="submit"
+                          class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg text-sm transition">
+                    <i class="fas fa-user-slash"></i>
+                    Unenroll
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Virtual delivery settings modal -->
+            <div x-show="vmodal" x-cloak x-transition.opacity
+                 style="display:none;"
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                 @click.self="vmodal = false"
+                 @keydown.escape.window="vmodal = false">
+              <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+                   x-data="{
+                     mode: '{{ enrollment.delivery_mode or 'in_person' }}',
+                     unlocked: {{ 'true' if enrollment.assessment_unlocked else 'false' }}
+                   }">
+                <form method="POST" action="{{ url_for('set_enrollment_virtual', enrollment_id=enrollment.id) }}">
+                  <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-brand-blue">Delivery Settings</h3>
+                    <button type="button" @click="vmodal = false" class="text-slate-400 hover:text-slate-700">
+                      <i class="fas fa-times text-xl"></i>
+                    </button>
+                  </div>
+                  <div class="px-6 py-5 space-y-4">
+                    <div class="text-sm text-slate-600">
+                      <strong>{{ group.student.name }} {{ group.student.surname }}</strong> &middot; {{ course.title }}
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Delivery Mode</label>
+                      <div class="grid grid-cols-2 gap-2">
+                        <label class="relative flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer"
+                               :class="mode === 'in_person' ? 'border-brand-blue bg-brand-blue/5' : 'border-slate-300'">
+                          <input type="radio" name="delivery_mode" value="in_person" x-model="mode" class="accent-brand-blue">
+                          <span class="text-sm font-semibold">Normal</span>
+                        </label>
+                        <label class="relative flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer"
+                               :class="mode === 'virtual' ? 'border-brand-blue bg-brand-blue/5' : 'border-slate-300'">
+                          <input type="radio" name="delivery_mode" value="virtual" x-model="mode" class="accent-brand-blue">
+                          <span class="text-sm font-semibold">Virtual</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div x-show="mode === 'virtual'" x-transition class="space-y-4">
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Teams Meeting Link</label>
+                        <input type="url" name="teams_meeting_link"
+                               value="{{ enrollment.teams_meeting_link or '' }}"
+                               placeholder="https://teams.microsoft.com/..."
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Session Date &amp; Time</label>
+                        <input type="datetime-local" name="virtual_session_date"
+                               value="{{ enrollment.virtual_session_date.strftime('%Y-%m-%dT%H:%M') if enrollment.virtual_session_date else '' }}"
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                      </div>
+                      <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
+                        <input type="checkbox" name="assessment_unlocked" value="1" x-model="unlocked" class="w-5 h-5 accent-brand-blue">
+                        <div>
+                          <div class="text-sm font-semibold text-slate-800">Unlock Final Assessment</div>
+                          <div class="text-xs text-slate-500">Student can start their final assessment once this is checked.</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" @click="vmodal = false"
+                            class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">
+                      Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+                      <i class="fas fa-save mr-1"></i>Save
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <!-- Empty State -->
+      <div class="bg-white rounded-xl shadow-sm card overflow-hidden">
+        <div class="p-12 text-center">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-users-slash text-slate-400 text-3xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">No Enrollments Found</h3>
+          <p class="text-slate-500 text-sm">There are no active student enrollments to display.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <!-- Client-side Search -->
+  <script>
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const term = this.value.toLowerCase().trim();
+      const blocks = document.querySelectorAll('.student-block');
+      blocks.forEach(block => {
+        // Search against the pre-built data-search attribute (covers name, IDs,
+        // email, and every enrolled course title). Falls back to the displayed
+        // name if data-search is somehow absent.
+        const haystack = (block.dataset.search || block.querySelector('.student-name')?.textContent || '').toLowerCase();
+        block.style.display = !term || haystack.includes(term) ? '' : 'none';
+      });
+    });
+  </script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</body>
+</html>

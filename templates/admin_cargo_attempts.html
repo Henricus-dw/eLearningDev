@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Level 3 Cargo Attempts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-950 p-6">
+  <a href="{{ url_for('admin_dashboard') }}" class="text-sm text-blue-700 dark:text-yellow-300">&larr; Back to Dashboard</a>
+  <h1 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 mt-4">Level 3 Cargo Attempts</h1>
+
+  {% if student_id %}
+    <p class="mt-2 text-slate-600 dark:text-slate-300">Student: {{ student_id }}</p>
+  {% endif %}
+
+  {% if attempts %}
+    <div class="mt-6 grid gap-4">
+      {% for a in attempts %}
+        <div class="rounded-lg p-4 bg-white dark:bg-slate-800 shadow">
+          <div class="font-semibold text-blue-900 dark:text-slate-100">Attempt #{{ a.id }}</div>
+          <div class="text-sm text-slate-600 dark:text-slate-300">Date: {{ a.created_at }}</div>
+          <div class="text-sm text-slate-600 dark:text-slate-300">Score: {{ a.score }}%</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-6 rounded-lg p-4 bg-white dark:bg-slate-800 shadow text-slate-600 dark:text-slate-300">
+      No attempts yet.
+    </div>
+  {% endif %}
+</body>
+</html>

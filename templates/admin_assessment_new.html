@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Final Assessment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --brand-gold: #C7A434;
+      --brand-gold-dark: #b9932b;
+      --brand-blue: #17306B;
+      --brand-blue-dark: #10224E;
+    }
+    .card { background:#fff; border-radius:1rem; box-shadow:0 6px 20px rgba(23,48,107,0.08); }
+    .title-accent { border-left:6px solid var(--brand-gold); padding-left:.75rem; }
+    .label { font-size:.875rem; font-weight:600; color:#334155; }
+    .hint { font-size:.75rem; color:#64748b; }
+    .field { border:1px solid #e5e7eb; border-radius:.75rem; padding:.6rem .8rem; width:100%; background:#fff; }
+    .field:focus { outline:none; box-shadow:0 0 0 2px rgba(199,164,52,.35); border-color:var(--brand-gold); }
+    .btn-primary { background:var(--brand-blue); color:#fff; border:1px solid var(--brand-gold);
+                   border-radius:.75rem; padding:.65rem 1rem; font-weight:600; }
+    .btn-primary:hover { background:var(--brand-blue-dark); }
+    .btn-ghost { border:1px solid #e5e7eb; border-radius:.75rem; padding:.65rem 1rem; }
+    .req { color:#ef4444; }
+  </style>
+</head>
+<body class="bg-slate-50 p-6">
+  <main class="max-w-2xl mx-auto">
+    <header class="mb-6">
+      <h1 class="title-accent text-2xl md:text-3xl font-semibold text-slate-900">Create Final Assessment</h1>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for cat, msg in messages %}
+            <div class="px-4 py-3 rounded-lg text-sm
+              {% if cat in ['success'] %}bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200
+              {% elif cat in ['warning','error','danger'] %}bg-amber-50 text-amber-900 ring-1 ring-amber-200
+              {% else %}bg-blue-50 text-blue-900 ring-1 ring-blue-200{% endif %}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="card p-6 md:p-7">
+      <!-- IMPORTANT: point form to the correct POST route -->
+      <form method="POST" action="{{ url_for('admin_new_final_assessment') }}" class="space-y-6" autocomplete="off" novalidate>
+        <!-- If CSRF is used, include token -->
+        {# {{ form.csrf_token }} #}
+
+        <!-- Title -->
+        <div>
+          <label class="label" for="titleInput">Title <span class="req">*</span></label>
+          <input name="title" id="titleInput" required autocomplete="off" autofocus
+                 placeholder="e.g. Airside Induction Final"
+                 class="field" />
+          <p class="hint mt-1">Human-friendly name shown to students and in admin lists.</p>
+          <p class="hint mt-2">
+            URL preview: <code id="urlPreview" class="text-slate-900">/your_assessment</code>
+          </p>
+        </div>
+
+        <!-- Course Key (optional) -->
+        <div>
+          <label class="label" for="keyInput">Course Key <span class="text-slate-400">(optional)</span></label>
+          <input name="course_key" id="keyInput"
+                 placeholder="Leave blank to auto-derive from the Title"
+                 class="field" />
+          <p class="hint mt-1">
+            Leave this empty and we'll build a clean URL from the Title.
+            If you do type one in, we'll still clean it up automatically (lowercase, underscores, no spaces).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Pass mark -->
+          <div>
+            <label class="label" for="passInput">Pass Mark (%)</label>
+            <input type="number" name="pass_mark" id="passInput" min="0" max="100" value="80" class="field" />
+            <p class="hint mt-1">Default 80%. Server still validates.</p>
+          </div>
+
+          <!-- Icon -->
+          <div>
+            <label class="label" for="iconInput">Icon (FontAwesome class)</label>
+            <input name="icon" id="iconInput" placeholder="fa-file-alt" value="fa-file-alt" class="field" />
+            <p class="hint mt-1">Optional. Examples: <code>fa-file-alt</code>, <code>fa-graduation-cap</code>.</p>
+          </div>
+        </div>
+
+        <!-- Optional link to Course ID -->
+        <div>
+          <label class="label" for="linkCourseId">Link to Course (ID)</label>
+          <input type="number" name="link_course_id" id="linkCourseId" min="1" placeholder="e.g. 26" class="field" />
+          <p class="hint mt-1">If provided, the course will be mapped to this assessment immediately (server-side logic required).</p>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" class="btn-primary">Create</button>
+          <a class="btn-ghost" href="{{ url_for('admin_dashboard') }}">Cancel</a>
+        </div>
+      </form>
+    </section>
+
+    <p class="hint mt-4">Tip: just type a Title. The URL is built automatically.</p>
+  </main>
+
+  <script>
+    const t = document.getElementById('titleInput');
+    const k = document.getElementById('keyInput');
+    const preview = document.getElementById('urlPreview');
+
+    function slugify(s) {
+      return (s || '')
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .replace(/__+/g, '_');
+    }
+
+    function updatePreview() {
+      const source = (k && k.value.trim()) ? k.value : (t ? t.value : '');
+      const slug = slugify(source) || 'your_assessment';
+      if (preview) preview.textContent = '/' + slug;
+    }
+
+    if (t) t.addEventListener('input', updatePreview);
+    if (k) k.addEventListener('input', updatePreview);
+    updatePreview();
+  </script>
+</body>
+</html>

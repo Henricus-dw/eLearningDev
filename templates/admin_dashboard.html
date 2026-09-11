@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      border-left: 4px solid var(--brand-gold);
+      padding-left: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dashboard-card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 1rem 0.75rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(23, 48, 107, 0.15);
+    }
+
+    .dashboard-card:hover::before {
+      height: 5px;
+    }
+
+    .dashboard-card i {
+      font-size: 1.4rem;
+      color: var(--brand-gold);
+      background: rgba(199, 164, 52, 0.12);
+      width: 2.75rem;
+      height: 2.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-top: 0.25rem;
+    }
+
+    .dashboard-card h5 {
+      font-weight: 600;
+      color: var(--brand-blue);
+      font-size: 0.8rem;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    /* Super Admin elevated cards — purple accent */
+    .dashboard-card-elevated::before {
+      background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+    }
+    .dashboard-card-elevated i {
+      color: #7c3aed;
+      background: rgba(124, 58, 237, 0.10);
+    }
+
+    /* Developer cards — indigo accent */
+    .dashboard-card-dev::before {
+      background: linear-gradient(90deg, #4338ca 0%, #818cf8 100%);
+    }
+    .dashboard-card-dev i {
+      color: #4338ca;
+      background: rgba(67, 56, 202, 0.10);
+    }
+
+    /* Accountant cards — amber accent */
+    .dashboard-card-accountant::before {
+      background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+    }
+    .dashboard-card-accountant i {
+      color: #d97706;
+      background: rgba(217, 119, 6, 0.10);
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logout-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+
+    .footer-content a {
+      color: var(--brand-gold);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-content a:hover {
+      color: #e0c04a;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      background: #dc2626;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.3rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      animation: pulse-badge 2s infinite;
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+  </style>
+</head>
+
+<body class="font-sans text-slate-800">
+
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('logout', from='admin') }}" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content max-w-7xl mx-auto px-4 py-6 w-full">
+
+    <!-- Welcome Heading -->
+    <h1 class="text-3xl font-bold mb-6" style="color: var(--brand-blue);">Welcome, {{ admin_name }}</h1>
+
+    {% if admin_role == 'Accountant' %}
+    {# ===== ACCOUNTANT-ONLY VIEW ===== #}
+    <h3 class="section-title"><i class="fas fa-building-circle-check text-lg"></i> Company Approvals</h3>
+    <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mb-8">
+      <a href="{{ url_for('admin_company_approvals') }}" class="dashboard-card dashboard-card-accountant" id="company-approvals-card">
+        <i class="fas fa-building-circle-check"></i>
+        <h5>Company Approvals</h5>
+        <span class="notification-badge" id="company-approvals-badge" style="display: none;">0</span>
+      </a>
+    </div>
+
+    {% else %}
+    {# ===== ADMIN+ VIEW ===== #}
+
+    {% if admin_role_level >= 3 %}
+    <!-- Analytics / Developer Dashboard Link -->
+    <a href="{{ url_for('developer_dashboard') }}"
+       class="mb-6 block px-5 py-4 rounded-xl flex items-center gap-3 shadow-lg transition"
+       style="background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: #fff;">
+      <i class="fas fa-chart-line text-2xl"></i>
+      <div>
+        <strong>{% if admin_role_level >= 4 %}Developer Portal{% else %}Analytics{% endif %}</strong>
+      </div>
+      <i class="fas fa-arrow-right ml-auto"></i>
+    </a>
+    {% endif %}
+
+    <!-- Overdue certificates banner -->
+    <div id="cert-overdue-banner" class="mb-6 px-5 py-4 rounded-xl bg-red-600 text-white flex items-center gap-3 shadow-lg" style="display:none;">
+      <i class="fas fa-exclamation-triangle text-2xl"></i>
+      <div>
+        <strong id="cert-overdue-text">0 certificates overdue!</strong>
+        <span class="ml-1 opacity-90">These have exceeded the 24-hour creation deadline.</span>
+        <a href="{{ url_for('admin_certificate_queue') }}" class="ml-2 underline font-semibold text-white hover:text-yellow-200">View Queue &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <h3 class="section-title"><i class="fas fa-inbox text-lg"></i> Operations</h3>
+    <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mb-8">
+      <a href="{{ url_for('support_centre') }}" class="dashboard-card">
+        <i class="fas fa-life-ring"></i>
+        <h5>Support Tickets</h5>
+        {% if open_ticket_count > 0 %}
+        <span class="notification-badge">{{ open_ticket_count }}</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('admin_retry_requests') }}" class="dashboard-card" id="retry-requests-card">
+        <i class="fas fa-redo-alt"></i>
+        <h5>Retry Requests</h5>
+        <span class="notification-badge" id="retry-requests-badge" style="display: none;">0</span>
+      </a>
+      <a href="{{ url_for('pending_enrollments') }}" class="dashboard-card" id="pending-enrollments-card">
+        <i class="fas fa-clock"></i>
+        <h5>Pending Enrollments</h5>
+        <span class="notification-badge" id="pending-count-badge" style="display: none;">0</span>
+      </a>
+      <a href="{{ url_for('show_bookings') }}" class="dashboard-card">
+        <i class="fas fa-calendar-check"></i>
+        <h5>Bookings</h5>
+      </a>
+      {% if admin_role_level >= 3 %}
+      <a href="{{ url_for('admin_company_approvals') }}" class="dashboard-card dashboard-card-elevated" id="company-approvals-card">
+        <i class="fas fa-building-circle-check"></i>
+        <h5>Company Approvals</h5>
+        <span class="notification-badge" id="company-approvals-badge" style="display: none;">0</span>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('admin_certificate_queue') }}" class="dashboard-card" id="cert-queue-card">
+        <i class="fas fa-certificate"></i>
+        <h5>Certificate Queue</h5>
+        <span class="notification-badge" id="cert-queue-badge" style="display: none;">0</span>
+      </a>
+      <a href="{{ url_for('admin_attendance_register') }}" class="dashboard-card">
+        <i class="fas fa-clipboard-list"></i>
+        <h5>Attendance Register</h5>
+      </a>
+    </div>
+
+    <!-- Assessments -->
+    <h3 class="section-title"><i class="fas fa-clipboard-check text-lg"></i> Assessments</h3>
+    <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mb-8">
+      <a href="{{ url_for('admin_final_assessments') }}" class="dashboard-card">
+        <i class="fas fa-file-alt"></i>
+        <h5>Final Assessments</h5>
+      </a>
+      <a href="{{ url_for('moderation') }}" class="dashboard-card">
+        <i class="fas fa-gavel"></i>
+        <h5>Moderation</h5>
+      </a>
+      <a href="{{ url_for('view_violations') }}" class="dashboard-card">
+        <i class="fas fa-video-slash"></i>
+        <h5>Proctoring Violations</h5>
+      </a>
+      <a href="{{ url_for('admin_course_feedback') }}" class="dashboard-card">
+        <i class="fas fa-comments"></i>
+        <h5>Course Feedback</h5>
+      </a>
+      {% if admin_role_level >= 3 %}
+      <a href="{{ url_for('admin_final_attempts') }}" class="dashboard-card dashboard-card-elevated">
+        <i class="fas fa-check-double"></i>
+        <h5>Assessment Attempts</h5>
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Management -->
+    <h3 class="section-title"><i class="fas fa-cog text-lg"></i> Management</h3>
+    <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mb-8">
+      <a href="{{ url_for('view_students') }}" class="dashboard-card">
+        <i class="fas fa-user-graduate"></i>
+        <h5>Students</h5>
+      </a>
+      {% if admin_role_level >= 3 %}
+      <a href="{{ url_for('manage_users') }}" class="dashboard-card {% if admin_role_level >= 4 %}dashboard-card-dev{% else %}dashboard-card-elevated{% endif %}">
+        <i class="fas fa-users-gear"></i>
+        <h5>Admins</h5>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('manage_courses') }}" class="dashboard-card">
+        <i class="fas fa-book"></i>
+        <h5>Courses</h5>
+      </a>
+      <a href="{{ url_for('manage_enrollments') }}" class="dashboard-card">
+        <i class="fas fa-user-check"></i>
+        <h5>Enrollments</h5>
+      </a>
+      <a href="{{ url_for('admin_virtual_training') }}" class="dashboard-card" style="border-color:#8b5cf6;">
+        <i class="fab fa-microsoft" style="color:#8b5cf6;"></i>
+        <h5>Virtual Training</h5>
+      </a>
+      {% if admin_role_level >= 3 %}
+      <a href="{{ url_for('admin_email_recipients') }}" class="dashboard-card dashboard-card-elevated">
+        <i class="fas fa-envelope"></i>
+        <h5>Email Recipients</h5>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('admin_companies') }}" class="dashboard-card">
+        <i class="fas fa-building"></i>
+        <h5>Companies</h5>
+      </a>
+      <a href="{{ url_for('admin_credits') }}" class="dashboard-card">
+        <i class="fas fa-coins"></i>
+        <h5>Company Credits</h5>
+      </a>
+      <a href="{{ url_for('admin_assessment_monitor') }}" class="dashboard-card">
+        <i class="fas fa-eye"></i>
+        <h5>Assessment Monitor</h5>
+      </a>
+      <a href="{{ url_for('announce') }}" class="dashboard-card">
+        <i class="fas fa-bullhorn"></i>
+        <h5>Post Announcement</h5>
+      </a>
+    </div>
+
+    {% if admin_role_level >= 4 %}
+    <!-- Developer Tools -->
+    <h3 class="section-title"><i class="fas fa-terminal text-lg"></i> Developer Tools</h3>
+    <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mb-8">
+      <a href="{{ url_for('admin_live_users') }}" class="dashboard-card dashboard-card-dev">
+        <i class="fas fa-satellite-dish"></i>
+        <h5>Live Users</h5>
+      </a>
+      <a href="{{ url_for('admin_session_logs') }}" class="dashboard-card dashboard-card-dev">
+        <i class="fas fa-history"></i>
+        <h5>Session Logs</h5>
+      </a>
+    </div>
+    {% endif %}
+
+    {% endif %}{# end admin_role == 'Accountant' check #}
+
+  </div>
+
+
+  <!-- Scripts -->
+  <script>
+
+    {% if admin_role != 'Accountant' %}
+    // Pending Enrollments count
+    function updatePendingCount() {
+      fetch('/api/pending_enrollments')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('pending-count-badge');
+          const count = data.enrollments ? data.enrollments.length : 0;
+
+          if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(err => console.error('Error fetching pending enrollments:', err));
+    }
+
+    // Retry Requests count
+    function updateRetryRequestsCount() {
+      fetch('/api/retry-requests/count')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('retry-requests-badge');
+          const count = data.count || 0;
+
+          if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(err => console.error('Error fetching retry requests count:', err));
+    }
+
+    // Certificate Queue count
+    function updateCertQueueCount() {
+      fetch('/api/certificate-queue/counts')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('cert-queue-badge');
+          const pending = data.pending || 0;
+          if (pending > 0) {
+            badge.textContent = pending;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+
+          const banner = document.getElementById('cert-overdue-banner');
+          const bannerText = document.getElementById('cert-overdue-text');
+          const overdue = data.overdue || 0;
+          if (overdue > 0) {
+            bannerText.textContent = overdue + ' certificate' + (overdue !== 1 ? 's' : '') + ' overdue!';
+            banner.style.display = 'flex';
+          } else {
+            banner.style.display = 'none';
+          }
+        })
+        .catch(err => console.error('Error fetching cert queue counts:', err));
+    }
+    {% endif %}
+
+    {% if admin_role_level >= 3 or admin_role == 'Accountant' %}
+    // Company Approvals count
+    function updateCompanyApprovalsCount() {
+      fetch('/api/company-approvals/count')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('company-approvals-badge');
+          const count = data.count || 0;
+
+          if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(err => console.error('Error fetching company approvals count:', err));
+    }
+    {% endif %}
+
+    // Initial load
+    {% if admin_role != 'Accountant' %}
+    updatePendingCount();
+    updateRetryRequestsCount();
+    updateCertQueueCount();
+    {% endif %}
+    {% if admin_role_level >= 3 or admin_role == 'Accountant' %}
+    updateCompanyApprovalsCount();
+    {% endif %}
+
+    // Poll every 10 seconds
+    {% if admin_role != 'Accountant' %}
+    setInterval(updatePendingCount, 10000);
+    setInterval(updateRetryRequestsCount, 10000);
+    setInterval(updateCertQueueCount, 10000);
+    {% endif %}
+    {% if admin_role_level >= 3 or admin_role == 'Accountant' %}
+    setInterval(updateCompanyApprovalsCount, 10000);
+    {% endif %}
+  </script>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Training. All rights reserved.</span>
+      <span class="flex items-center gap-2">Powered by <a href="https://asimo.tech" target="_blank" class="flex items-center gap-1">Asimotech <img src="{{ url_for('static', filename='images/asimowhitesmall.png') }}" alt="Asimotech" class="h-5"></a></span>
+    </div>
+  </footer>
+
+</body>
+</html>

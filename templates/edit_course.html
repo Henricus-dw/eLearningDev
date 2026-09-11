@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Course</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Brand styling -->
+  <style>
+    :root{
+      --brand-blue:#17306B;
+      --brand-gold:#C7A434;
+      --border:rgba(0,0,0,.08);
+    }
+    body{
+      background:
+        radial-gradient(900px 500px at -10% -10%, rgba(199,164,52,.08), transparent 60%),
+        radial-gradient(800px 500px at 110% 0%, rgba(23,48,107,.10), transparent 55%),
+        linear-gradient(#f9fbff, #f3f6fc);
+    }
+    .page-head{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin:20px 0 10px;
+    }
+    .title{
+      display:flex; align-items:center; gap:.75rem;
+      color:var(--brand-blue); font-weight:800; font-size:clamp(22px,3vw,28px);
+    }
+    .title-badge{
+      width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+      background:linear-gradient(135deg,var(--brand-gold),#f2d471); color:#272b3a; font-size:20px;
+      box-shadow:0 8px 20px rgba(199,164,52,.35);
+    }
+
+    .card-soft{
+      border:1px solid var(--border);
+      box-shadow:0 10px 24px rgba(0,0,0,.06);
+      border-radius:16px;
+    }
+    .btn-gold{background:var(--brand-gold);border-color:var(--brand-gold);color:#1b1e2b;font-weight:700}
+    .btn-gold:hover{filter:brightness(.96)}
+    .btn-blue{background:var(--brand-blue);border-color:var(--brand-blue);color:#fff;font-weight:700}
+    .btn-blue:hover{filter:brightness(.96)}
+    .btn-ghost{background:#fff;border:1px solid var(--border);font-weight:700}
+    .btn-ghost:hover{filter:brightness(.98)}
+
+    .dropzone{
+      border:2px dashed rgba(199,164,52,.65);
+      border-radius:14px; padding:14px; background:#fffdf2; cursor:pointer;
+      transition:background .15s,border-color .15s;
+    }
+    .dropzone.drag{ background:#fff7dc; border-color:var(--brand-gold); }
+    .cover-img{
+      width:100%; aspect-ratio:16/9; object-fit:cover;
+      background:#f1f3f7; border-radius:12px; border:1px solid #e8ebf2;
+    }
+    .subtle{
+      color:#5c667c; font-size:.9rem;
+    }
+    .section-title{
+      font-weight:800; color:var(--brand-blue); font-size:1.1rem;
+      border-left:6px solid var(--brand-gold); padding-left:.75rem;
+    }
+    .list-clean .list-group-item{
+      border:1px solid var(--border); border-radius:12px; margin-bottom:.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-3 py-md-4">
+
+    <!-- Page header -->
+    <div class="page-head">
+      <div class="title">
+        <span class="title-badge">✏</span>
+        Edit Course
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-ghost">← Back to Courses</a>
+        <a href="{{ url_for('add_chapter', course_id=course.id) }}" class="btn btn-blue">➕ Add Chapter</a>
+      </div>
+    </div>
+
+    <p class="text-danger small mb-2">DEBUG: course.id = {{ course.id }}</p>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Cover uploader -->
+    <div class="card card-soft mb-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="section-title">Course Cover</div>
+        </div>
+
+        <div class="row g-4 align-items-start">
+          <div class="col-12 col-md-5">
+            <img id="coverPreview"
+                 class="cover-img"
+                 alt="Course cover"
+                 src="{% if course.cover_image %}{{ url_for('static', filename='uploads/courses/' ~ course.cover_image) }}{% else %}{{ url_for('static', filename='images/coursepreview.jpg') }}{% endif %}">
+            <div class="form-text mt-2">
+              Recommended 1200×675 (16:9). PNG, JPG, or WEBP up to 5 MB.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-7">
+            <form method="POST" id="coverForm"
+                  action="{{ url_for('upload_course_cover', course_id=course.id) }}"
+                  enctype="multipart/form-data">
+              <div id="coverDrop" class="dropzone mb-3">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <strong>Drag & drop</strong> an image here, or choose a file.
+                    <div class="subtle">A preview appears before upload.</div>
+                  </div>
+                  <label class="btn btn-ghost mb-0">
+                    Browse…
+                    <input type="file" class="d-none" name="cover" id="coverInput"
+                           accept="image/png,image/jpeg,image/webp">
+                  </label>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-gold" type="submit" id="uploadBtn" disabled>Upload Cover</button>
+                {% if course.cover_image %}
+                  <a class="btn btn-outline-danger"
+                     href="#"
+                     onclick="event.preventDefault(); document.getElementById('deleteCoverForm').submit();">
+                    Remove
+                  </a>
+                {% endif %}
+              </div>
+            </form>
+
+            {% if course.cover_image %}
+              <form id="deleteCoverForm" method="POST"
+                    action="{{ url_for('delete_course_cover', course_id=course.id) }}"></form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course details -->
+    <div class="card card-soft mb-4">
+      <div class="card-body">
+        <div class="section-title mb-3">Details</div>
+        <form method="POST">
+          <div class="mb-3">
+            <label for="name" class="form-label fw-semibold">Course Name</label>
+            <input type="text" class="form-control" id="name" name="title" value="{{ course.title }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label fw-semibold">Course Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required>{{ course.description }}</textarea>
+          </div>
+
+          <div class="d-flex gap-2 justify-content-end">
+            <a href="{{ url_for('manage_courses') }}" class="btn btn-ghost">Back</a>
+            <button type="submit" class="btn btn-blue">💾 Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Chapters -->
+    <div class="card card-soft">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="section-title">Chapters</div>
+          <a href="{{ url_for('add_chapter', course_id=course.id) }}" class="btn btn-blue btn-sm">➕ Add Chapter</a>
+        </div>
+
+        {% if chapters %}
+          <ul class="list-group list-clean">
+            {% for chapter in chapters %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge rounded-pill text-bg-warning" title="position">{{ chapter.position }}</span>
+                  <span class="fw-semibold">{{ chapter.title }}</span>
+                </div>
+                <a href="{{ url_for('edit_chapter', chapter_id=chapter.id) }}" class="btn btn-outline-primary btn-sm">
+                  Edit
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="subtle mb-0">No chapters added yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Live preview + drag/drop for cover (unchanged logic, nicer UX)
+    (function(){
+      const input = document.getElementById('coverInput');
+      const drop  = document.getElementById('coverDrop');
+      const img   = document.getElementById('coverPreview');
+      const btn   = document.getElementById('uploadBtn');
+      const form  = document.getElementById('coverForm');
+
+      const accept = ['image/png','image/jpeg','image/webp'];
+      const maxMB = 5;
+
+      function setFile(file){
+        if(!file) return;
+        if(!accept.includes(file.type)) { alert('Use PNG, JPG, or WEBP.'); return; }
+        if(file.size > maxMB*1024*1024){ alert('Image too large (max 5 MB).'); return; }
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        img.onload = () => URL.revokeObjectURL(url);
+
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+
+        btn.disabled = false;
+      }
+
+      input?.addEventListener('change', e => setFile(e.target.files?.[0]));
+
+      ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation(); drop.classList.add('drag');
+      }));
+      ['dragleave','dragend','drop'].forEach(ev => drop.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation(); drop.classList.remove('drag');
+      }));
+      drop.addEventListener('drop', e => setFile(e.dataTransfer.files?.[0]));
+
+      form?.addEventListener('submit', e => {
+        if (!input.files || !input.files[0]) {
+          e.preventDefault(); alert('Choose an image first.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unit Attempts — {{ unit_key }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container py-4">
+  <h3>Unit Attempts — {{ unit_key }}</h3>
+  <table class="table table-sm align-middle">
+    <thead>
+      <tr>
+        <th>ID</th><th>Student</th><th>Email</th><th>Score</th><th>Passed</th><th>When</th><th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in rows %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.full_name or a.student_id }}</td>
+          <td>{{ a.email or '-' }}</td>
+          <td>{{ "%.2f"|format(a.score or 0.0) }}%</td>
+          <td>{{ '✅' if a.passed else '❌' }}</td>
+          <td>{{ (a.submitted_at or a.finished_at) }}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary"
+               href="{{ url_for('unit_quiz_result', course_id=a.course_id, unit_key=a.unit_key, attempt_id=a.id) }}"
+               target="_blank">Open</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-muted">No attempts yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

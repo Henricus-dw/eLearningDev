@@ -1,0 +1,164 @@
+{% if current_filters is not defined or current_filters is none %}{% set current_filters = {} %}{% endif %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Final Assessment Attempts</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+  <div class="max-w-6xl mx-auto p-6">
+
+    <!-- Header bar -->
+    <div class="mb-6 flex items-center justify-between gap-3">
+      <h1 class="text-3xl font-bold text-slate-800">📊 Final Assessment Attempts</h1>
+      <div class="flex items-center gap-2">
+        <a href="{{ back_url or url_for('dashboard') }}"
+           class="inline-flex items-center gap-2 border border-slate-300 px-3 py-2 rounded hover:bg-slate-100">
+          <span>⬅</span><span>Back to Dashboard</span>
+        </a>
+        <a href="{{ csv_url }}"
+           class="inline-flex items-center gap-2 border border-slate-300 px-3 py-2 rounded hover:bg-slate-100">
+          <span>Export CSV</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="bg-white p-5 rounded-xl shadow-md mb-6 grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div>
+        <label class="block text-xs text-slate-600 mb-1 uppercase tracking-wide">Course Key</label>
+        <input type="text" name="course_key" value="{{ current_filters.course_key|default('') }}"
+               class="w-full border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-600 mb-1 uppercase tracking-wide">Student ID</label>
+        <input type="text" name="student_id" value="{{ current_filters.student_id|default('') }}"
+               class="w-full border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-600 mb-1 uppercase tracking-wide">Status</label>
+        <select name="status" class="w-full border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="" {{ (current_filters.status|default('') == '') and 'selected' or '' }}>Any</option>
+          <option value="pass" {{ current_filters.status|default('') == 'pass' and 'selected' or '' }}>PASS</option>
+          <option value="fail" {{ current_filters.status|default('') == 'fail' and 'selected' or '' }}>FAIL</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-600 mb-1 uppercase tracking-wide">Order</label>
+        <select name="order" class="w-full border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="desc" {{ current_filters.order|default('desc') == 'desc' and 'selected' or '' }}>Newest first</option>
+          <option value="asc"  {{ current_filters.order|default('desc') == 'asc'  and 'selected' or '' }}>Oldest first</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-600 mb-1 uppercase tracking-wide">Per Page</label>
+        <input type="number" min="1" max="200" name="per_page" value={{ current_filters.per_page|default(25) }}
+               class="w-full border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- Buttons row spans full width and right aligns -->
+      <div class="md:col-span-6 flex items-end justify-end gap-2">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition">Apply</button>
+        <a href="{{ reset_url }}" class="px-3 py-2 rounded border border-slate-300 hover:bg-slate-100">Reset</a>
+      </div>
+    </form>
+
+    <!-- Summary -->
+    <div class="text-sm text-slate-600 mb-3">
+      Showing page <strong>{{ page }}</strong> of <strong>{{ pages }}</strong> —
+      <strong>{{ total }}</strong> total attempts.
+    </div>
+
+    <!-- Attempts Table -->
+    <div class="mt-4 overflow-hidden rounded-xl ring-1 ring-slate-200 bg-white">
+      <table class="min-w-full text-sm">
+        <thead class="bg-slate-50 text-slate-600">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold">ID</th>
+            <th class="px-4 py-2 text-left font-semibold">Student</th>
+            <th class="px-4 py-2 text-left font-semibold">Student&nbsp;ID</th>
+            <th class="px-4 py-2 text-left font-semibold">Course</th>
+            <th class="px-4 py-2 text-right font-semibold">Score</th>
+            <th class="px-4 py-2 text-left font-semibold">Status</th>
+            <th class="px-4 py-2 text-left font-semibold">Date</th>
+            <th class="px-4 py-2 text-right font-semibold">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          {% for r in rows %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-2 text-slate-700">#{{ r.id }}</td>
+
+            <td class="px-4 py-2">
+              <div class="text-slate-900 font-medium">{{ r.student_name or '—' }}</div>
+              {% if r.student_attempts_url %}
+                <a href="{{ r.student_attempts_url }}" class="text-blue-600 hover:underline text-xs">All attempts</a>
+              {% endif %}
+            </td>
+
+            <td class="px-4 py-2 text-slate-700">{{ r.student_id or r.student_number or '—' }}</td>
+            <td class="px-4 py-2 text-slate-700">{{ r.course_title or '—' }}</td>
+
+            <td class="px-4 py-2 text-right text-slate-900">
+              {{ "%.2f"|format(r.percentage or 0) }}%
+            </td>
+
+            <td class="px-4 py-2">
+              {% if r.passed %}
+                <span class="inline-flex items-center rounded-full bg-green-100 text-green-800 px-2 py-0.5 text-xs font-semibold">PASS</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">FAIL</span>
+              {% endif %}
+            </td>
+
+            <td class="px-4 py-2 text-slate-700">
+              {% if r.submitted_at %}
+                {{ r.submitted_at.strftime("%Y-%m-%d %H:%M") }}
+              {% else %}—{% endif %}
+            </td>
+
+            <td class="px-4 py-2 text-right whitespace-nowrap">
+              {% if r.result_url %}
+                <a class="text-blue-600 hover:underline mr-3" href="{{ r.result_url }}">View</a>
+              {% else %}
+                <span class="text-slate-400 mr-3">View</span>
+              {% endif %}
+              {% if r.pdf_url %}
+                <a class="text-slate-700 hover:underline mr-3" href="{{ r.pdf_url }}" target="_blank">PDF</a>
+              {% endif %}
+              {% if r.video_url %}
+                <a class="text-slate-700 hover:underline" href="{{ r.video_url }}" target="_blank">Video</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="px-4 py-6 text-center text-slate-500">No attempts found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pager -->
+    <div class="flex items-center justify-between mt-5">
+      <div class="text-sm text-slate-600">Page {{ page }} of {{ pages }}</div>
+      <div class="flex gap-2">
+        {% if page > 1 %}
+          <a class="px-3 py-2 border rounded text-sm hover:bg-slate-100" href="{{ make_url(page-1) }}">← Prev</a>
+        {% else %}
+          <span class="px-3 py-2 border rounded text-sm opacity-50 cursor-not-allowed">← Prev</span>
+        {% endif %}
+        {% if page < pages %}
+          <a class="px-3 py-2 border rounded text-sm hover:bg-slate-100" href="{{ make_url(page+1) }}">Next →</a>
+        {% else %}
+          <span class="px-3 py-2 border rounded text-sm opacity-50 cursor-not-allowed">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

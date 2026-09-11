@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>⚙️ System Settings</title>
+
+  <!-- Tailwind + dark mode setup -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --brand-blue:#17306B;
+      --brand-gold:#C7A434;
+    }
+    body {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(23,48,107,.10), transparent 50%),
+        radial-gradient(circle at 80% -10%, rgba(199,164,52,.10), transparent 40%),
+        linear-gradient(to bottom, #f7f9fc, #eef2f9);
+    }
+    .dark body { background: linear-gradient(to bottom, #0B1226, #050912); }
+
+    .cardx {
+      background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:1rem;
+      box-shadow:0 10px 20px rgba(0,0,0,.08); transition:.2s;
+    }
+    .cardx:hover { transform:translateY(-2px); }
+    .dark .cardx { background:#0C142B; border-color:rgba(255,255,255,.1); }
+
+    .section-title {
+      font-size:1.7rem; font-weight:900;
+      color:var(--brand-blue);
+      border-left:5px solid var(--brand-gold);
+      padding-left:.75rem;
+    }
+    .dark .section-title { color:#f2f6ff; }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans text-gray-800 dark:text-slate-100">
+  <div class="max-w-4xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
+      <h2 class="section-title flex items-center gap-2">
+        <i class="fas fa-cogs"></i> System Settings
+      </h2>
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="inline-flex items-center gap-2 rounded-xl px-3 py-2 border border-blue-200 bg-white text-[var(--brand-blue)] shadow-sm hover:shadow transition
+                dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+      </a>
+    </div>
+
+    <p class="text-gray-600 dark:text-slate-400 mb-6">
+      Manage your platform configuration below. Changes take effect immediately after saving.
+    </p>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium shadow
+                      {% if category == 'success' %}
+                        bg-green-600 text-white
+                      {% elif category == 'danger' %}
+                        bg-red-600 text-white
+                      {% else %}
+                        bg-blue-600 text-white
+                      {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Settings form -->
+    <div class="cardx p-8 space-y-6">
+      <form method="POST" class="space-y-6">
+        <!-- Site Name -->
+        <div>
+          <label for="site_name" class="block font-semibold text-[var(--brand-blue)] dark:text-slate-200 mb-1">Site Name</label>
+          <input type="text" id="site_name" name="site_name"
+                 value="Professional Training Platform"
+                 class="block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-blue-500
+                        dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"/>
+        </div>
+
+        <!-- Admin Email -->
+        <div>
+          <label for="admin_email" class="block font-semibold text-[var(--brand-blue)] dark:text-slate-200 mb-1">Admin Email</label>
+          <input type="email" id="admin_email" name="admin_email"
+                 value="admin@professional.za.com"
+                 class="block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-blue-500
+                        dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"/>
+        </div>
+
+        <!-- Save -->
+        <div class="pt-2">
+          <button type="submit"
+                  class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 bg-[var(--brand-blue)] hover:brightness-110 text-white font-semibold shadow transition">
+            <i class="fas fa-save"></i> Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

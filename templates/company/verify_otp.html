@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Verify OTP — Company Registration</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{blue:'#17306B',gold:'#C7A434'}}}}}</script>
+</head>
+<body class="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+  <main class="w-full max-w-md bg-white rounded-2xl shadow ring-1 ring-slate-200 overflow-hidden">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold"></div>
+    <div class="p-6">
+      <h1 class="text-xl font-semibold text-brand-blue">Verify Your Email</h1>
+      <p class="text-sm text-slate-600 mt-1">We sent a one-time PIN to <strong>{{ email }}</strong>. Please enter it below.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mt-3 space-y-2">
+          {% for c,m in messages %}<div class="text-sm px-3 py-2 rounded ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}{% endwith %}
+
+      <form method="post" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">One-Time PIN</label>
+          <input name="otp" type="text" required maxlength="8" pattern="[0-9]{6,8}" class="w-full rounded-lg border-slate-300 px-3 py-2 text-center text-2xl tracking-widest font-mono" placeholder="--------" autofocus>
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2 font-semibold">Verify</button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <form method="post" action="{{ url_for('company_resend_otp') }}">
+          <button type="submit" class="text-sm text-brand-blue underline hover:text-brand-gold">Resend OTP</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</body></html>

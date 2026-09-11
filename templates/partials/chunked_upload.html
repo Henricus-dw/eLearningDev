@@ -1,0 +1,363 @@
+<!-- Chunked Video Upload System -->
+<!-- Include this partial in proctored assessment templates -->
+<!-- Exposes: window.ChunkedRecorder, window.AssessmentSafeguard -->
+<script>
+(function() {
+  'use strict';
+
+  // ═══════════════════════════════════════════════════════════════
+  // CHUNKED RECORDER — progressive video upload during recording
+  // ═══════════════════════════════════════════════════════════════
+
+  const CHUNK_INTERVAL_MS = 30000; // 30 seconds
+  const MAX_RETRIES = 3;
+  const RETRY_DELAYS = [1000, 2000, 4000];
+  const CHUNK_ENDPOINT = '/api/video-chunk';
+
+  let _mediaRecorder = null;
+  let _sessionId = null;
+  let _chunkIndex = 0;
+  let _pendingUploads = [];
+  let _allChunks = [];       // fallback: raw blobs for single-upload
+  let _chunkedMode = true;   // starts true, flips to false on persistent failure
+  let _failedCount = 0;
+  let _uploadedCount = 0;
+  let _stopped = false;
+  let _stopResolve = null;
+  let _studentNumber = null;
+  let _warningBanner = null;
+
+  function generateSessionId() {
+    return 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function getStudentNumber() {
+    if (_studentNumber) return _studentNumber;
+    const meta = document.querySelector('meta[name="student-number"]');
+    if (meta) return meta.getAttribute('content');
+    const el = document.getElementById('student_number') || document.querySelector('[name="student_number"]');
+    if (el) return el.value;
+    return 'unknown';
+  }
+
+  function showWarningBanner() {
+    if (_warningBanner) return;
+    _warningBanner = document.createElement('div');
+    _warningBanner.id = 'chunked-upload-warning';
+    _warningBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fef3c7;color:#92400e;text-align:center;padding:8px 16px;font-size:13px;font-weight:500;border-bottom:2px solid #f59e0b;';
+    _warningBanner.innerHTML = '<i class="fa-solid fa-wifi" style="margin-right:6px;"></i> Connection unstable — your recording will be uploaded when you submit.';
+    document.body.prepend(_warningBanner);
+  }
+
+  function hideWarningBanner() {
+    if (_warningBanner) { _warningBanner.remove(); _warningBanner = null; }
+  }
+
+  async function uploadChunk(blob, index, attempt) {
+    attempt = attempt || 0;
+    const fd = new FormData();
+    fd.append('chunk', blob, 'chunk_' + String(index).padStart(4, '0') + '.webm');
+    fd.append('session_id', _sessionId);
+    fd.append('chunk_index', index);
+    fd.append('student_number', getStudentNumber());
+
+    try {
+      const resp = await fetch(CHUNK_ENDPOINT, { method: 'POST', body: fd });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.message || 'Server rejected chunk');
+      _uploadedCount++;
+      if (_warningBanner && _chunkedMode) hideWarningBanner();
+      return true;
+    } catch (err) {
+      console.warn('[ChunkedUpload] Chunk ' + index + ' attempt ' + (attempt + 1) + ' failed:', err.message);
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+        return uploadChunk(blob, index, attempt + 1);
+      }
+      _failedCount++;
+      if (_chunkedMode) {
+        console.warn('[ChunkedUpload] Switching to fallback mode');
+        _chunkedMode = false;
+        showWarningBanner();
+      }
+      return false;
+    }
+  }
+
+  function onDataAvailable(e) {
+    if (!e.data || e.data.size === 0) return;
+    _allChunks.push(e.data);
+    if (_chunkedMode) {
+      var idx = _chunkIndex++;
+      _pendingUploads.push(uploadChunk(e.data, idx));
+    }
+  }
+
+  function onRecorderStop() {
+    Promise.allSettled(_pendingUploads).then(function() {
+      if (_stopResolve) _stopResolve();
+    });
+  }
+
+  window.ChunkedRecorder = {
+    init: function(stream, studentNumber) {
+      _sessionId = generateSessionId();
+      _chunkIndex = 0;
+      _pendingUploads = [];
+      _allChunks = [];
+      _chunkedMode = true;
+      _failedCount = 0;
+      _uploadedCount = 0;
+      _stopped = false;
+      _stopResolve = null;
+      _studentNumber = studentNumber || null;
+
+      try { _mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); }
+      catch (e) { _mediaRecorder = new MediaRecorder(stream); }
+
+      _mediaRecorder.ondataavailable = onDataAvailable;
+      _mediaRecorder.onstop = onRecorderStop;
+      _mediaRecorder.start(CHUNK_INTERVAL_MS);
+      console.log('[ChunkedUpload] Recording started, session:', _sessionId);
+      return _mediaRecorder;
+    },
+
+    stop: function() {
+      return new Promise(function(resolve) {
+        _stopResolve = resolve;
+        _stopped = true;
+        if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+          try { _mediaRecorder.stop(); } catch (e) { resolve(); }
+        } else {
+          Promise.allSettled(_pendingUploads).then(resolve);
+        }
+      });
+    },
+
+    getSessionId: function() { return _sessionId; },
+    isChunkedMode: function() { return _chunkedMode && _failedCount === 0; },
+    getFallbackBlob: function() { return new Blob(_allChunks, { type: 'video/webm' }); },
+    getRawChunks: function() { return _allChunks; },
+    getRecorder: function() { return _mediaRecorder; },
+    getStats: function() {
+      return { uploaded: _uploadedCount, failed: _failedCount, total: _chunkIndex, chunkedMode: _chunkedMode, sessionId: _sessionId };
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ASSESSMENT SAFEGUARD — backup answers + retry on failed submit
+  // ═══════════════════════════════════════════════════════════════
+
+  var _formRef = null;
+  var _backupKey = null;
+  var _submitRetries = 0;
+  var MAX_SUBMIT_RETRIES = 3;
+
+  window.AssessmentSafeguard = {
+
+    /**
+     * Start auto-saving answers from a form.
+     * Call once after the form is loaded.
+     * @param {HTMLFormElement} form
+     * @param {string} assessmentKey - unique key like "asat_gen_12345678"
+     */
+    init: function(form, assessmentKey) {
+      _formRef = form;
+      _backupKey = 'assessment_backup_' + assessmentKey;
+      _submitRetries = 0;
+
+      // Check for saved answers from a previous interrupted session
+      try {
+        var saved = localStorage.getItem(_backupKey);
+        if (saved) {
+          var parsed = JSON.parse(saved);
+          var answerCount = Object.keys(parsed).filter(function(k) {
+            return k.indexOf('q_') === 0 || k.indexOf('question_') === 0;
+          }).length;
+          if (answerCount > 0) {
+            AssessmentSafeguard._showRestorePrompt(answerCount);
+          }
+        }
+      } catch (e) {}
+
+      // Auto-save answers every 10 seconds
+      setInterval(function() {
+        AssessmentSafeguard.saveAnswers();
+      }, 10000);
+
+      // Also save on every input change
+      form.addEventListener('change', function() {
+        AssessmentSafeguard.saveAnswers();
+      });
+
+      console.log('[Safeguard] Initialized, key:', _backupKey);
+    },
+
+    /** Show a non-blocking prompt to restore previous answers */
+    _showRestorePrompt: function(answerCount) {
+      var banner = document.createElement('div');
+      banner.id = 'safeguard-restore-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#17306B;color:white;text-align:center;padding:12px 16px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+      banner.innerHTML = '<span style="font-size:20px;">&#128190;</span>'
+        + '<span>You have <strong>' + answerCount + ' saved answer(s)</strong> from a previous session.</span>'
+        + '<button id="safeguard-restore-btn" style="background:#C7A434;color:#17306B;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Restore Answers</button>'
+        + '<button id="safeguard-discard-btn" style="background:transparent;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Start Fresh</button>';
+      document.body.prepend(banner);
+
+      document.getElementById('safeguard-restore-btn').addEventListener('click', function() {
+        var restored = AssessmentSafeguard.restoreAnswers();
+        banner.style.background = '#065f46';
+        banner.innerHTML = '<span style="font-size:20px;">&#9989;</span><span>' + (restored ? 'Answers restored! You can continue where you left off.' : 'Could not restore answers.') + '</span>';
+        setTimeout(function() { banner.remove(); }, 3000);
+      });
+
+      document.getElementById('safeguard-discard-btn').addEventListener('click', function() {
+        AssessmentSafeguard.clearBackup();
+        banner.remove();
+      });
+    },
+
+    /** Save current form answers to localStorage */
+    saveAnswers: function() {
+      if (!_formRef) return;
+      var data = {};
+      var inputs = _formRef.querySelectorAll('input[type="radio"]:checked, input[type="text"], input[type="hidden"], textarea, select');
+      inputs.forEach(function(el) {
+        if (el.name && el.name !== 'video' && el.name !== 'video_session_id' && el.name !== 'chunk') {
+          data[el.name] = el.value;
+        }
+      });
+      try {
+        localStorage.setItem(_backupKey, JSON.stringify(data));
+      } catch (e) {}
+    },
+
+    /** Restore saved answers into the form */
+    restoreAnswers: function() {
+      if (!_formRef || !_backupKey) return false;
+      try {
+        var raw = localStorage.getItem(_backupKey);
+        if (!raw) return false;
+        var data = JSON.parse(raw);
+        Object.keys(data).forEach(function(name) {
+          var el = _formRef.querySelector('[name="' + name + '"]');
+          if (!el) return;
+          if (el.type === 'radio') {
+            var radio = _formRef.querySelector('input[name="' + name + '"][value="' + data[name] + '"]');
+            if (radio) {
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change', { bubbles: true }));
+              radio.dispatchEvent(new Event('click', { bubbles: true }));
+            }
+          } else {
+            el.value = data[name];
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+        return true;
+      } catch (e) { return false; }
+    },
+
+    /** Clear saved answers (call after successful submission) */
+    clearBackup: function() {
+      try { localStorage.removeItem(_backupKey); } catch (e) {}
+    },
+
+    /** Check if there's a saved backup */
+    hasBackup: function() {
+      try { return !!localStorage.getItem(_backupKey); } catch (e) { return false; }
+    },
+
+    /**
+     * Submit with retry logic.
+     * Shows a retry modal if all attempts fail.
+     * @param {FormData} formData - the prepared FormData
+     * @param {string} url - POST URL
+     * @param {object} callbacks - { onProgress, onSuccess, onRetrying, headers }
+     */
+    submitWithRetry: function(formData, url, callbacks) {
+      callbacks = callbacks || {};
+      _submitRetries = 0;
+
+      function attempt() {
+        _submitRetries++;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        if (callbacks.headers) {
+          Object.keys(callbacks.headers).forEach(function(k) {
+            xhr.setRequestHeader(k, callbacks.headers[k]);
+          });
+        }
+        if (callbacks.onProgress) {
+          xhr.upload.onprogress = callbacks.onProgress;
+        }
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            // Success — clear backup
+            AssessmentSafeguard.clearBackup();
+            if (callbacks.onSuccess) callbacks.onSuccess(xhr);
+          } else if (_submitRetries < MAX_SUBMIT_RETRIES) {
+            console.warn('[Safeguard] Submit failed (HTTP ' + xhr.status + '), retrying... (' + _submitRetries + '/' + MAX_SUBMIT_RETRIES + ')');
+            if (callbacks.onRetrying) callbacks.onRetrying(_submitRetries, MAX_SUBMIT_RETRIES);
+            setTimeout(attempt, 2000 * _submitRetries);
+          } else {
+            showRetryModal(formData, url, callbacks, xhr.status);
+          }
+        };
+        xhr.onerror = function() {
+          if (_submitRetries < MAX_SUBMIT_RETRIES) {
+            console.warn('[Safeguard] Submit network error, retrying... (' + _submitRetries + '/' + MAX_SUBMIT_RETRIES + ')');
+            if (callbacks.onRetrying) callbacks.onRetrying(_submitRetries, MAX_SUBMIT_RETRIES);
+            setTimeout(attempt, 2000 * _submitRetries);
+          } else {
+            showRetryModal(formData, url, callbacks, 0);
+          }
+        };
+        xhr.send(formData);
+      }
+
+      attempt();
+    }
+  };
+
+  function showRetryModal(formData, url, callbacks, lastStatus) {
+    // Remove existing modal if any
+    var existing = document.getElementById('safeguard-retry-modal');
+    if (existing) existing.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'safeguard-retry-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML = '<div style="background:white;border-radius:16px;padding:32px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">'
+      + '<div style="font-size:48px;margin-bottom:12px;">&#9888;&#65039;</div>'
+      + '<h2 style="font-size:20px;font-weight:700;color:#17306B;margin-bottom:8px;">Upload Failed</h2>'
+      + '<p style="color:#475569;font-size:14px;margin-bottom:8px;">Your answers have been saved locally. Please check your internet connection.</p>'
+      + '<p style="color:#64748b;font-size:12px;margin-bottom:20px;">Your attempt has <strong>not</strong> been counted. You can retry safely.</p>'
+      + '<button id="safeguard-retry-btn" style="background:linear-gradient(135deg,#C7A434,#e0c04a);color:#17306B;border:none;padding:14px 32px;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;width:100%;margin-bottom:10px;">Retry Upload</button>'
+      + '<p id="safeguard-retry-status" style="color:#94a3b8;font-size:12px;min-height:18px;"></p>'
+      + '</div>';
+    document.body.appendChild(modal);
+
+    document.getElementById('safeguard-retry-btn').addEventListener('click', function() {
+      var btn = this;
+      var status = document.getElementById('safeguard-retry-status');
+      btn.disabled = true;
+      btn.textContent = 'Retrying...';
+      status.textContent = 'Uploading your assessment...';
+      _submitRetries = 0; // Reset retry counter
+      AssessmentSafeguard.submitWithRetry(formData, url, {
+        onProgress: callbacks.onProgress,
+        onSuccess: function(xhr) {
+          modal.remove();
+          if (callbacks.onSuccess) callbacks.onSuccess(xhr);
+        },
+        onRetrying: function(n, max) {
+          status.textContent = 'Attempt ' + n + ' of ' + max + '...';
+        }
+      });
+    });
+  }
+
+})();
+</script>

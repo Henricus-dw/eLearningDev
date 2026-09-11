@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Final Assessments - Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      border-left: 4px solid var(--brand-gold);
+      padding-left: 0.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+
+    .footer-content a {
+      color: var(--brand-gold);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-content a:hover {
+      color: #e0c04a;
+    }
+
+    .create-btn {
+      background: linear-gradient(135deg, var(--brand-gold) 0%, #b8952e 100%);
+      color: var(--brand-blue);
+      padding: 0.625rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .create-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(199, 164, 52, 0.4);
+    }
+
+    .assessment-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(23, 48, 107, 0.08);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .assessment-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(23, 48, 107, 0.15);
+    }
+
+    .assessment-header {
+      background: var(--brand-blue);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .assessment-header i {
+      font-size: 1.5rem;
+      color: var(--brand-gold);
+    }
+
+    .assessment-header h3 {
+      font-weight: 600;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .assessment-actions {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .action-btn-primary {
+      background: #f1f5f9;
+      color: var(--brand-blue);
+    }
+
+    .action-btn-primary:hover {
+      background: #e2e8f0;
+    }
+
+    .action-btn-danger {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .action-btn-danger:hover {
+      background: #fee2e2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(23, 48, 107, 0.08);
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #d1d5db;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+
+<body class="font-sans text-slate-800">
+
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- Page Title & Create Button -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="section-title">
+          <i class="fas fa-file-alt"></i>
+          Final Assessments
+        </h1>
+        <p class="text-sm text-gray-600 ml-4">
+          Manage final assessments, view attempts, and edit questions.
+        </p>
+      </div>
+      <a href="{{ url_for('admin_new_final_assessment') }}" class="create-btn">
+        <i class="fas fa-plus"></i>
+        <span>Create Final Assessment</span>
+      </a>
+    </div>
+
+    <!-- Assessments Grid -->
+    {% if assessments_catalog %}
+    <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {% for c in assessments_catalog %}
+      <div class="assessment-card">
+        <div class="assessment-header">
+          <i class="fas {{ c.icon or 'fa-file-alt' }}"></i>
+          <h3>{{ c.title }}</h3>
+        </div>
+        <div class="assessment-actions">
+          <a href="{{ url_for('course_take', course_key=c.key) }}" class="action-btn action-btn-primary">
+            <i class="fas fa-play"></i>
+            <span>Take Assessment</span>
+          </a>
+          <a href="{{ url_for('admin_attempts_for_course', course_key=c.key) }}" class="action-btn action-btn-primary">
+            <i class="fas fa-list"></i>
+            <span>View Attempts</span>
+          </a>
+          <a href="{{ url_for('admin_question_builder', key=c.key) }}" class="action-btn action-btn-primary">
+            <i class="fas fa-list-check"></i>
+            <span>Question Builder</span>
+          </a>
+          <a href="{{ url_for('questions_mcq', filename=c.qfile) }}" class="action-btn action-btn-primary">
+            <i class="fas fa-question-circle"></i>
+            <span>Edit Questions (legacy)</span>
+          </a>
+          <form action="{{ url_for('admin_delete_final_assessment', course_key=c.key) }}"
+                method="post"
+                onsubmit="return confirm('Are you sure you want to delete the Final Assessment: {{ c.title }}?');">
+            <button type="submit" class="action-btn action-btn-danger w-full">
+              <i class="fas fa-trash"></i>
+              <span>Delete Assessment</span>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-file-alt"></i>
+      <p class="text-lg font-medium text-gray-700 mb-2">No Final Assessments Found</p>
+      <p class="text-gray-500 mb-4">Create your first final assessment to get started.</p>
+      <a href="{{ url_for('admin_new_final_assessment') }}" class="create-btn">
+        <i class="fas fa-plus"></i>
+        <span>Create Final Assessment</span>
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Training. All rights reserved.</span>
+      <span class="flex items-center gap-2">Powered by <a href="https://asimo.tech" target="_blank" class="flex items-center gap-1">Asimotech <img src="{{ url_for('static', filename='images/asimowhitesmall.png') }}" alt="Asimotech" class="h-5"></a></span>
+    </div>
+  </footer>
+
+</body>
+</html>

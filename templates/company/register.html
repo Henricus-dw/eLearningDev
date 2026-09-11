@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Register Company — Professional Aviation Training</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' },
+        keyframes: {
+          dash: { to:{ strokeDashoffset:-700 } }
+        },
+        animation: {
+          dash: 'dash 20s linear infinite'
+        }
+      }
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  .bg-board {
+    background:
+      radial-gradient(900px 500px at 70% 15%, rgba(199,164,52,.08), transparent 60%),
+      radial-gradient(1000px 600px at 10% 90%, rgba(23,48,107,.10), transparent 60%),
+      radial-gradient(1200px 700px at 50% 50%, rgba(23,48,107,.06), transparent 65%),
+      radial-gradient(circle at center, rgba(255,255,255,.6), rgba(255,255,255,.4) 40%, rgba(255,255,255,.2) 70%, transparent 80%),
+      radial-gradient(circle at 50% 110%, rgba(0,0,0,.05), transparent 40%);
+    position: relative;
+  }
+  .dotfield {
+    background-image: radial-gradient(rgba(23,48,107,.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+    -webkit-mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+  }
+  .field-input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    transition: all 0.2s;
+  }
+  .field-input:focus {
+    outline: none;
+    border-color: #17306B;
+    box-shadow: 0 0 0 3px rgba(23,48,107,.15);
+  }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 bg-board overflow-x-hidden">
+  <!-- Decorative dotted layer + routes -->
+  <div class="dotfield absolute inset-0 pointer-events-none"></div>
+  <svg class="pointer-events-none absolute inset-0 w-full h-full opacity-60" viewBox="0 0 1440 900" fill="none">
+    <g stroke="#17306B" stroke-opacity=".15" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 10" class="animate-dash">
+      <path d="M140,580 C420,420 740,520 960,340 C1120,220 1240,240 1320,300"/>
+      <path d="M220,260 C460,240 680,360 880,410 C1100,470 1250,400 1340,340"/>
+      <path d="M160,500 C380,520 600,440 760,300 C900,180 1120,200 1260,260"/>
+    </g>
+    <g fill="#C7A434" opacity=".65">
+      <circle cx="220" cy="260" r="3"/><circle cx="160" cy="500" r="3"/><circle cx="140" cy="580" r="3"/>
+      <circle cx="760" cy="300" r="3"/><circle cx="960" cy="340" r="3"/><circle cx="1260" cy="260" r="3"/>
+    </g>
+  </svg>
+
+  <div class="relative z-10 flex items-center justify-center min-h-screen py-8 px-4">
+    <main class="w-full max-w-3xl bg-white/95 backdrop-blur-sm rounded-2xl shadow-soft ring-1 ring-slate-200 overflow-hidden">
+      <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold"></div>
+      <div class="p-6 sm:p-8">
+        <div class="flex items-center gap-3 mb-2">
+          <img src="{{ url_for('static', filename='images/PAS_Training_Logo.png') }}" class="h-10 w-auto" alt="Logo">
+          <div>
+            <h1 class="text-xl font-semibold text-brand-blue">Register your Company</h1>
+            <p class="text-sm text-slate-500">Your registration will be reviewed by an administrator.</p>
+          </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mt-3 mb-4 space-y-2">
+            {% for c,m in messages %}<div class="text-sm px-3 py-2 rounded-lg ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+          </div>
+        {% endif %}{% endwith %}
+
+        <form method="post" class="space-y-5 mt-4">
+          <!-- Section: Company / Client Details -->
+          <fieldset class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+            <legend class="text-sm font-semibold text-brand-blue px-2">
+              <i class="fa-solid fa-building text-brand-gold mr-1"></i> Company / Individual Responsible for Payment
+            </legend>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Full Name of Company / Client <span class="text-rose-500">*</span></label>
+                <input name="company_name" required class="field-input" value="{{ request.form.get('company_name', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Postal Address</label>
+                <input name="postal_address" class="field-input" value="{{ request.form.get('postal_address', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Postal Code</label>
+                <input name="postal_code" class="field-input" value="{{ request.form.get('postal_code', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Street Address <span class="text-rose-500">*</span></label>
+                <input name="street_address" required class="field-input" value="{{ request.form.get('street_address', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Postal Code (Street)</label>
+                <input name="street_postal_code" class="field-input" value="{{ request.form.get('street_postal_code', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">VAT Number <span class="text-rose-500">*</span></label>
+                <input name="vat_number" required class="field-input" value="{{ request.form.get('vat_number', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Purchase Order Number</label>
+                <input name="purchase_order_number" class="field-input" value="{{ request.form.get('purchase_order_number', '') }}">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm text-slate-600 mb-1">Copy of Purchase Order attached?</label>
+                <div class="flex gap-6 mt-1">
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="purchase_order_attached" value="yes" class="accent-brand-blue"> Yes
+                  </label>
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="purchase_order_attached" value="no" checked class="accent-brand-blue"> No
+                  </label>
+                </div>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm text-slate-600 mb-1">Entity Responsible for Payment</label>
+                <input name="entity_responsible" class="field-input" value="{{ request.form.get('entity_responsible', '') }}">
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Section: Contact Details -->
+          <fieldset class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+            <legend class="text-sm font-semibold text-brand-blue px-2">
+              <i class="fa-solid fa-address-book text-brand-gold mr-1"></i> Contact Details
+            </legend>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Name of Contact Person <span class="text-rose-500">*</span></label>
+                <input name="contact_name" required class="field-input" value="{{ request.form.get('contact_name', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Telephone <span class="text-rose-500">*</span></label>
+                <input name="contact_phone" id="contact_phone" class="field-input" value="{{ request.form.get('contact_phone', '') }}">
+                <p class="text-xs text-slate-400 mt-1">At least one phone number is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Cellphone <span class="text-rose-500">*</span></label>
+                <input name="cellphone" id="cellphone" class="field-input" value="{{ request.form.get('cellphone', '') }}">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">E-mail Address <span class="text-rose-500">*</span></label>
+                <input name="contact_email" type="email" required class="field-input" value="{{ request.form.get('contact_email', '') }}">
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Section: Account Owner (login credentials) -->
+          <fieldset class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+            <legend class="text-sm font-semibold text-brand-blue px-2">
+              <i class="fa-solid fa-user-shield text-brand-gold mr-1"></i> Account Login Details
+            </legend>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Your Full Name <span class="text-rose-500">*</span></label>
+                <input name="full_name" required class="field-input" value="{{ request.form.get('full_name', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Login Email <span class="text-rose-500">*</span></label>
+                <input name="email" type="email" required class="field-input" value="{{ request.form.get('email', '') }}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Password <span class="text-rose-500">*</span></label>
+                <input name="password" type="password" required minlength="8" class="field-input">
+              </div>
+            </div>
+          </fieldset>
+
+          <button class="w-full bg-brand-blue text-white rounded-lg py-3 font-semibold shadow-soft hover:brightness-95 transition">
+            <i class="fa-solid fa-paper-plane mr-1"></i> Create Company Account
+          </button>
+        </form>
+
+        <p class="text-xs text-center text-slate-500 mt-4">Already have an account?
+          <a class="font-medium text-brand-blue hover:text-brand-gold transition" href="{{ url_for('company_login') }}">Login here</a>.
+        </p>
+      </div>
+    </main>
+  </div>
+<script>
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const phone = document.getElementById('contact_phone').value.trim();
+    const cell = document.getElementById('cellphone').value.trim();
+    if (!phone && !cell) {
+      e.preventDefault();
+      alert('Please provide at least one phone number (Telephone or Cellphone).');
+      document.getElementById('contact_phone').focus();
+    }
+  });
+</script>
+</body>
+</html>

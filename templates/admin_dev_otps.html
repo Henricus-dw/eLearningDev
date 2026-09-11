@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Access - Developer Tools</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --brand-blue:#17306B; --brand-gold:#C7A434; }
+    body { background:linear-gradient(135deg,#f5f7fa 0%,#e4e8f0 100%); min-height:100vh; }
+    .header-bar { background:var(--brand-blue); padding:1rem 0; }
+    .header-content { max-width:80rem; margin:0 auto; padding:0 1rem;
+      display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .back-btn { border:2px solid #fff; color:#fff; padding:.5rem 1.25rem; border-radius:8px;
+      font-weight:600; font-size:.875rem; text-decoration:none; white-space:nowrap; }
+    .back-btn:hover { background:#fff; color:var(--brand-blue); }
+    .section-title { font-size:1.5rem; font-weight:700; color:var(--brand-blue);
+      border-left:4px solid var(--brand-gold); padding-left:.75rem; }
+    .card { background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(23,48,107,.08); }
+    table { width:100%; border-collapse:collapse; table-layout:fixed; }
+    thead th { text-align:left; font-size:.65rem; font-weight:600; letter-spacing:.07em;
+      text-transform:uppercase; color:#6b7280; padding:.6rem .5rem; border-bottom:1.5px solid #e5e7eb; }
+    tbody td { padding:.6rem .5rem; border-bottom:1px solid #f1f5f9; font-size:.83rem; vertical-align:top; }
+    tbody tr:hover { background:#f9fafb; }
+    .trunc { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .otp { font-family:ui-monospace,Menlo,monospace; font-size:1.05rem; font-weight:700;
+      letter-spacing:.1em; color:var(--brand-blue); background:#eef2ff;
+      padding:.25rem .5rem; border-radius:6px; cursor:pointer; border:1px solid #c7d2fe; }
+    .otp:hover { background:#e0e7ff; }
+    .btn { display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .6rem;
+      border-radius:6px; font-size:.73rem; font-weight:600; border:none; cursor:pointer; white-space:nowrap; }
+    .btn-primary { background:var(--brand-blue); color:#fff; }
+    .btn-ghost { background:#e5e7eb; color:#111827; }
+    .btn-gold { background:var(--brand-gold); color:#3b2f00; }
+    .badge { display:inline-block; padding:.18rem .5rem; border-radius:999px;
+      font-size:.68rem; font-weight:700; white-space:nowrap; }
+    .b-otp { background:#fef3c7; color:#92400e; }
+    .b-setup { background:#dbeafe; color:#1e40af; }
+    .b-exp { background:#fee2e2; color:#991b1b; }
+    .b-ok { background:#d1fae5; color:#065f46; }
+    .b-susp { background:#e5e7eb; color:#374151; }
+    .tab { padding:.4rem .8rem; border-radius:8px; font-size:.78rem; font-weight:600;
+      text-decoration:none; color:#475569; background:#eef2f7; white-space:nowrap; }
+    .tab.on { background:var(--brand-blue); color:#fff; }
+    .temp-pw { font-family:ui-monospace,Menlo,monospace; font-size:1.35rem; font-weight:700;
+      letter-spacing:.08em; color:#7c2d12; background:#fef3c7; padding:.4rem .8rem;
+      border-radius:8px; cursor:pointer; border:1.5px solid #fcd34d; }
+    .temp-pw:hover { background:#fde68a; }
+    .stale { color:#b91c1c; font-weight:600; }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+  <header class="header-bar">
+    <div class="header-content">
+      <span class="text-white font-semibold">Developer Tools: Student Access</span>
+      <div class="flex gap-2">
+        <a href="{{ url_for('admin_dev_tools') }}" class="back-btn"><i class="fas fa-screwdriver-wrench"></i> Dev Tools</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="back-btn"><i class="fas fa-arrow-left"></i> Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="section-title mb-1"><i class="fas fa-key"></i> Student access and verification</h1>
+    <p class="text-sm text-slate-600 ml-4 mb-4">
+      Search any student to see whether they can actually log in. Students who
+      registered themselves are held by an OTP. Students loaded by a company are
+      held by a password setup link instead, which is the part that used to be
+      invisible here.
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            {% set styles = {
+              'success':'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+              'danger':'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
+              'warning':'bg-amber-50 text-amber-800 ring-1 ring-amber-200' } %}
+            <div class="px-3 py-2 rounded-lg text-sm {{ styles.get(category,'bg-blue-50 text-blue-700 ring-1 ring-blue-200') }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% if temp_pw %}
+    <div class="card p-4 mb-4" style="border:2px solid var(--brand-gold); background:#fffbeb;">
+      <div class="flex items-start gap-3 flex-wrap">
+        <i class="fas fa-key text-2xl" style="color:var(--brand-gold);"></i>
+        <div class="flex-1 min-w-[260px]">
+          <div class="font-semibold text-slate-800">
+            Temporary password for {{ temp_pw.name }}
+          </div>
+          <div class="text-xs text-slate-500 mb-2">{{ temp_pw.email }}</div>
+          <button type="button" class="temp-pw" title="Click to copy"
+                  onclick="navigator.clipboard.writeText('{{ temp_pw.password }}').then(()=>{const t=this.textContent;this.textContent='copied';setTimeout(()=>this.textContent=t,900);})">{{ temp_pw.password }}</button>
+          <p class="text-xs text-slate-600 mt-2">
+            Send this to them on WhatsApp or read it out. They log in with their
+            email address and this password, then change it under Update Profile.
+            {% if temp_pw.cleared_otp %}Their pending OTP was cleared as well.{% endif %}
+          </p>
+          <p class="text-xs text-amber-800 mt-1">
+            This is shown once. Copy it before you leave the page.
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card p-4 mb-4">
+      <form method="GET" action="{{ url_for('admin_dev_otps') }}" class="flex flex-wrap gap-2 items-end">
+        <input type="hidden" name="view" value="{{ view }}">
+        <div class="flex-1 min-w-[240px]">
+          <label class="block text-xs font-medium text-slate-700 mb-1">
+            {% if view == 'companies' %}Search company logins by email, contact name, phone or company name{% else %}Search every student by email, name, student number, ID number or cell{% endif %}
+          </label>
+          <input type="text" name="q" value="{{ q or '' }}" autofocus
+                 placeholder="e.g. client@company.co.za"
+                 class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2">
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-magnifying-glass"></i> Search</button>
+        {% if q %}<a href="{{ url_for('admin_dev_otps', view=view) }}" class="btn btn-ghost">Clear</a>{% endif %}
+      </form>
+
+      <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+        <a href="{{ url_for('admin_dev_otps', view='stuck', q=q or None) }}"
+           class="tab {% if view=='stuck' %}on{% endif %}">Cannot log in ({{ counts.stuck }})</a>
+        <a href="{{ url_for('admin_dev_otps', view='otp', q=q or None) }}"
+           class="tab {% if view=='otp' %}on{% endif %}">Awaiting OTP ({{ counts.otp }})</a>
+        <a href="{{ url_for('admin_dev_otps', view='setup', q=q or None) }}"
+           class="tab {% if view=='setup' %}on{% endif %}">Awaiting password setup ({{ counts.setup }})</a>
+        <a href="{{ url_for('admin_dev_otps', view='all', q=q or None) }}"
+           class="tab {% if view=='all' %}on{% endif %}">All students ({{ counts.total }})</a>
+        <a href="{{ url_for('admin_dev_otps', view='companies', q=q or None) }}"
+           class="tab {% if view=='companies' %}on{% endif %}">
+          Company logins ({{ counts.company_total }}){% if counts.company_otp %} <span style="color:#b45309;">&bull; {{ counts.company_otp }} stuck</span>{% endif %}
+        </a>
+        {% if counts.expired %}
+        <span class="text-xs text-rose-700 self-center ml-auto">
+          <i class="fas fa-triangle-exclamation"></i>
+          {{ counts.expired }} setup link{{ 's' if counts.expired != 1 }} already expired and need reissuing
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      {% if view == 'companies' %}
+        {% if rows %}
+        <table>
+          <colgroup>
+            <col style="width:20%"><col style="width:22%"><col style="width:20%">
+            <col style="width:11%"><col style="width:12%"><col style="width:15%">
+          </colgroup>
+          <thead>
+            <tr><th>Contact</th><th>Email</th><th>Company</th><th>Registered</th><th>OTP</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            <tr>
+              <td>
+                <div class="font-medium trunc">{{ r.user.full_name }}</div>
+                {% if r.user.phone %}<div class="text-xs text-slate-400">{{ r.user.phone }}</div>{% endif %}
+                <div class="mt-1">
+                  {% if r.state == 'otp' %}<span class="badge b-otp">Awaiting OTP</span>
+                  {% elif r.state == 'inactive' %}<span class="badge b-susp">Inactive</span>
+                  {% else %}<span class="badge b-ok">Can log in</span>{% endif %}
+                </div>
+                {% if r.state == 'otp' %}
+                  <div class="text-xs mt-1 {% if r.age_min and r.age_min > 1440 %}stale{% else %}text-slate-500{% endif %}">waiting {{ r.age_human }}</div>
+                {% endif %}
+              </td>
+              <td><div class="trunc" title="{{ r.user.email }}">{{ r.user.email }}</div></td>
+              <td>
+                <div class="trunc">{{ r.company or '-' }}</div>
+                {% if r.approved is not none %}
+                  {% if r.approved %}<span class="text-xs text-emerald-700">approved</span>
+                  {% else %}<span class="text-xs text-rose-600 font-semibold">awaiting approval</span>{% endif %}
+                {% endif %}
+              </td>
+              <td class="text-slate-600 text-xs whitespace-nowrap">
+                {{ r.user.created_at.strftime('%d %b %Y') if r.user.created_at else '-' }}
+                <div class="text-slate-400">{{ r.user.created_at.strftime('%H:%M') if r.user.created_at else '' }}</div>
+              </td>
+              <td>
+                {% if r.state == 'otp' %}
+                  <button type="button" class="otp" title="Click to copy"
+                          onclick="navigator.clipboard.writeText('{{ r.user.otp }}').then(()=>{this.textContent='copied';setTimeout(()=>this.textContent='{{ r.user.otp }}',900);})">{{ r.user.otp }}</button>
+                {% else %}<span class="text-slate-400 text-xs">nothing pending</span>{% endif %}
+              </td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  {% if r.state == 'otp' %}
+                    <form method="POST" action="{{ url_for('admin_dev_company_verify', user_id=r.user.id) }}"
+                          onsubmit="return confirm('Verify {{ r.user.full_name }} without the code? They will be able to log in immediately.');">
+                      <input type="hidden" name="q" value="{{ q or '' }}">
+                      <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Verify now</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_dev_company_resend', user_id=r.user.id) }}">
+                      <input type="hidden" name="q" value="{{ q or '' }}">
+                      <button type="submit" class="btn btn-ghost"><i class="fas fa-paper-plane"></i> New code</button>
+                    </form>
+                  {% endif %}
+                  <form method="POST" action="{{ url_for('admin_dev_company_temp_password', user_id=r.user.id) }}"
+                        onsubmit="return confirm('Set a temporary password for {{ r.user.full_name }}? This replaces their current password.');">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <button type="submit" class="btn btn-ghost" title="Generate a password you can WhatsApp or read out"><i class="fas fa-unlock-keyhole"></i> Temp password</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <div class="p-10 text-center text-slate-500">
+            <i class="fas fa-building text-3xl text-slate-300 mb-3 block"></i>
+            {% if q %}No company login matches &ldquo;{{ q }}&rdquo;.{% else %}No company logins yet.{% endif %}
+          </div>
+        {% endif %}
+      {% elif rows %}
+      <table>
+        <colgroup>
+          <col style="width:19%"><col style="width:20%"><col style="width:13%">
+          <col style="width:10%"><col style="width:18%"><col style="width:20%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Student</th><th>Email</th><th>Status</th>
+            <th>Added</th><th>Code or link</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>
+              <div class="font-medium trunc">{{ r.student.name }} {{ r.student.surname }}</div>
+              <div class="text-xs text-slate-500 font-mono">{{ r.student.student_id }}</div>
+              {% if r.company %}<div class="text-xs text-slate-400 trunc">{{ r.company }}</div>{% endif %}
+            </td>
+            <td>
+              <div class="trunc" title="{{ r.student.email }}">{{ r.student.email }}</div>
+              {% if r.student.cell_number %}<div class="text-xs text-slate-400">{{ r.student.cell_number }}</div>{% endif %}
+            </td>
+            <td>
+              {% if r.state == 'otp' %}<span class="badge b-otp">Awaiting OTP</span>
+              {% elif r.state == 'setup' %}<span class="badge b-setup">Awaiting setup</span>
+              {% elif r.state == 'setup_expired' %}<span class="badge b-exp">Link expired</span>
+              {% elif r.state == 'suspended' %}<span class="badge b-susp">Suspended</span>
+              {% else %}<span class="badge b-ok">Can log in</span>{% endif %}
+              {% if r.state in ('otp','setup','setup_expired') %}
+                <div class="text-xs mt-1 {% if r.age_min and r.age_min > 1440 %}stale{% else %}text-slate-500{% endif %}">
+                  waiting {{ r.age_human }}
+                </div>
+              {% endif %}
+            </td>
+            <td class="text-slate-600 text-xs whitespace-nowrap">
+              {{ r.student.date_joined.strftime('%d %b %Y') if r.student.date_joined else '-' }}
+              <div class="text-slate-400">{{ r.student.date_joined.strftime('%H:%M') if r.student.date_joined else '' }}</div>
+            </td>
+            <td>
+              {% if r.state == 'otp' %}
+                <button type="button" class="otp" title="Click to copy"
+                        onclick="navigator.clipboard.writeText('{{ r.student.otp }}').then(()=>{this.textContent='copied';setTimeout(()=>this.textContent='{{ r.student.otp }}',900);})">{{ r.student.otp }}</button>
+              {% elif r.setup_url %}
+                <button type="button" class="btn btn-gold" title="{{ r.setup_url }}"
+                        onclick="navigator.clipboard.writeText('{{ r.setup_url }}').then(()=>{const t=this.innerHTML;this.innerHTML='copied';setTimeout(()=>this.innerHTML=t,900);})">
+                  <i class="fas fa-link"></i> Copy setup link</button>
+                <div class="text-xs mt-1 {% if r.state == 'setup_expired' %}text-rose-600 font-semibold{% else %}text-slate-400{% endif %}">
+                  {% if r.state == 'setup_expired' %}expired {{ r.expires.strftime('%d %b %Y') if r.expires }}, reissue first
+                  {% else %}valid to {{ r.expires.strftime('%d %b %Y') if r.expires else 'no expiry' }}{% endif %}
+                </div>
+              {% else %}
+                <span class="text-slate-400 text-xs">nothing pending</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="flex flex-wrap gap-1">
+                {% if r.state == 'otp' %}
+                  <form method="POST" action="{{ url_for('admin_dev_otp_verify', student_id=r.student.id) }}"
+                        onsubmit="return confirm('Verify {{ r.student.name }} {{ r.student.surname }} without the code? They will be able to log in immediately.');">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Verify now</button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin_dev_otp_resend', student_id=r.student.id) }}">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <button type="submit" class="btn btn-ghost"><i class="fas fa-paper-plane"></i> New code</button>
+                  </form>
+                {% elif r.state in ('setup','setup_expired') %}
+                  <form method="POST" action="{{ url_for('admin_dev_setup_link', student_id=r.student.id) }}">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <input type="hidden" name="send" value="1">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-envelope"></i> New link and email</button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin_dev_setup_link', student_id=r.student.id) }}">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <button type="submit" class="btn btn-ghost" title="Create a fresh 30 day link without sending email"><i class="fas fa-rotate"></i> New link only</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{{ url_for('admin_dev_setup_link', student_id=r.student.id) }}"
+                        onsubmit="return confirm('Send {{ r.student.name }} a password setup link? Use this only if they cannot get in. Their current password keeps working until they set a new one.');">
+                    <input type="hidden" name="q" value="{{ q or '' }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <input type="hidden" name="send" value="1">
+                    <button type="submit" class="btn btn-ghost"><i class="fas fa-life-ring"></i> Send setup link</button>
+                  </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('admin_dev_temp_password', student_id=r.student.id) }}"
+                      onsubmit="return confirm('Set a temporary password for {{ r.student.name }} {{ r.student.surname }}? This replaces their current password, so they will need the new one to log in.');">
+                  <input type="hidden" name="q" value="{{ q or '' }}">
+                  <input type="hidden" name="view" value="{{ view }}">
+                  <button type="submit" class="btn btn-ghost" title="Generate a password you can WhatsApp or read out"><i class="fas fa-unlock-keyhole"></i> Temp password</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="p-10 text-center text-slate-500">
+          <i class="fas fa-inbox text-3xl text-slate-300 mb-3 block"></i>
+          {% if q %}No student matches &ldquo;{{ q }}&rdquo; in this view.
+            <div class="mt-2"><a class="text-blue-700 underline" href="{{ url_for('admin_dev_otps', view='all', q=q) }}">Search all students instead</a></div>
+          {% else %}Nobody is stuck right now.{% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if truncated %}
+    <p class="text-xs text-amber-700 mt-3">
+      Showing the 200 most recent of {{ matched }} matches. Narrow the search to see the rest.
+    </p>
+    {% endif %}
+
+    <p class="text-xs text-slate-500 mt-4">
+      OTPs and setup links are live credentials, so this page is limited to Super
+      Admins and Developers and every view and action is written to the audit log.
+      Verifying a student here has the same effect as them entering the code
+      themselves. A student who can already log in is not offered an OTP, because
+      issuing one would lock them out until they entered it.
+    </p>
+  </div>
+</body>
+</html>

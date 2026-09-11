@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="page-context" data-page="Final Assessment (Proctored)" data-course="{{ title }}" data-chapter="" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="{{ url_for('static', filename='js/dragdrop_player.js') }}"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } };
+  </script>
+
+  <style>
+    #uploadOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .82);
+      color: #fff;
+      display: none;
+      z-index: 9999;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    #uploadOverlay .inner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      border: 6px solid rgba(255, 255, 255, .25);
+      border-top-color: #fff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    progress::-webkit-progress-bar {
+      background-color: #e2e8f0;
+      border-radius: 9999px;
+    }
+
+    progress::-webkit-progress-value {
+      background-color: #10b981;
+      border-radius: 9999px;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <main class="max-w-5xl mx-auto px-4 mt-4 lg:mt-5">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold m-0">🎓 {{ title }}</h2>
+        <div class="text-sm text-slate-500">
+          Pass mark: <span class="font-semibold">{{ pass_mark }}%</span> • Time allowed: 1 hour
+        </div>
+
+        {% if attempts_remaining is defined %}
+        <div class="mt-1 text-xs text-slate-500">
+          Attempts:
+          <span class="font-semibold">{{ attempts_used }}</span>
+          /
+          <span class="font-semibold">{{ attempts_allowed }}</span>
+          {% if attempts_remaining == 0 %}
+          • <span class="text-rose-600 font-semibold">No attempts remaining</span>
+          {% elif attempts_remaining == 1 %}
+          • <span class="text-amber-600 font-semibold">This is your last attempt</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="text-right">
+        <div id="timerDisplay" class="inline-block rounded bg-slate-900 text-white px-3 py-1 font-bold text-sm">60:00
+        </div>
+        <div class="text-xs text-slate-500">Time remaining</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Left: form -->
+      <div class="lg:col-span-2">
+        <form id="assessmentForm" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate>
+          <input type="hidden" id="studentNumberHidden" name="student_number" value="{{ student_number or '' }}" />
+
+          <!-- Identity card -->
+          <div class="rounded-xl border border-slate-200 bg-white shadow-sm mb-3">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700">Full Name</label>
+                <input class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800"
+                  value="{{ student_name or 'Unknown' }}" readonly>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Student ID</label>
+                <input id="studentIdDisplay"
+                  class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800"
+                  value="{{ student_id or 'unsure' }}" readonly>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Email</label>
+                <input class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800"
+                  value="{{ student_email or '' }}" readonly>
+              </div>
+
+              <div class="sm:col-span-2 lg:col-span-1">
+                <label class="block text-sm font-medium text-slate-700">Student #</label>
+                <input id="studentNumberInput"
+                  class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800"
+                  value="{{ student_number or '' }}" placeholder="Enter #" {% if student_number %}readonly{% endif %}>
+                <div id="snHelp" class="mt-1 text-xs text-slate-500">
+                  {% if student_number %}
+                  Using saved student number.
+                  {% else %}
+                  Please enter your student number (we’ll save it with your video).
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if questions %}
+          {% for q in questions %}
+            {% set _qtype = (q.type or 'mcq')|lower %}
+            {% if _qtype == 'short_answer' %}
+              {% include 'partials/players/short_answer.html' %}
+            {% elif _qtype == 'table_fill' %}
+              {% include 'partials/players/table_fill.html' %}
+            {% elif _qtype == 'drag_drop' %}
+              {% include 'partials/players/drag_drop.html' %}
+            {% else %}
+              {% include 'partials/players/mcq.html' %}
+            {% endif %}
+          {% endfor %}
+          {% else %}
+          <div class="mt-4 rounded-lg border border-slate-200 bg-blue-50 text-blue-900 px-4 py-3">
+            ℹ️ No questions loaded — only proctoring video will be submitted.
+          </div>
+          {% endif %}
+
+          <div class="border-t border-slate-200 pt-3 mt-4">
+            {% if attempts_remaining is defined and attempts_remaining <= 0 %} <button type="button"
+              class="w-full inline-flex items-center justify-center rounded-xl bg-slate-400 text-white font-semibold px-5 py-3 cursor-not-allowed"
+              disabled>
+              ❌ No attempts remaining
+              </button>
+              {% else %}
+              <button id="submitBtn" type="submit"
+                class="w-full inline-flex items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-3">
+                {% if attempts_remaining is defined and attempts_remaining == 1 %}
+                ⚠️ Submit (last attempt)
+                {% else %}
+                ✅ Submit Assessment
+                {% endif %}
+              </button>
+              {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Proctoring -->
+      <div>
+        <div class="sticky top-4">
+          <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="p-4">
+              <h5 class="font-semibold mb-3">📹 Proctoring</h5>
+              <video id="preview" width="100%" height="auto" autoplay muted
+                class="mb-3 rounded border border-slate-200"></video>
+
+              <p id="recording-status" class="text-rose-600 font-semibold">
+                ⏺ Recording will start automatically. Please ensure your camera and mic are enabled.
+              </p>
+
+              <div id="upload-status"
+                class="hidden bg-amber-50 text-amber-800 border border-amber-200 rounded px-3 py-2">
+                ⏳ Uploading… Please do not close your browser.
+              </div>
+
+              <progress id="progressBar" value="0" max="100" class="w-full hidden mt-2"></progress>
+
+              <hr class="my-3 border-slate-200">
+              <ul class="text-sm text-slate-500 mb-0 list-disc pl-5">
+                <li>Keep your face in frame.</li>
+                <li>Ensure good lighting.</li>
+                <li>Do not switch tabs during the assessment.</li>
+              </ul>
+            </div>
+          </div>
+
+          {% if attempts_remaining is defined %}
+          <div class="mt-3 rounded-xl border border-slate-200 bg-white shadow-sm p-4 text-sm">
+            <div class="font-semibold text-slate-800 mb-1">Attempts status</div>
+            <div class="text-slate-600">
+              Used: <span class="font-semibold">{{ attempts_used }}</span><br>
+              Allowed: <span class="font-semibold">{{ attempts_allowed }}</span><br>
+              Remaining: <span class="font-semibold">{{ attempts_remaining }}</span>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Full-screen upload overlay -->
+    <div id="uploadOverlay">
+      <div class="inner">
+        <div class="spinner" aria-hidden="true"></div>
+        <h2 class="mb-2 text-2xl font-bold">⏳ Don’t close your browser</h2>
+        <p class="text-lg mb-1">Your assessment is being uploaded…</p>
+        <p class="text-lg">Please be patient…</p>
+      </div>
+    </div>
+  </main>
+
+  {% include 'partials/chunked_upload.html' %}
+
+  <script>
+    let mediaRecorder, recordedChunks = [];
+    const preview = document.getElementById('preview');
+    const progressBar = document.getElementById('progressBar');
+    const statusMsg = document.getElementById('upload-status');
+    const form = document.getElementById('assessmentForm');
+    const overlay = document.getElementById('uploadOverlay');
+    const submitBtn = document.getElementById('submitBtn');
+
+    AssessmentSafeguard.init(form, 'final_proctor_{{ course.id }}_' + (document.querySelector('[name="student_number"]') || {}).value);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let detector, noFaceCounter = 0, darkCounter = 0;
+    const WARN_THRESHOLD = 3;
+    const FATAL_THRESHOLD = 8;
+
+    let submitting = false;
+
+    function playAlertSound() {
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+      audio.play().catch(() => { });
+    }
+
+    function logViolation(reason) {
+      fetch("/log_violation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
+      }).catch(() => { });
+    }
+
+    function showWarning(msg) {
+      playAlertSound();
+      logViolation("Warning: " + msg);
+      alert(msg);
+    }
+
+    function showFatal(msg) {
+      playAlertSound();
+      logViolation("Fatal: " + msg);
+      stopRecording();
+      alert(msg);
+      try { if (submitBtn) submitBtn.disabled = true; } catch { }
+    }
+
+    async function initRecording() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        showFatal("Your browser doesn't support camera and microphone access.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        preview.srcObject = stream;
+
+        const videoTrack = stream.getVideoTracks()[0];
+        videoTrack.onmute = () => showFatal("⚠️ Camera feed was interrupted or disabled.");
+
+        setInterval(() => checkBrightness(), 1000);
+        await initFaceDetection();
+
+        mediaRecorder = ChunkedRecorder.init(stream);
+
+        const rs = document.getElementById('recording-status');
+        if (rs) rs.textContent = "🔴 Recording in progress...";
+      } catch (err) {
+        console.error("Camera/mic access error:", err);
+        // Not fatal to submission. We still allow submitting without video if needed.
+        const rs = document.getElementById('recording-status');
+        if (rs) rs.textContent = "⚠️ Recording failed to start. You may continue and submit.";
+      }
+    }
+
+    function checkBrightness() {
+      if (!preview || preview.videoWidth === 0) return;
+      canvas.width = preview.videoWidth;
+      canvas.height = preview.videoHeight;
+      ctx.drawImage(preview, 0, 0);
+
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let totalBrightness = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+      const avgBrightness = totalBrightness / (data.length / 4);
+
+      if (avgBrightness < 10) {
+        darkCounter++;
+        if (darkCounter === WARN_THRESHOLD) showWarning("⚠️ Your camera looks too dark. Please adjust lighting.");
+        if (darkCounter >= FATAL_THRESHOLD) showFatal("⚠️ Camera too dark for too long. Assessment stopped.");
+      } else {
+        darkCounter = 0;
+      }
+    }
+
+    async function initFaceDetection() {
+      if (!window.faceDetection) {
+        console.warn("Face detection not loaded; continuing without it.");
+        return;
+      }
+      try {
+        const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+        detector = await faceDetection.createDetector(model, { runtime: 'tfjs', maxFaces: 1 });
+        detectFaceLoop();
+      } catch (e) {
+        console.warn("Face detector init failed; continuing without it:", e);
+      }
+    }
+
+    async function detectFaceLoop() {
+      if (!detector || !preview || preview.readyState < 2) return setTimeout(detectFaceLoop, 1000);
+      try {
+        const faces = await detector.estimateFaces(preview);
+        if (!faces || faces.length === 0) {
+          noFaceCounter++;
+          if (noFaceCounter === WARN_THRESHOLD) showWarning("⚠️ We can't see your face. Please return to view.");
+          if (noFaceCounter >= FATAL_THRESHOLD) showFatal("⚠️ No face detected for too long. Assessment stopped.");
+        } else {
+          noFaceCounter = 0;
+        }
+      } catch (e) {
+        console.error("Face detection error:", e);
+      }
+      setTimeout(detectFaceLoop, 1000);
+    }
+
+    function stopRecording() {
+      try {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+      } catch { }
+    }
+
+    // Keep hidden student number synced
+    (function () {
+      const snInput = document.getElementById("studentNumberInput");
+      const snHidden = document.getElementById("studentNumberHidden");
+      if (!snInput || !snHidden) return;
+      const sync = () => { snHidden.value = (snInput.value || "").trim(); };
+      snInput.addEventListener("input", sync);
+      sync();
+    })();
+
+    // Timer (60 mins)
+    (function initTimer() {
+      const display = document.getElementById("timerDisplay");
+      if (!display) return;
+      let remaining = 60 * 60;
+
+      setInterval(() => {
+        remaining = Math.max(remaining - 1, 0);
+        const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
+        const ss = String(remaining % 60).padStart(2, "0");
+        display.textContent = `${mm}:${ss}`;
+
+        if (remaining === 0 && !submitting) {
+          showWarning("Time is up. Submitting your assessment now.");
+          try { form.requestSubmit(); } catch { form.submit(); }
+        }
+      }, 1000);
+    })();
+
+    // Submit / Upload (✅ show server result page, no redirect)
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (submitting) return;
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      submitting = true;
+      if (submitBtn) submitBtn.disabled = true;
+      statusMsg.classList.remove('hidden');
+      progressBar.classList.remove('hidden');
+      if (overlay) overlay.style.display = "block";
+
+      ChunkedRecorder.stop().then(() => {
+        const formData = new FormData(form);
+
+        if (ChunkedRecorder.isChunkedMode()) {
+          formData.append('video_session_id', ChunkedRecorder.getSessionId());
+        } else if (ChunkedRecorder.getRawChunks().length) {
+          const blob = ChunkedRecorder.getFallbackBlob();
+          formData.append('video', blob, 'final_assessment.webm');
+        }
+
+        AssessmentSafeguard.saveAnswers();
+        AssessmentSafeguard.submitWithRetry(formData, window.location.pathname, {
+          onProgress: function(event) {
+            if (event.lengthComputable) {
+              var percent = Math.round((event.loaded / event.total) * 100);
+              progressBar.value = percent;
+              statusMsg.textContent = 'Uploading: ' + percent + '%';
+            }
+          },
+          onSuccess: function(xhr) {
+            if (xhr.status >= 200 && xhr.status < 400) {
+              document.open();
+              document.write(xhr.responseText);
+              document.close();
+            }
+          },
+          onRetrying: function(n, max) {
+            statusMsg.textContent = 'Upload failed. Retrying (' + n + '/' + max + ')...';
+          }
+        });
+      });
+    });
+
+    window.onload = () => {
+      initRecording();
+      initBackButtonProtection();
+    };
+
+    // ===== Back Button Protection =====
+    const currentAttempt = {{ current_attempt|default(1) }};
+    let allowNavigation = false;
+
+    function initBackButtonProtection() {
+      // Push a state so we have something to go "back" to
+      history.pushState({ page: 'assessment' }, '', window.location.href);
+
+      // Handle browser back button
+      window.addEventListener('popstate', function(e) {
+        if (allowNavigation) return;
+
+        // Push state again to prevent actual navigation
+        history.pushState({ page: 'assessment' }, '', window.location.href);
+
+        // Check if on attempt 2 - block completely
+        if (currentAttempt >= 2) {
+          showBackBlockedModal();
+        } else {
+          showBackConfirmModal();
+        }
+      });
+
+      // Warn on page unload (refresh, close tab, navigate away)
+      window.addEventListener('beforeunload', function(e) {
+        if (allowNavigation) return;
+        e.preventDefault();
+        e.returnValue = 'You have an assessment in progress. Are you sure you want to leave?';
+        return e.returnValue;
+      });
+    }
+
+    function showBackConfirmModal() {
+      const modal = document.getElementById('backConfirmModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function hideBackConfirmModal() {
+      const modal = document.getElementById('backConfirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmLeaveAssessment() {
+      allowNavigation = true;
+      hideBackConfirmModal();
+      history.back();
+    }
+
+    function showBackBlockedModal() {
+      const modal = document.getElementById('backBlockedModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function hideBackBlockedModal() {
+      const modal = document.getElementById('backBlockedModal');
+      if (modal) modal.style.display = 'none';
+    }
+  </script>
+
+  <!-- SANITY BEACON -->
+  <script>
+    (() => {
+      const VERSION = "proctor-v3.4-validation-xhr";
+      console.log("🚨 Loaded", VERSION);
+      const b = document.createElement("div");
+      b.textContent = "🔧 " + VERSION + " loaded";
+      Object.assign(b.style, {
+        position: "fixed", right: "8px", top: "8px", zIndex: 999999,
+        background: "#111", color: "#fff", padding: "6px 10px",
+        borderRadius: "8px", fontSize: "12px", fontFamily: "system-ui"
+      });
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 4000);
+    })();
+  </script>
+
+  <!-- Back Button Confirmation Modal -->
+  <div id="backConfirmModal" class="fixed inset-0 z-[10000] items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div class="bg-amber-500 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">⚠️</span>
+          <h3 class="text-xl font-bold text-white">Leave Assessment?</h3>
+        </div>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-slate-700 mb-4">
+          You are about to leave this assessment. Your progress will be <strong>lost</strong> and you may not be able to return.
+        </p>
+        <p class="text-slate-600 text-sm">
+          Are you sure you want to go back?
+        </p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button type="button" onclick="hideBackConfirmModal()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition">
+          Stay Here
+        </button>
+        <button type="button" onclick="confirmLeaveAssessment()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-white bg-rose-600 hover:bg-rose-700 transition">
+          Yes, Leave
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Blocked Modal (Attempt 2) -->
+  <div id="backBlockedModal" class="fixed inset-0 z-[10000] items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div class="bg-rose-600 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🚫</span>
+          <h3 class="text-xl font-bold text-white">Navigation Blocked</h3>
+        </div>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-slate-700 mb-4">
+          You are on your <strong>second attempt</strong>. Going back is not allowed.
+        </p>
+        <p class="text-slate-600 text-sm">
+          Please complete this assessment. You cannot return to your previous attempt.
+        </p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 flex justify-end">
+        <button type="button" onclick="hideBackBlockedModal()"
+                class="px-5 py-2.5 rounded-xl font-semibold text-white bg-slate-700 hover:bg-slate-800 transition">
+          Continue Assessment
+        </button>
+      </div>
+    </div>
+  </div>
+  {% include 'partials/heartbeat.html' %}
+</body>
+
+</html>

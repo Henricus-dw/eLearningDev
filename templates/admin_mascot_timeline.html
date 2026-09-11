@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mascot Timeline - {{ chapter.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --brand-blue:#17306B; --brand-gold:#C7A434; }
+    body { background:linear-gradient(135deg,#f5f7fa 0%,#e4e8f0 100%); min-height:100vh; }
+    .header-bar { background:var(--brand-blue); padding:1rem 0; }
+    .header-content { max-width:80rem; margin:0 auto; padding:0 1rem;
+      display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .back-btn { border:2px solid #fff; color:#fff; padding:.5rem 1.25rem; border-radius:8px;
+      font-weight:600; font-size:.875rem; text-decoration:none; white-space:nowrap; }
+    .back-btn:hover { background:#fff; color:var(--brand-blue); }
+    .section-title { font-size:1.4rem; font-weight:700; color:var(--brand-blue);
+      border-left:4px solid var(--brand-gold); padding-left:.75rem; }
+    .card { background:#fff; border-radius:12px; padding:1.1rem;
+      box-shadow:0 2px 12px rgba(23,48,107,.08); }
+    .btn { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem;
+      border-radius:6px; font-size:.8rem; font-weight:600; border:none; cursor:pointer; }
+    .btn-primary { background:var(--brand-blue); color:#fff; }
+    .btn-gold { background:var(--brand-gold); color:#1f2937; }
+    .btn-ghost { background:#e5e7eb; color:#111827; }
+    .btn-danger { background:#dc2626; color:#fff; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+
+    /* Timeline */
+    #track { position:relative; height:64px; background:#eef2f7; border-radius:10px;
+      border:1px solid #dbe2ea; cursor:pointer; overflow:hidden; user-select:none; }
+    #played { position:absolute; inset:0 auto 0 0; width:0;
+      background:linear-gradient(90deg,rgba(23,48,107,.16),rgba(199,164,52,.24)); }
+    #playhead { position:absolute; top:0; bottom:0; width:2px; background:#17306B; left:0; }
+    .marker { position:absolute; top:4px; bottom:4px; width:16px; margin-left:-8px;
+      border-radius:4px; background:#fff; border:2px solid var(--brand-gold);
+      box-shadow:0 1px 4px rgba(0,0,0,.15); cursor:grab; overflow:hidden; }
+    .marker img { width:100%; height:100%; object-fit:cover; }
+    /* Subtitle track. Sits under the gesture track and shares its time scale,
+       because blocks are timed once against the English voiceline and every
+       language reuses those windows. */
+    #subTrack { position:relative; height:44px; background:#f6f8fb;
+      border-radius:10px; border:1px solid #dbe2ea; overflow:hidden;
+      user-select:none; margin-top:.5rem; cursor:pointer; }
+    #subPlayhead { position:absolute; top:0; bottom:0; width:2px;
+      background:#17306B; left:0; pointer-events:none; }
+    .sblock { position:absolute; top:5px; bottom:5px; border-radius:5px;
+      background:#17306B; color:#fff; font-size:.66rem; line-height:1.15;
+      padding:3px 5px; overflow:hidden; cursor:pointer;
+      border:1px solid rgba(255,255,255,.35); }
+    .sblock.untranslated { background:#cbd5e1; color:#475569;
+      border-style:dashed; border-color:#94a3b8; }
+    .sblock.active { outline:2px solid var(--brand-gold); outline-offset:1px; }
+    .langtabs { display:flex; flex-wrap:wrap; gap:.35rem; margin:.75rem 0 .5rem; }
+    .langtab { border:1px solid #dbe2ea; background:#fff; border-radius:999px;
+      padding:.3rem .75rem; font-size:.78rem; font-weight:600; color:#475569;
+      cursor:pointer; display:inline-flex; align-items:center; gap:.4rem; }
+    .langtab .count { font-size:.68rem; font-weight:500; color:#64748b;
+      background:#eef2f7; border-radius:999px; padding:.05rem .4rem; }
+    .langtab.empty { color:#94a3b8; border-style:dashed; }
+    .langtab.on { background:var(--brand-blue); color:#fff; border-color:var(--brand-blue); }
+    .langtab.on .count { background:rgba(255,255,255,.22); color:#fff; }
+    table.subs { width:100%; border-collapse:collapse; }
+    table.subs th { text-align:left; font-size:.68rem; text-transform:uppercase;
+      letter-spacing:.06em; color:#64748b; padding:.35rem .4rem;
+      border-bottom:1px solid #e2e8f0; }
+    table.subs td { padding:.3rem .4rem; border-bottom:1px solid #f1f5f9; }
+    table.subs input[type=text] { width:100%; border:1px solid #dbe2ea;
+      border-radius:6px; padding:.3rem .45rem; font-size:.82rem; }
+    table.subs input.ms { width:5.5rem; font-family:ui-monospace,monospace;
+      font-size:.78rem; text-align:right; }
+    tr.rowsel td { background:#fffbeb; }
+
+    /* 1:2 preview, matching the student-side container */
+    .stage { width:150px; aspect-ratio:1/2; background:#f8fafc; border:1px dashed #cbd5e1;
+      border-radius:10px; display:flex; align-items:flex-end; justify-content:center;
+      overflow:hidden; margin:0 auto; }
+    .stage img { width:100%; height:100%; object-fit:contain; }
+
+    /* Cue rows: the gesture is shown, not just named. */
+    table.cues { width:100%; border-collapse:collapse; font-size:.8rem; }
+    table.cues th { text-align:left; color:#6b7280; font-weight:600; padding:.35rem .4rem; }
+    table.cues td { padding:.35rem .4rem; border-top:1px solid #eef2f7; vertical-align:middle; }
+    table.cues input[type=number] { width:90px; border:1px solid #d1d5db; border-radius:6px; padding:.2rem .4rem; }
+    .cue-thumb { display:flex; align-items:center; gap:.5rem; background:#f8fafc;
+      border:1px solid #e2e8f0; border-radius:8px; padding:.25rem .5rem .25rem .25rem;
+      cursor:pointer; width:100%; text-align:left; }
+    .cue-thumb:hover { border-color:var(--brand-blue); background:#eef2ff; }
+    .cue-thumb img { width:26px; height:52px; object-fit:contain; background:#fff; border-radius:4px; flex:none; }
+    .cue-thumb .nm { font-weight:600; color:#111827; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cue-thumb .swap { margin-left:auto; color:#6b7280; font-size:.7rem; }
+
+    /* Gesture picker modal */
+    .modal-back { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:60;
+      display:none; align-items:center; justify-content:center; padding:1rem; }
+    .modal-back.open { display:flex; }
+    .modal { background:#fff; border-radius:14px; width:min(760px,100%);
+      max-height:86vh; display:flex; flex-direction:column; overflow:hidden; }
+    .modal-head { padding:.9rem 1.1rem; border-bottom:1px solid #e5e7eb;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+    .modal-body { padding:1rem; overflow:auto; }
+    .gpreview { width:104px; height:208px; border:1px solid #dbe2ea; border-radius:10px;
+      background:#f8fafc; display:grid; place-items:center; overflow:hidden; flex:0 0 auto; }
+    .gpreview img { max-width:100%; max-height:100%; object-fit:contain; }
+    .tinput { width:7rem; border:1px solid #dbe2ea; border-radius:8px; padding:.4rem .55rem;
+      font-family:ui-monospace,monospace; font-size:.85rem; text-align:right; }
+    .langrow { display:grid; grid-template-columns:6.5rem 1fr; gap:.5rem; align-items:start;
+      margin-bottom:.45rem; }
+    .langrow label { font-size:.78rem; color:#475569; padding-top:.45rem; font-weight:600; }
+    .langrow textarea { width:100%; border:1px solid #dbe2ea; border-radius:8px;
+      padding:.4rem .55rem; font-size:.85rem; min-height:2.6rem; resize:vertical; }
+    .langrow.isempty textarea { border-style:dashed; background:#fcfcfd; }
+    .btn-danger { background:#dc2626; color:#fff; }
+    .pick { border:2px solid transparent; border-radius:10px; padding:6px; background:#fff; cursor:pointer; }
+    .pick:hover { border-color:#c7d2fe; background:#f8fafc; }
+    .pick.sel { border-color:var(--brand-blue); }
+    .pick img { width:100%; aspect-ratio:1/2; object-fit:contain; background:#f8fafc; border-radius:6px; }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+  <header class="header-bar">
+    <div class="header-content">
+      <span class="text-white font-semibold truncate">
+        Mascot Timeline: {{ course.title }} / {{ chapter.title }}
+      </span>
+      <div class="flex gap-2">
+        <a href="{{ url_for('admin_mascot_gestures', return_to=chapter.id) }}" class="back-btn">
+          <i class="fas fa-masks-theater"></i> Manage library</a>
+        <a href="{{ url_for('edit_chapter', chapter_id=chapter.id) }}" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Back to slide</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            {% set styles = {
+              'success':'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+              'danger':'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
+              'warning':'bg-amber-50 text-amber-800 ring-1 ring-amber-200' } %}
+            <div class="px-3 py-2 rounded-lg text-sm {{ styles.get(category,'bg-blue-50 text-blue-700 ring-1 ring-blue-200') }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- 1. Voiceline -->
+    <div class="card mb-4">
+      <h2 class="section-title mb-3">1. Voiceline</h2>
+      <form method="POST" action="{{ url_for('admin_chapter_mascot_audio', chapter_id=chapter.id) }}"
+            enctype="multipart/form-data" id="audioForm" class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-700 mb-1">
+            Audio file {% if audio_url %}(replaces the current one){% endif %}
+          </label>
+          <input type="file" name="audio" id="audioFile" accept=".mp3,.m4a,.ogg,.wav" required
+                 class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white">
+        </div>
+        <input type="hidden" name="duration_ms" id="uploadDuration" value="">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+        {% if audio_url %}
+          <span class="text-sm text-emerald-700 font-medium">
+            <i class="fas fa-check-circle"></i> Voiceline loaded
+            {% if mascot.duration_ms %}({{ '%.1f'|format(mascot.duration_ms/1000) }}s){% endif %}
+          </span>
+        {% else %}
+          <span class="text-sm text-amber-700"><i class="fas fa-triangle-exclamation"></i>
+            No voiceline yet. The mascot stays hidden from students until one is uploaded.</span>
+        {% endif %}
+      </form>
+    </div>
+
+    {% if audio_url %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- 2. Timeline -->
+      <div class="card lg:col-span-2">
+        <h2 class="section-title mb-3">2. Timeline</h2>
+        <audio id="audio" preload="auto" src="{{ audio_url }}"></audio>
+
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <button type="button" id="play" class="btn btn-primary"><i class="fas fa-play"></i> Play</button>
+          <button type="button" id="stop" class="btn btn-ghost"><i class="fas fa-stop"></i> Stop</button>
+          <button type="button" id="addCue" class="btn btn-gold">
+            <i class="fas fa-plus"></i> Add gesture at playhead</button>
+          <span id="clock" class="text-sm text-slate-600 ml-auto font-mono">0.00s / 0.00s</span>
+        </div>
+
+        <div id="track">
+          <div id="played"></div>
+          <div id="playhead"></div>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">
+          Click the bar to scrub. Drag a marker to retime it. Each gesture shows
+          from its own moment until the next one.
+        </p>
+
+        <hr class="my-4">
+
+        <div>
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-sm text-slate-700">Subtitles</h3>
+            <button type="button" id="addSub" class="btn btn-gold">
+              <i class="fas fa-plus"></i> Add subtitle at playhead</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            Time each block once against the English voiceline. Every language
+            reuses the same windows, so a translation is never retimed.
+          </p>
+
+          <div class="langtabs" id="langTabs"></div>
+
+          <div id="subTrack"><div id="subPlayhead"></div></div>
+
+          <p class="text-xs text-slate-500 mt-2">
+            Click a block on the bar to write it, retime it or remove it.
+            <span id="subCount" class="text-slate-400"></span>
+          </p>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <h3 class="font-semibold text-sm text-slate-700">Gesture cues</h3>
+          <span id="cueCount" class="text-xs text-slate-500"></span>
+        </div>
+        <p class="text-xs text-slate-500">
+          Click a meerkat on the bar to change it, retime it or remove it.
+          Drag one sideways to move it.
+        </p>
+      </div>
+
+      <!-- 3. Preview + settings -->
+      <div class="card">
+        <h2 class="section-title mb-3">3. Preview</h2>
+
+        <div class="stage" id="stage">
+          <img id="stageImg" alt="" style="display:none;">
+        </div>
+        <div class="text-center mt-2">
+          <div id="currentName" class="text-sm font-semibold text-slate-800">none yet</div>
+          <div class="text-xs text-slate-500">Exactly what the student sees under the handbook button.</div>
+        </div>
+
+        <hr class="my-4">
+
+        <label class="flex items-center gap-2 text-sm mb-2">
+          <input type="checkbox" id="isEnabled" {% if mascot.is_enabled %}checked{% endif %}>
+          <span>Show the mascot on this slide</span>
+        </label>
+        <label class="flex items-center gap-2 text-sm mb-3">
+          <input type="checkbox" id="requireVideo" {% if mascot.require_video %}checked{% endif %}>
+          <span>Also require the video to finish
+            {% if not has_video %}<em class="text-slate-500">(no video on this slide)</em>{% endif %}
+          </span>
+        </label>
+
+        <button type="button" id="save" class="btn btn-primary w-full justify-center">
+          <i class="fas fa-floppy-disk"></i> Save timeline</button>
+        <div id="saveMsg" class="text-xs mt-2"></div>
+
+        <form method="POST" action="{{ url_for('admin_chapter_mascot_delete', chapter_id=chapter.id) }}"
+              onsubmit="return confirm('Remove the mascot and its voiceline from this slide?');" class="mt-4">
+          <button type="submit" class="btn btn-danger w-full justify-center">
+            <i class="fas fa-trash"></i> Remove mascot from slide</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Gesture picker -->
+  <div class="modal-back" id="picker">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="font-semibold text-slate-800" id="pickerTitle">Choose a gesture</div>
+          <div class="text-xs text-slate-500" id="pickerSub"></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="{{ url_for('admin_mascot_gestures', return_to=chapter.id) }}" class="btn btn-ghost">
+            <i class="fas fa-gear"></i> Manage library</a>
+          <button type="button" class="btn btn-ghost" id="pickerClose">Close</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        {% if gestures %}
+          <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="pickerGrid">
+            {% for g in gestures %}
+              <button type="button" class="pick" data-id="{{ g.id }}"
+                      data-src="{{ media_url(g.image_path) }}" data-name="{{ g.name }}">
+                <img src="{{ media_url(g.image_path) }}" alt="{{ g.name }}" loading="lazy">
+                <div class="text-[11px] truncate mt-1">{{ g.name }}</div>
+              </button>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-sm text-amber-700">
+            No gestures in the library yet.
+            <a class="underline" href="{{ url_for('admin_mascot_gestures', return_to=chapter.id) }}">Upload some first</a>.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-back" id="inspect">
+    <div class="modal" style="width:min(560px,100%);">
+      <div class="modal-head">
+        <div>
+          <div class="font-semibold text-slate-800" id="inspectTitle">Edit</div>
+          <div class="text-xs text-slate-500" id="inspectSub"></div>
+        </div>
+        <button type="button" class="btn btn-ghost" id="inspectClose">Close</button>
+      </div>
+      <div class="modal-body">
+
+        <div id="inspectGesture" style="display:none;">
+          <div class="flex gap-4 items-start">
+            <div class="gpreview"><img id="inspectImg" alt=""></div>
+            <div class="flex-1">
+              <div class="text-xs text-slate-500">Gesture</div>
+              <div class="font-semibold text-slate-800 mb-2" id="inspectName">none</div>
+              <label class="block text-xs text-slate-600 mb-1">Shows from (ms)</label>
+              <input type="text" id="inspectAt" class="tinput" inputmode="numeric">
+              <div class="text-xs text-slate-500 mt-1" id="inspectAtClock"></div>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button type="button" class="btn btn-primary" id="inspectChange">
+              <i class="fas fa-repeat"></i> Change gesture</button>
+            <button type="button" class="btn btn-ghost" id="inspectPlayFrom">
+              <i class="fas fa-play"></i> Play from here</button>
+            <button type="button" class="btn btn-danger ml-auto" id="inspectDelG">
+              <i class="fas fa-trash"></i> Remove</button>
+          </div>
+        </div>
+
+        <div id="inspectSub2" style="display:none;">
+          <div class="flex gap-3">
+            <div>
+              <label class="block text-xs text-slate-600 mb-1">Start (ms)</label>
+              <input type="text" id="inspectStart" class="tinput" inputmode="numeric">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-600 mb-1">End (ms)</label>
+              <input type="text" id="inspectEnd" class="tinput" inputmode="numeric">
+            </div>
+            <div class="self-end text-xs text-slate-500 pb-2" id="inspectDur"></div>
+          </div>
+          <div id="inspectLangs" class="mt-3"></div>
+          <div class="flex gap-2 mt-4">
+            <button type="button" class="btn btn-ghost" id="inspectPlayFrom2">
+              <i class="fas fa-play"></i> Play from here</button>
+            <button type="button" class="btn btn-danger ml-auto" id="inspectDelS">
+              <i class="fas fa-trash"></i> Remove</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const META = {};
+  document.querySelectorAll('#pickerGrid .pick').forEach(b => {
+    META[b.dataset.id] = { src: b.dataset.src, name: b.dataset.name };
+  });
+
+  // Post the measured duration with the upload, so the server can later judge
+  // whether a student really heard the whole voiceline.
+  const fileInput = document.getElementById('audioFile');
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      const f = this.files && this.files[0];
+      if (!f) return;
+      const probe = new Audio(URL.createObjectURL(f));
+      probe.addEventListener('loadedmetadata', function () {
+        if (isFinite(probe.duration)) {
+          document.getElementById('uploadDuration').value = Math.round(probe.duration * 1000);
+        }
+      });
+    });
+  }
+
+  const audio = document.getElementById('audio');
+  if (!audio) return;
+
+  const track = document.getElementById('track');
+  const played = document.getElementById('played');
+  const head = document.getElementById('playhead');
+  const clock = document.getElementById('clock');
+  const stageImg = document.getElementById('stageImg');
+  const currentName = document.getElementById('currentName');
+  const subHead = document.getElementById('subPlayhead');
+  const subTrack = document.getElementById('subTrack');
+  const cueCount = document.getElementById('cueCount');
+
+  let cues = {{ cues | tojson }};
+  let durationMs = {{ mascot.duration_ms or 0 }};
+
+  function dur() {
+    if (isFinite(audio.duration) && audio.duration > 0) return audio.duration * 1000;
+    return durationMs || 0;
+  }
+  function fmt(ms) { return (ms / 1000).toFixed(2) + 's'; }
+
+  audio.addEventListener('loadedmetadata', () => {
+    if (isFinite(audio.duration)) durationMs = Math.round(audio.duration * 1000);
+    render();
+  });
+
+  // ── Gesture picker modal ───────────────────────────────────────────────
+  // One picker serves both "add a cue" and "change this cue's gesture", so the
+  // gesture grid no longer has to sit permanently in the sidebar.
+  const picker = document.getElementById('picker');
+  let pickTarget = null;   // null = adding a new cue, otherwise the cue index
+
+  function openPicker(index, atMs) {
+    pickTarget = index;
+    document.getElementById('pickerTitle').textContent =
+      index === null ? 'Add a gesture' : 'Change gesture';
+    document.getElementById('pickerSub').textContent =
+      index === null ? 'It will start at ' + fmt(atMs) + ' and run until the next cue.'
+                     : 'Cue ' + (index + 1) + ' at ' + fmt(cues[index].at_ms);
+    document.querySelectorAll('#pickerGrid .pick').forEach(b => {
+      b.classList.toggle('sel',
+        index !== null && String(cues[index].gesture_id) === b.dataset.id);
+    });
+    picker.classList.add('open');
+  }
+  function closePicker() { picker.classList.remove('open'); pickTarget = null; }
+
+  document.getElementById('pickerClose').addEventListener('click', closePicker);
+  picker.addEventListener('click', e => { if (e.target === picker) closePicker(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && picker.classList.contains('open')) closePicker();
+  });
+
+  document.querySelectorAll('#pickerGrid .pick').forEach(b => {
+    b.addEventListener('click', () => {
+      const gid = parseInt(b.dataset.id, 10);
+      if (pickTarget === null) {
+        const at = Math.round(audio.currentTime * 1000);
+        if (cues.some(c => Math.abs(c.at_ms - at) < 40)) {
+          alert('There is already a cue at this moment. Change or drag that one instead.');
+        } else {
+          cues.push({ at_ms: at, gesture_id: gid });
+          cues.sort((a, b2) => a.at_ms - b2.at_ms);
+        }
+      } else {
+        cues[pickTarget].gesture_id = gid;
+      }
+      closePicker();
+      render();
+    });
+  });
+
+  // Which gesture is showing at time t
+  function gestureAt(ms) {
+    let g = null;
+    for (const c of cues) { if (c.at_ms <= ms) g = c; else break; }
+    return g;
+  }
+
+  function paintStage(ms) {
+    const c = gestureAt(ms);
+    const meta = c ? META[String(c.gesture_id)] : null;
+    if (meta) {
+      stageImg.src = meta.src;
+      stageImg.style.display = '';
+      currentName.textContent = meta.name;
+    } else {
+      stageImg.style.display = 'none';
+      currentName.textContent = cues.length ? 'before first cue' : 'no cues yet';
+    }
+  }
+
+  function renderMarkers() {
+    track.querySelectorAll('.marker').forEach(m => m.remove());
+    const d = dur();
+    if (!d) return;
+    cues.forEach((c, i) => {
+      const meta = META[String(c.gesture_id)];
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.style.left = Math.min(100, (c.at_ms / d) * 100) + '%';
+      el.title = (meta ? meta.name : 'gesture') + ' @ ' + fmt(c.at_ms);
+      if (meta) { const im = document.createElement('img'); im.src = meta.src; el.appendChild(im); }
+      el.addEventListener('mousedown', ev => {
+        ev.preventDefault(); ev.stopPropagation();
+        const rect = track.getBoundingClientRect();
+        const startX = ev.clientX;
+        let moved = false;
+        const move = e => {
+          if (!moved && Math.abs(e.clientX - startX) < 4) return;
+          moved = true;
+          const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+          cues[i].at_ms = Math.round(pct * dur());
+          cues.sort((a, b) => a.at_ms - b.at_ms);
+          render();
+        };
+        const up = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', up);
+          // A press that did not travel is a click, and opens the editor.
+          if (!moved) openInspectCue(i);
+        };
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+      });
+      track.appendChild(el);
+    });
+  }
+
+  function renderList() {
+    // The cue list used to be a table. With twenty or more gestures on a slide
+    // that became unmanageable, so editing now happens in the inspector and this
+    // only reports the count.
+    cueCount.textContent = cues.length + ' cue' + (cues.length === 1 ? '' : 's');
+  }
+
+  function render() {
+    renderMarkers();
+    renderList();
+    paintStage(audio.currentTime * 1000);
+  }
+
+  // requestAnimationFrame rather than timeupdate: timeupdate only fires about
+  // 4x a second, which is visibly loose for gesture swaps.
+  let raf = null;
+  function tick() {
+    const ms = audio.currentTime * 1000;
+    const d = dur();
+    const pct = d ? Math.min(100, (ms / d) * 100) : 0;
+    played.style.width = pct + '%';
+    head.style.left = pct + '%';
+    if (subHead) subHead.style.left = pct + '%';
+    clock.textContent = fmt(ms) + ' / ' + fmt(d);
+    paintStage(ms);
+    raf = requestAnimationFrame(tick);
+  }
+  function stopTick() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+  function tickOnce() {
+    const ms = audio.currentTime * 1000, d = dur();
+    const pct = d ? Math.min(100, (ms / d) * 100) : 0;
+    played.style.width = pct + '%'; head.style.left = pct + '%';
+    if (subHead) subHead.style.left = pct + '%';
+    if (subHead) subHead.style.left = pct + '%';
+    clock.textContent = fmt(ms) + ' / ' + fmt(d);
+    paintStage(ms);
+  }
+
+  document.getElementById('play').addEventListener('click', () => {
+    if (audio.paused) { audio.play(); if (!raf) raf = requestAnimationFrame(tick); }
+    else { audio.pause(); stopTick(); }
+  });
+  document.getElementById('stop').addEventListener('click', () => {
+    audio.pause(); audio.currentTime = 0; stopTick(); tickOnce();
+  });
+  audio.addEventListener('ended', () => { stopTick(); tickOnce(); });
+  audio.addEventListener('pause', () => { stopTick(); tickOnce(); });
+
+  function scrubFrom(el, e) {
+    const rect = el.getBoundingClientRect();
+    const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const d = dur();
+    if (d) { audio.currentTime = (pct * d) / 1000; tickOnce(); }
+  }
+
+  track.addEventListener('click', e => scrubFrom(track, e));
+
+  // Both bars share one time scale, so scrubbing works the same on either. A
+  // click that landed on a subtitle block is that block's own, not a scrub.
+  subTrack.addEventListener('click', e => {
+    if (e.target.closest('.sblock')) return;
+    scrubFrom(subTrack, e);
+  });
+
+  document.getElementById('addCue').addEventListener('click', () => {
+    if (!Object.keys(META).length) {
+      alert('Upload some gestures to the library first.');
+      return;
+    }
+    openPicker(null, Math.round(audio.currentTime * 1000));
+  });
+
+  document.getElementById('save').addEventListener('click', async () => {
+    const msg = document.getElementById('saveMsg');
+    msg.textContent = 'Saving...'; msg.className = 'text-xs mt-2 text-slate-500';
+    try {
+      const r = await fetch('{{ url_for("admin_chapter_mascot_cues", chapter_id=chapter.id) }}', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cues: cues,
+          duration_ms: Math.round(dur()),
+          is_enabled: document.getElementById('isEnabled').checked,
+          require_video: document.getElementById('requireVideo').checked
+        })
+      });
+      const rs = await fetch('{{ url_for("admin_chapter_mascot_subtitles", chapter_id=chapter.id) }}', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subtitles: subs })
+      });
+      const sj = await rs.json();
+      const j = await r.json();
+      if (j.ok && sj.ok) {
+        msg.textContent = 'Saved ' + j.saved + ' cue(s) and ' + sj.saved + ' subtitle(s).';
+        msg.className = 'text-xs mt-2 text-emerald-700 font-semibold';
+      } else {
+        msg.textContent = 'Save failed: ' + (j.error || 'unknown');
+        msg.className = 'text-xs mt-2 text-rose-700 font-semibold';
+      }
+    } catch (e) {
+      msg.textContent = 'Save failed: ' + e.message;
+      msg.className = 'text-xs mt-2 text-rose-700 font-semibold';
+    }
+  });
+
+  // ---- Subtitles ---------------------------------------------------------
+  const LANGS = {{ languages | tojson }};
+  let subs = {{ subtitles | tojson }};
+  let activeLang = 'en';
+  let selectedSub = -1;
+
+
+  function msClock(ms) { return (Math.max(0, ms) / 1000).toFixed(2) + 's'; }
+
+  function renderLangTabs() {
+    const wrap = document.getElementById('langTabs');
+    wrap.innerHTML = '';
+    LANGS.forEach(function (pair) {
+      const code = pair[0], name = pair[1];
+      const n = subs.filter(function (b) {
+        return String(b.texts[code] || '').trim();
+      }).length;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'langtab' + (code === activeLang ? ' on' : '') +
+                      (n === 0 ? ' empty' : '');
+      btn.innerHTML = name + ' <span class="count">' +
+                      (subs.length ? n + '/' + subs.length : 'empty') + '</span>';
+      btn.addEventListener('click', function () {
+        activeLang = code;
+        document.getElementById('textColHead').textContent = 'Text (' + name + ')';
+        renderSubs();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderSubTrack() {
+    const d = dur() || 1;
+    subTrack.querySelectorAll('.sblock').forEach(function (e) { e.remove(); });
+    subs.forEach(function (b, i) {
+      const el = document.createElement('div');
+      const has = String(b.texts[activeLang] || '').trim();
+      el.className = 'sblock' + (has ? '' : ' untranslated') +
+                     (i === selectedSub ? ' active' : '');
+      el.style.left = (b.start_ms / d * 100) + '%';
+      el.style.width = Math.max(0.6, (b.end_ms - b.start_ms) / d * 100) + '%';
+      el.title = msClock(b.start_ms) + ' to ' + msClock(b.end_ms);
+      el.textContent = has || 'not translated';
+      el.addEventListener('click', function () {
+        selectedSub = i;
+        openInspectSub(i);
+      });
+      subTrack.appendChild(el);
+    });
+  }
+
+  function renderSubs() {
+    renderLangTabs();
+    renderSubTrack();
+    const c = document.getElementById('subCount');
+    if (c) c.textContent = subs.length
+      ? '(' + subs.length + ' block' + (subs.length === 1 ? '' : 's') + ')'
+      : '(none yet)';
+  }
+
+  document.getElementById('addSub').addEventListener('click', function () {
+    const start = Math.round(audio.currentTime * 1000);
+    const d = dur() || (start + 3000);
+    let end = Math.min(start + 3000, Math.round(d));
+    const later = subs.filter(function (b) { return b.start_ms > start; })
+                      .sort(function (a, b2) { return a.start_ms - b2.start_ms; })[0];
+    if (later && later.start_ms < end) end = later.start_ms;
+    if (end <= start) end = start + 500;
+    subs.push({ start_ms: start, end_ms: end, texts: {} });
+    subs.sort(function (a, b2) { return a.start_ms - b2.start_ms; });
+    selectedSub = subs.findIndex(function (b) { return b.start_ms === start; });
+    renderSubs();
+    openInspectSub(selectedSub);
+  });
+
+  // ---- Inspector -------------------------------------------------------
+  // Twenty gestures and a dozen subtitle blocks made the old tables unusable.
+  // Everything is edited by clicking the thing itself on the bar instead.
+  const inspect = document.getElementById('inspect');
+  let inspectKind = null, inspectIdx = -1;
+
+  function closeInspect() {
+    inspect.classList.remove('open');
+    inspectKind = null; inspectIdx = -1;
+  }
+
+  function openInspectCue(i) {
+    if (!cues[i]) return;
+    inspectKind = 'cue'; inspectIdx = i;
+    const c = cues[i], meta = META[String(c.gesture_id)];
+    document.getElementById('inspectTitle').textContent = 'Gesture ' + (i + 1);
+    document.getElementById('inspectSub').textContent =
+      'Shows from here until the next gesture.';
+    document.getElementById('inspectGesture').style.display = '';
+    document.getElementById('inspectSub2').style.display = 'none';
+    const img = document.getElementById('inspectImg');
+    if (meta) { img.src = meta.src; img.style.display = ''; }
+    else { img.removeAttribute('src'); img.style.display = 'none'; }
+    document.getElementById('inspectName').textContent = meta ? meta.name : 'unknown';
+    document.getElementById('inspectAt').value = c.at_ms;
+    document.getElementById('inspectAtClock').textContent = fmt(c.at_ms);
+    inspect.classList.add('open');
+  }
+
+  function openInspectSub(i) {
+    if (!subs[i]) return;
+    inspectKind = 'sub'; inspectIdx = i;
+    const b = subs[i];
+    document.getElementById('inspectTitle').textContent = 'Subtitle ' + (i + 1);
+    document.getElementById('inspectSub').textContent =
+      'Shown from ' + fmt(b.start_ms) + ' to ' + fmt(b.end_ms) + '.';
+    document.getElementById('inspectGesture').style.display = 'none';
+    document.getElementById('inspectSub2').style.display = '';
+    document.getElementById('inspectStart').value = b.start_ms;
+    document.getElementById('inspectEnd').value = b.end_ms;
+    document.getElementById('inspectDur').textContent =
+      ((b.end_ms - b.start_ms) / 1000).toFixed(2) + 's long';
+    const wrap = document.getElementById('inspectLangs');
+    wrap.innerHTML = '';
+    LANGS.forEach(function (pair) {
+      const code = pair[0], name = pair[1];
+      const val = String(b.texts[code] || '');
+      const row = document.createElement('div');
+      row.className = 'langrow' + (val.trim() ? '' : ' isempty');
+      const lab = document.createElement('label'); lab.textContent = name;
+      const ta = document.createElement('textarea');
+      ta.placeholder = code === 'en' ? 'What the meerkat says here'
+                                     : 'Not translated yet';
+      ta.value = val;
+      ta.addEventListener('input', function () {
+        subs[inspectIdx].texts[code] = ta.value;
+        row.classList.toggle('isempty', !ta.value.trim());
+        renderSubs();
+      });
+      row.appendChild(lab); row.appendChild(ta);
+      wrap.appendChild(row);
+    });
+    inspect.classList.add('open');
+  }
+
+  document.getElementById('inspectClose').addEventListener('click', closeInspect);
+  inspect.addEventListener('click', function (e) {
+    if (e.target === inspect) closeInspect();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && inspect.classList.contains('open')) closeInspect();
+  });
+
+  document.getElementById('inspectAt').addEventListener('change', function () {
+    const v = parseInt(this.value, 10);
+    if (inspectKind === 'cue' && isFinite(v) && v >= 0 && cues[inspectIdx]) {
+      cues[inspectIdx].at_ms = v;
+      cues.sort(function (a, b) { return a.at_ms - b.at_ms; });
+      render();
+      closeInspect();
+    }
+  });
+
+  function applySubTimes() {
+    if (inspectKind !== 'sub' || !subs[inspectIdx]) return;
+    const s = parseInt(document.getElementById('inspectStart').value, 10);
+    const e = parseInt(document.getElementById('inspectEnd').value, 10);
+    if (isFinite(s) && s >= 0) subs[inspectIdx].start_ms = s;
+    if (isFinite(e) && e > subs[inspectIdx].start_ms) subs[inspectIdx].end_ms = e;
+    document.getElementById('inspectDur').textContent =
+      ((subs[inspectIdx].end_ms - subs[inspectIdx].start_ms) / 1000).toFixed(2) + 's long';
+    renderSubs();
+  }
+  document.getElementById('inspectStart').addEventListener('change', applySubTimes);
+  document.getElementById('inspectEnd').addEventListener('change', applySubTimes);
+
+  document.getElementById('inspectChange').addEventListener('click', function () {
+    const i = inspectIdx;
+    closeInspect();
+    openPicker(i, cues[i] ? cues[i].at_ms : 0);
+  });
+
+  function playFrom(ms) {
+    audio.currentTime = Math.max(0, ms) / 1000;
+    closeInspect();
+    if (audio.paused) document.getElementById('play').click();
+  }
+  document.getElementById('inspectPlayFrom').addEventListener('click', function () {
+    if (cues[inspectIdx]) playFrom(cues[inspectIdx].at_ms);
+  });
+  document.getElementById('inspectPlayFrom2').addEventListener('click', function () {
+    if (subs[inspectIdx]) playFrom(subs[inspectIdx].start_ms);
+  });
+
+  document.getElementById('inspectDelG').addEventListener('click', function () {
+    if (inspectKind === 'cue' && cues[inspectIdx]) {
+      cues.splice(inspectIdx, 1);
+      closeInspect();
+      render();
+    }
+  });
+  document.getElementById('inspectDelS').addEventListener('click', function () {
+    if (inspectKind === 'sub' && subs[inspectIdx]) {
+      subs.splice(inspectIdx, 1);
+      selectedSub = -1;
+      closeInspect();
+      renderSubs();
+    }
+  });
+
+  renderSubs();
+  render();
+  tickOnce();
+})();
+</script>
+</body>
+</html>

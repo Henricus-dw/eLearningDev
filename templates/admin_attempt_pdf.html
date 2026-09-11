@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attempt {{ attempt.id }} - {{ course.title }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    h1, h2, h3 { margin: 0 0 8px 0; }
+    .meta { margin-bottom: 12px; }
+    .q { margin: 10px 0; }
+    .opt { margin-left: 16px; }
+    .correct { font-weight: bold; }
+    .chosen { text-decoration: underline; }
+    .muted { color: #666; }
+    hr { margin: 12px 0; border: none; border-top: 1px solid #ddd; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Final Assessment Attempt</h2>
+  <div class="meta grid-2">
+    <div>
+      <div><strong>Course:</strong> {{ course.title }}</div>
+      <div><strong>Attempt #:</strong> {{ attempt.id }}</div>
+      <div><strong>Submitted:</strong> {{ attempt.submitted_at }}</div>
+    </div>
+    <div>
+      <div><strong>Student:</strong> {{ student.name }} {{ student.surname }}</div>
+      <div><strong>Student #:</strong> {{ student.student_id }}</div>
+      <div><strong>Status:</strong> {{ attempt.review_status }}</div>
+    </div>
+  </div>
+  <div class="meta">
+    <strong>Score:</strong> {{ attempt.score }}/{{ attempt.total_questions }} &nbsp;
+    <strong>Percentage:</strong> {{ attempt.percentage }}%
+  </div>
+
+  <hr>
+
+  {% for q in questions %}
+    <div class="q">
+      <div><strong>Q{{ loop.index }}.</strong> {{ q.question }}</div>
+      {% set correct = q.correct %}
+      {% set chosen = answers.get(q.id|string) %}
+      {% for key, text in q.options.items() %}
+        <div class="opt">
+          {% if key == correct %}<span class="correct">✔</span>{% else %}<span class="muted">•</span>{% endif %}
+          <span class="{% if key == chosen %}chosen{% endif %}">
+            ({{ key|upper }}) {{ text }}
+          </span>
+        </div>
+      {% endfor %}
+      {% if chosen and chosen != correct %}
+        <div class="muted">Chosen: {{ chosen|upper }} | Correct: {{ correct|upper }}</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <hr>
+  {% if attempt.video_filename %}
+    <div class="muted">
+      Video file: {{ attempt.video_filename }} (download from admin list)
+    </div>
+  {% endif %}
+</body>
+</html>

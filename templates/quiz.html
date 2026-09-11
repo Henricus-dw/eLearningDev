@@ -1,0 +1,63 @@
+<meta name="page-context" data-page="Quiz" data-course="" data-chapter="" />
+<script>
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function checkCameraAndStartQuiz() {
+        try {
+            // ✅ Check if camera is available
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+            if (!stream) {
+                alert("⚠️ Camera not accessible! Please enable it before starting the quiz.");
+                return;
+            }
+
+            // ✅ Start Video Recording
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = event => recordedChunks.push(event.data);
+            mediaRecorder.start();
+
+            // ✅ Enable Quiz Start Button
+            document.getElementById("startQuiz").disabled = false;
+        } catch (error) {
+            alert("❌ Camera access is required to proceed with the quiz!");
+            document.getElementById("startQuiz").disabled = true;
+        }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        mediaRecorder.onstop = async () => {
+            const videoBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+            const formData = new FormData();
+            formData.append("video", videoBlob, "{{ student_id }}_quiz_{{ quiz_id }}.mp4");
+
+            await fetch("/upload_quiz_video", { method: "POST", body: formData });
+        };
+    }
+</script>
+<script>
+    let cameraStream;
+
+    async function checkCameraContinuously() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+            // ✅ Detect if Camera Stops
+            cameraStream.getVideoTracks()[0].onended = function () {
+                alert("⚠️ Camera has stopped or is blocked! Quiz submission is now disabled.");
+                document.getElementById("submitQuiz").disabled = true;
+            };
+
+        } catch (error) {
+            alert("❌ No camera detected! Quiz cannot continue.");
+            document.getElementById("submitQuiz").disabled = true;
+        }
+    }
+
+    function enableSubmit() {
+        document.getElementById("submitQuiz").disabled = false;
+    }
+</script>
+{% include 'partials/heartbeat.html' %}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Escalated Moderation</title>
+  <link rel="icon" type="image/png" href="/static/professional-logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f5f7fa;
+    }
+
+    h1 {
+      color: #002366;
+      border-bottom: 2px solid #FFD700;
+      padding-bottom: 5px;
+    }
+
+    .section {
+      background: #fff;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .btn {
+      background-color: #002366;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background-color: #FFD700;
+      color: #002366;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .note-block {
+      background: #eef5ff;
+      padding: 15px;
+      border-left: 4px solid #007bff;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+
+    .note-meta {
+      font-size: 0.85em;
+      color: #666;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚩 Escalated Moderation</h1>
+
+  <div class="section">
+    <h3>🎓 Student Info</h3>
+    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+    <p><strong>Student Name:</strong> {{ student.name }}</p>
+    <p><strong>Course:</strong> {{ course.title }}</p>
+    <p><strong>Moderation Date:</strong> {{ mod.moderationdate.strftime('%Y-%m-%d %H:%M') if mod.moderationdate else 'N/A' }}</p>
+  </div>
+
+  {% if video_path %}
+  <div class="section">
+    <h3>🎥 Moderation Video</h3>
+    <video controls>
+      <source src="{{ video_path }}" type="video/webm">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <h3>📝 Escalation Notes</h3>
+    {% for note in notes %}
+      <div class="note-block">
+        <p>{{ note.note_text }}</p>
+        <div class="note-meta">— {{ note.escalated_by }} on {{ note.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+      </div>
+    {% else %}
+      <p>No notes yet.</p>
+    {% endfor %}
+    <form method="POST">
+      <label for="note">Add Note:</label>
+      <textarea name="note" placeholder="Write a note..."></textarea>
+      <button type="submit" class="btn">➕ Add Note</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>📬 Send Message to Student</h3>
+    <form method="POST">
+      <label for="student_message">Message:</label>
+      <textarea name="student_message" placeholder="Write your message to the student..."></textarea>
+      <button type="submit" class="btn">📤 Send Message</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>🔐 Account Control</h3>
+    <form method="POST">
+      <input type="hidden" name="unsuspend" value="1">
+      <button type="submit" class="btn">🔓 Unsuspend Account</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>🛠 Moderation Actions</h3>
+    <form method="POST" style="display: inline-block; margin-right: 10px;">
+      <input type="hidden" name="approve_moderation" value="1">
+      <button type="submit" class="btn">✅ Approve Moderation</button>
+    </form>
+    <form method="POST" style="display: inline-block;">
+      <input type="hidden" name="remoderate" value="1">
+      <button type="submit" class="btn">🔁 Re-Moderate</button>
+    </form>
+  </div>
+
+  <a href="{{ url_for('moderation_logs') }}" class="btn mt-3">⬅️ Back to Moderation Logs</a>
+</body>
+</html>

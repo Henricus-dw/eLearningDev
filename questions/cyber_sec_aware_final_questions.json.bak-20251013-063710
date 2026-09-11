@@ -1,0 +1,28 @@
+{
+  "questions": [
+    {
+      "question": "What is a firewall?",
+      "options": [
+        "a firewall a wall of fire",
+        "a firewall is a security layer on a network"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "are these both tcp/ip",
+      "options": [
+        "tcp/ipv4",
+        "tcp/ipv6"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "select the correct subnet mask for class c",
+      "options": [
+        "255.255.0.0",
+        "255.255.255.0"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

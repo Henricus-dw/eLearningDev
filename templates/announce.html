@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📢 Post Announcement</title>
+
+  <!-- Tailwind + dark mode (same setup as dashboard) -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root{
+      --brand-blue:#17306B;   /* Deep aviation navy */
+      --brand-gold:#C7A434;   /* Aviation gold */
+    }
+
+    /* Background aligned with admin dashboard */
+    body{
+      background:
+        radial-gradient(circle at 20% 15%, rgba(23,48,107,.10), transparent 50%),
+        radial-gradient(circle at 80% -10%, rgba(199,164,52,.10), transparent 40%),
+        linear-gradient(to bottom, #f7f9fc, #eef2f9);
+      color:#0b1022;
+    }
+    .dark body{ background: linear-gradient(to bottom, #0B1226, #050912); color:#E6EDF7; }
+
+    .section-title{
+      font-size:1.6rem; font-weight:900;
+      color:var(--brand-blue);
+      border-left:5px solid var(--brand-gold);
+      padding-left:.75rem; margin:0;
+    }
+    .dark .section-title{ color:#F2F6FF; }
+
+    .cardx{
+      background:#fff; border:1px solid rgba(0,0,0,.08);
+      border-radius:1rem; box-shadow:0 10px 22px rgba(0,0,0,.08);
+      transition:.2s;
+    }
+    .cardx:hover{ transform:translateY(-1px); }
+    .dark .cardx{ background:#0C142B; border-color:rgba(255,255,255,.1); box-shadow:0 10px 24px rgba(0,0,0,.35); }
+
+    .btnx{ display:inline-flex; align-items:center; gap:.55rem; font-weight:800;
+           border-radius:.9rem; padding:.55rem 1rem; transition:.18s; }
+    .btn-outline-blue{ border:1px solid var(--brand-blue); color:var(--brand-blue); background:transparent; }
+    .btn-outline-blue:hover{ background:rgba(23,48,107,.06); }
+    .btn-blue{ background:var(--brand-blue); color:#fff; }
+    .btn-blue:hover{ filter:brightness(1.07); }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans text-gray-800 dark:text-slate-100">
+  <div class="max-w-3xl mx-auto px-4 py-10">
+
+    <!-- Header + actions -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <h2 class="section-title flex items-center gap-2">
+        <i class="fas fa-bullhorn"></i> Post Announcement
+      </h2>
+
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="btnx btn-outline-blue">
+          <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+        </a>
+
+        <!-- Theme toggle -->
+        <button id="themeToggle" class="btnx btn-outline-blue hidden sm:inline-flex" title="Toggle theme">
+          <i class="fas fa-moon hidden dark:inline"></i>
+          <i class="fas fa-sun inline dark:hidden"></i>
+          <span id="themeLabel" class="text-sm">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            <div class="rounded-xl px-4 py-3 text-white shadow
+                        {% if category == 'success' %}bg-green-600{% elif category == 'danger' %}bg-red-600{% else %}bg-blue-600{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Card: post new announcement -->
+    <div class="cardx p-6 md:p-8">
+      <form action="{{ url_for('announce') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+        <div>
+          <label for="title" class="block font-semibold text-[var(--brand-blue)] dark:text-slate-200 mb-1">
+            Announcement Title
+          </label>
+          <input
+            type="text" id="title" name="title" required maxlength="140"
+            class="w-full rounded-xl border border-blue-200 bg-white px-4 py-3 shadow-sm
+                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                   dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100">
+          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            <span id="titleCount">0</span>/140
+          </p>
+        </div>
+
+        <div>
+          <label for="content" class="block font-semibold text-[var(--brand-blue)] dark:text-slate-200 mb-1">
+            Message
+          </label>
+          <textarea id="content" name="content" rows="8" required
+            class="w-full rounded-xl border border-blue-200 bg-white px-4 py-3 shadow-sm resize-y
+                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                   dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"></textarea>
+        </div>
+
+        <div>
+          <label for="image_file" class="block font-semibold text-[var(--brand-blue)] dark:text-slate-200 mb-1">
+            Banner Image <span class="text-xs font-normal text-gray-500 dark:text-slate-400">(optional, JPG/PNG/WebP/GIF)</span>
+          </label>
+          <input type="file" id="image_file" name="image_file" accept="image/jpeg,image/png,image/webp,image/gif"
+                 class="block w-full text-sm text-gray-700 dark:text-slate-200
+                        file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0
+                        file:text-sm file:font-semibold file:bg-[var(--brand-blue)] file:text-white
+                        hover:file:brightness-110">
+          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            Recommended: a wide image (e.g. 1200x300) for best banner appearance.
+          </p>
+        </div>
+
+        <button type="submit" class="w-full btnx btn-blue justify-center text-base py-3">
+          <i class="fas fa-paper-plane"></i> Send Announcement
+        </button>
+      </form>
+    </div>
+
+    <!-- Existing announcements list -->
+    {% if announcements %}
+    <div class="mt-8">
+      <h3 class="section-title mb-4 text-xl flex items-center gap-2">
+        <i class="fas fa-list-alt"></i> Existing Announcements
+        <span class="text-xs font-normal text-gray-500 dark:text-slate-400 ml-2">{{ announcements|length }}</span>
+      </h3>
+      <div class="space-y-3">
+        {% for a in announcements %}
+        <div class="cardx p-4 flex flex-col sm:flex-row gap-4 {% if not a.is_active %}opacity-60{% endif %}">
+          {% if a.image_filename %}
+          <img src="{{ url_for('static', filename='uploads/announcements/' ~ a.image_filename) }}"
+               alt="" class="w-24 h-24 object-cover rounded-lg flex-shrink-0">
+          {% endif %}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-3 mb-1">
+              <h4 class="font-bold text-[var(--brand-blue)] dark:text-slate-100">{{ a.title }}</h4>
+              <span class="text-xs px-2 py-0.5 rounded-full whitespace-nowrap
+                           {% if a.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-200 text-slate-600{% endif %}">
+                {% if a.is_active %}Visible{% else %}Hidden{% endif %}
+              </span>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{{ a.content }}</p>
+            <p class="text-xs text-gray-400 mt-2">
+              <i class="far fa-clock"></i> {{ a.date_posted.strftime('%Y-%m-%d %H:%M') if a.date_posted else '' }}
+            </p>
+          </div>
+          <div class="flex sm:flex-col gap-2 flex-shrink-0">
+            <form method="POST" action="{{ url_for('announce_toggle', ann_id=a.id) }}">
+              <button type="submit" class="btnx btn-outline-blue text-sm py-1.5 px-3 w-full">
+                <i class="fas {% if a.is_active %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                <span>{% if a.is_active %}Hide{% else %}Show{% endif %}</span>
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('announce_delete', ann_id=a.id) }}"
+                  onsubmit="return confirm('Delete this announcement? This cannot be undone.');">
+              <button type="submit"
+                      class="btnx text-sm py-1.5 px-3 w-full text-white"
+                      style="background:#dc2626;">
+                <i class="fas fa-trash"></i> <span>Delete</span>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Theme + small helpers -->
+  <script>
+    // title live count
+    const titleEl = document.getElementById('title');
+    const countEl = document.getElementById('titleCount');
+    function updateCount(){ if(countEl && titleEl){ countEl.textContent = titleEl.value.length; } }
+    titleEl?.addEventListener('input', updateCount); updateCount();
+
+    // theme toggle (same as dashboard)
+    const btn = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
+    function updateLabel(isDark){ if(label) label.textContent = isDark ? 'Light' : 'Dark'; }
+    const root = document.documentElement;
+    updateLabel(root.classList.contains('dark'));
+    btn?.addEventListener('click', () => {
+      const nowDark = root.classList.toggle('dark');
+      localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      btn.querySelector('.fa-moon')?.classList.toggle('hidden', !nowDark);
+      btn.querySelector('.fa-sun')?.classList.toggle('hidden', nowDark);
+      updateLabel(nowDark);
+    });
+  </script>
+</body>
+</html>

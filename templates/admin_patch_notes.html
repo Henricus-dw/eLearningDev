@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Patch Notes - Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandblue: '#17306B',
+            brandgold: '#C7A434'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .header-bar {
+      background: #17306B;
+      padding: 1rem 0;
+      width: 100%;
+    }
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    .back-btn:hover {
+      background: #ffffff;
+      color: #17306B;
+      transform: translateY(-2px);
+    }
+    .patch-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      border-left: 4px solid #C7A434;
+      transition: all 0.2s;
+    }
+    .patch-card:hover {
+      box-shadow: 0 4px 16px rgba(23, 48, 107, 0.12);
+    }
+    .version-badge {
+      background: linear-gradient(135deg, #17306B 0%, #2a4a8f 100%);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .add-btn {
+      background: linear-gradient(135deg, #17306B 0%, #2a4a8f 100%);
+      color: #ffffff;
+      padding: 0.625rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(23, 48, 107, 0.4);
+    }
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #dc2626;
+    }
+    .edit-btn {
+      background: #17306B;
+      color: white;
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .edit-btn:hover {
+      background: #2a4a8f;
+    }
+    .status-action {
+      padding: 0.25rem 0.5rem;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+    }
+    .status-action-approve { background: #10b981; }
+    .status-action-approve:hover { background: #059669; }
+    .status-action-problem { background: #ef4444; }
+    .status-action-problem:hover { background: #dc2626; }
+    .status-action-undo { background: #94a3b8; }
+    .status-action-undo:hover { background: #64748b; }
+    .problem-note-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="header-content">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      </div>
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-4 rounded-lg {% if category == 'danger' %}bg-red-100 text-red-800{% elif category == 'success' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Add New Entry Button -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-brandblue">Patch Notes</h2>
+      {% if admin_role_level >= 4 %}
+      <button onclick="toggleAddForm()" class="add-btn">
+        <i class="fas fa-plus mr-2"></i> Add Entry
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Add New Entry Form (Hidden by default) -->
+    <div id="addForm" class="hidden mb-8 patch-card p-6">
+      <h3 class="text-lg font-semibold text-brandblue mb-4">Add New Patch Note</h3>
+      <form method="POST" action="{{ url_for('admin_patch_notes_add') }}">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
+            <input type="text" name="version" placeholder="e.g., 2.5.0" required
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input type="date" name="date" required value="{{ today }}"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <input type="text" name="title" placeholder="Brief description of this release" required
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Changes (one per line)</label>
+          <textarea name="changes" rows="5" placeholder="Enter each change on a new line..." required
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button type="submit" class="add-btn">
+            <i class="fas fa-save mr-2"></i> Save Entry
+          </button>
+          <button type="button" onclick="toggleAddForm()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Patch Notes List -->
+    <div class="space-y-6">
+      {% for note in notes %}
+      <div class="patch-card p-6" id="note-{{ note.id }}">
+        <!-- View Mode -->
+        <div class="view-mode" id="view-{{ note.id }}">
+          {% set reviews = note.get('change_reviews', None) %}
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="version-badge">v{{ note.version }}</span>
+              <span class="text-sm text-gray-500">{{ note.date }}</span>
+            </div>
+            {% if admin_role_level >= 4 %}
+            <div class="flex gap-2">
+              <button onclick="toggleEdit({{ note.id }})" class="edit-btn">
+                <i class="fas fa-edit mr-1"></i> Edit
+              </button>
+              <form method="POST" action="{{ url_for('admin_patch_notes_delete', note_id=note.id) }}"
+                    onsubmit="return confirm('Delete this patch note?');" class="inline">
+                <button type="submit" class="delete-btn">
+                  <i class="fas fa-trash-alt mr-1"></i> Delete
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+
+          <h3 class="text-lg font-semibold text-brandblue mb-3">{{ note.title }}</h3>
+
+          <ul class="space-y-2">
+            {% set ns = namespace(main_status='approved') %}
+            {% for change in note.changes %}
+              {% set is_sub = change.startswith('- ') %}
+              {% set idx = loop.index0|string %}
+              {% if not is_sub %}
+                {% set item_review = reviews[idx] if (reviews is not none and idx in reviews) else None %}
+                {% set item_status = item_review.status if item_review else ('review' if reviews is not none else 'approved') %}
+                {% set ns.main_status = item_status %}
+              {% endif %}
+              <li {% if not is_sub %}data-note-id="{{ note.id }}" data-idx="{{ idx }}" data-status="{{ ns.main_status }}"{% endif %}>
+                <div class="flex items-start gap-2 text-gray-700">
+                  {% if is_sub %}
+                    <i class="fas fa-circle text-gray-400 mt-1.5 flex-shrink-0" style="font-size: 0.4rem;"></i>
+                    <span class="flex-1">{{ change[2:] }}</span>
+                  {% else %}
+                    <!-- Left icon: toggles between empty / check / cross -->
+                    <i class="far fa-circle text-gray-300 mt-1 flex-shrink-0 item-icon-default {% if ns.main_status != 'review' %}hidden{% endif %}"></i>
+                    <i class="fas fa-check-circle text-green-500 mt-1 flex-shrink-0 item-icon-approved {% if ns.main_status != 'approved' %}hidden{% endif %}"></i>
+                    <i class="fas fa-times-circle text-red-500 mt-1 flex-shrink-0 item-icon-problem {% if ns.main_status != 'problem' %}hidden{% endif %}"></i>
+                    <span class="flex-1">{{ change }}</span>
+
+                    {% if admin_role_level >= 3 %}
+                      <div class="flex items-center gap-1 flex-shrink-0 ml-2 item-controls">
+                        <!-- Approve + Flag (shown when default) -->
+                        <button type="button" onclick="setItemStatus({{ note.id }}, '{{ idx }}', 'approved')"
+                                class="status-action status-action-approve item-btn-approve {% if ns.main_status != 'review' %}hidden{% endif %}" title="Approve">
+                          <i class="fas fa-check"></i>
+                        </button>
+                        <button type="button" onclick="toggleItemProblem({{ note.id }}, '{{ idx }}')"
+                                class="status-action status-action-problem item-btn-problem {% if ns.main_status != 'review' %}hidden{% endif %}" title="Flag problem">
+                          <i class="fas fa-times"></i>
+                        </button>
+                        <!-- Undo (shown when approved or flagged) -->
+                        <button type="button" onclick="setItemStatus({{ note.id }}, '{{ idx }}', 'review')"
+                                class="status-action status-action-undo item-btn-undo {% if ns.main_status == 'review' %}hidden{% endif %}" title="Undo">
+                          <i class="fas fa-undo"></i>
+                        </button>
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                </div>
+
+                {% if not is_sub %}
+                  <!-- Problem note form (hidden) -->
+                  <div id="item-problem-{{ note.id }}-{{ idx }}" class="hidden mt-1 ml-6">
+                    <div class="problem-note-box">
+                      <textarea id="item-problem-text-{{ note.id }}-{{ idx }}" rows="1" placeholder="What's the problem?"
+                                class="w-full border border-red-200 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-red-300 bg-white"></textarea>
+                      <div class="flex gap-2 mt-1">
+                        <button type="button" onclick="submitProblem({{ note.id }}, '{{ idx }}')"
+                                class="status-action status-action-problem"><i class="fas fa-times mr-1"></i>Submit</button>
+                        <button type="button" onclick="toggleItemProblem({{ note.id }}, '{{ idx }}')"
+                                class="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Problem note display -->
+                  <div class="problem-note-box ml-6 mt-1 item-problem-display {% if not (ns.main_status == 'problem' and item_review and item_review.note) %}hidden{% endif %}">
+                    <p class="text-xs text-red-800"><i class="fas fa-comment-dots mr-1"></i><span class="problem-note-text">{{ item_review.note if item_review and item_review.note else '' }}</span></p>
+                    <p class="text-xs text-gray-400 mt-0.5">— <span class="problem-note-by">{{ item_review.by if item_review else '' }}</span>, <span class="problem-note-at">{{ item_review.at if item_review else '' }}</span></p>
+                  </div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Edit Mode (Hidden by default) -->
+        <div class="edit-mode hidden" id="edit-{{ note.id }}">
+          <form method="POST" action="{{ url_for('admin_patch_notes_edit', note_id=note.id) }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                <input type="text" name="version" value="{{ note.version }}" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" name="date" value="{{ note.date }}" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input type="text" name="title" value="{{ note.title }}" required
+                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Changes (one per line)</label>
+              <textarea name="changes" rows="5" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brandblue">{% for change in note.changes %}{{ change }}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="add-btn">
+                <i class="fas fa-save mr-2"></i> Save Changes
+              </button>
+              <button type="button" onclick="toggleEdit({{ note.id }})" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center py-12 text-gray-500">
+        <i class="fas fa-clipboard-list text-4xl mb-4"></i>
+        <p>No patch notes yet. Click "Add Entry" to create one.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <script>
+    function toggleAddForm() {
+      const form = document.getElementById('addForm');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function toggleEdit(noteId) {
+      const viewMode = document.getElementById('view-' + noteId);
+      const editMode = document.getElementById('edit-' + noteId);
+      viewMode.classList.toggle('hidden');
+      editMode.classList.toggle('hidden');
+    }
+
+    function toggleItemProblem(noteId, idx) {
+      const box = document.getElementById('item-problem-' + noteId + '-' + idx);
+      box.classList.toggle('hidden');
+      if (!box.classList.contains('hidden')) {
+        box.querySelector('textarea').focus();
+      }
+    }
+
+    /* ── AJAX status helpers ── */
+
+    function getLi(noteId, idx) {
+      return document.querySelector('li[data-note-id="' + noteId + '"][data-idx="' + idx + '"]');
+    }
+
+    function updateItemUI(li, status, review) {
+      li.dataset.status = status;
+      var isDefault = (status === 'review');
+
+      // Action buttons (may not exist if role < 3)
+      var btnApprove = li.querySelector('.item-btn-approve');
+      var btnProblem = li.querySelector('.item-btn-problem');
+      var btnUndo    = li.querySelector('.item-btn-undo');
+      if (btnApprove) btnApprove.classList.toggle('hidden', !isDefault);
+      if (btnProblem) btnProblem.classList.toggle('hidden', !isDefault);
+      if (btnUndo)    btnUndo.classList.toggle('hidden', isDefault);
+
+      // Left icons
+      li.querySelector('.item-icon-default').classList.toggle('hidden', !isDefault);
+      li.querySelector('.item-icon-approved').classList.toggle('hidden', status !== 'approved');
+      li.querySelector('.item-icon-problem').classList.toggle('hidden', status !== 'problem');
+
+      // Problem note display
+      var display = li.querySelector('.item-problem-display');
+      if (status === 'problem' && review && review.note) {
+        display.classList.remove('hidden');
+        display.querySelector('.problem-note-text').textContent = review.note;
+        display.querySelector('.problem-note-by').textContent = review.by || '';
+        display.querySelector('.problem-note-at').textContent = review.at || '';
+      } else {
+        display.classList.add('hidden');
+      }
+
+      // Hide problem form if open
+      var noteId = li.dataset.noteId;
+      var idx = li.dataset.idx;
+      var problemBox = document.getElementById('item-problem-' + noteId + '-' + idx);
+      if (problemBox) problemBox.classList.add('hidden');
+    }
+
+    function showToast(message, type) {
+      var toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg transition-all';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      if (type === 'success') {
+        toast.className += ' bg-green-100 text-green-800 border border-green-300';
+      } else {
+        toast.className += ' bg-red-100 text-red-800 border border-red-300';
+      }
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      requestAnimationFrame(function() {
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+      setTimeout(function() {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 2500);
+    }
+
+    function setItemStatus(noteId, idx, status, statusNote) {
+      var li = getLi(noteId, idx);
+      var body = new FormData();
+      body.append('index', idx);
+      body.append('status', status);
+      if (statusNote) body.append('status_note', statusNote);
+
+      fetch('/admin/patch-notes/' + noteId + '/change-status', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: body
+      })
+      .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+      .then(function(result) {
+        if (result.ok && result.data.ok) {
+          updateItemUI(li, status, result.data.review);
+          var labels = { review: 'Reverted', approved: 'Approved', problem: 'Flagged' };
+          showToast(labels[status], 'success');
+        } else {
+          showToast(result.data.error || 'Something went wrong', 'error');
+        }
+      })
+      .catch(function() {
+        showToast('Network error — please try again', 'error');
+      });
+    }
+
+    function submitProblem(noteId, idx) {
+      var textarea = document.getElementById('item-problem-text-' + noteId + '-' + idx);
+      var note = textarea.value.trim();
+      if (!note) { textarea.focus(); return; }
+      setItemStatus(noteId, idx, 'problem', note);
+      textarea.value = '';
+    }
+  </script>
+
+</body>
+</html>

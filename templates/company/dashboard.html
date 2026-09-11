@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Company Portal — Professional Aviation Training</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' },
+        keyframes: { dash: { to:{ strokeDashoffset:-700 } } },
+        animation: { dash: 'dash 20s linear infinite' }
+      }
+    }
+  }
+</script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+<style>
+  .bg-board {
+    background:
+      radial-gradient(900px 500px at 70% 15%, rgba(199,164,52,.08), transparent 60%),
+      radial-gradient(1000px 600px at 10% 90%, rgba(23,48,107,.10), transparent 60%),
+      radial-gradient(1200px 700px at 50% 50%, rgba(23,48,107,.06), transparent 65%),
+      radial-gradient(circle at center, rgba(255,255,255,.6), rgba(255,255,255,.4) 40%, rgba(255,255,255,.2) 70%, transparent 80%),
+      radial-gradient(circle at 50% 110%, rgba(0,0,0,.05), transparent 40%);
+    position: relative;
+  }
+  .dotfield {
+    background-image: radial-gradient(rgba(23,48,107,.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+    -webkit-mask-image: radial-gradient(1200px 700px at 50% 35%, #000 70%, transparent 85%);
+  }
+  .pill { border-radius: 9999px; }
+  dialog { border: none; border-radius: 1rem; padding: 0; }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  .progress-bar { transition: width 0.6s ease; }
+</style>
+</head>
+
+<body class="min-h-screen bg-slate-50 bg-board overflow-x-hidden">
+  <div class="dotfield absolute inset-0 pointer-events-none"></div>
+  <svg class="pointer-events-none absolute inset-0 w-full h-full opacity-60" viewBox="0 0 1440 900" fill="none">
+    <g stroke="#17306B" stroke-opacity=".15" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 10" class="animate-dash">
+      <path d="M140,580 C420,420 740,520 960,340 C1120,220 1240,240 1320,300"/>
+      <path d="M220,260 C460,240 680,360 880,410 C1100,470 1250,400 1340,340"/>
+      <path d="M160,500 C380,520 600,440 760,300 C900,180 1120,200 1260,260"/>
+    </g>
+    <g fill="#C7A434" opacity=".65">
+      <circle cx="220" cy="260" r="3"/><circle cx="160" cy="500" r="3"/><circle cx="140" cy="580" r="3"/>
+      <circle cx="760" cy="300" r="3"/><circle cx="960" cy="340" r="3"/><circle cx="1260" cy="260" r="3"/>
+    </g>
+  </svg>
+
+  <!-- Top bar -->
+  <header class="relative z-10 max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/PAS_Training_Logo.png') }}" class="h-10 w-auto" alt="Logo">
+      <div>
+        <div class="text-sm uppercase tracking-widest text-slate-400">Company Portal</div>
+        <h1 class="text-2xl font-semibold text-brand-blue leading-tight">{{ company.name }}</h1>
+        {% if current_branch %}
+          <div class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-code-branch mr-1"></i> {{ current_branch.name }}</div>
+        {% endif %}
+        <div class="flex items-center gap-1 mt-1">
+          <i class="fa-solid fa-coins text-xs text-brand-gold"></i>
+          <span class="text-xs font-semibold {% if (company.enrollment_credits or 0) > 0 %}text-emerald-600{% else %}text-red-500{% endif %}">
+            {{ company.enrollment_credits or 0 }} credit(s)
+          </span>
+        </div>
+      </div>
+    </div>
+    <nav class="flex items-center gap-3">
+      <a href="{{ url_for('company_courses') }}" class="pill bg-brand-blue text-white px-3 py-1.5 text-sm shadow-soft hover:brightness-110">
+        <i class="fa-solid fa-book-open mr-1"></i> Enroll Students
+      </a>
+      <a href="{{ url_for('company_attendance_register') }}" class="pill bg-white/80 text-slate-600 px-3 py-1.5 text-sm ring-1 ring-slate-200 shadow-sm hover:bg-white">
+        <i class="fa-solid fa-clipboard-list mr-1"></i> Attendance Register
+      </a>
+      <button onclick="document.getElementById('settingsDialog').showModal()" class="pill bg-white/80 text-slate-600 px-3 py-1.5 text-sm ring-1 ring-slate-200 shadow-sm hover:bg-white">
+        <i class="fa-solid fa-gear mr-1"></i> Settings
+      </button>
+      <a href="{{ url_for('company_logout') }}" class="pill bg-slate-900 text-white px-3 py-1.5 text-sm shadow-soft hover:bg-slate-800">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+      </a>
+    </nav>
+  </header>
+
+  <!-- Page content -->
+  <main class="relative z-10 max-w-7xl mx-auto px-6 pb-14">
+    <div class="h-1.5 w-full rounded-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold shadow-soft mb-6"></div>
+
+    <!-- Students — full width -->
+    <section class="bg-white/95 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200 shadow-soft p-5 mb-6 relative z-10">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-slate-600">
+          Students
+          <span class="ml-2 pill text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">{{ students|length }}</span>
+        </h2>
+        <button onclick="document.getElementById('createStudentDialog').showModal()" class="pill bg-brand-blue text-white px-3 py-1.5 text-sm shadow-soft hover:brightness-95">
+          <i class="fa-solid fa-user-plus mr-1"></i> Create Student
+        </button>
+      </div>
+
+      {% if students %}
+        <!-- Search bar -->
+        <div class="mb-3">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="studentSearch" placeholder="Search by name, student ID, national ID, email, or course..."
+              class="w-full pl-9 pr-4 py-2 text-sm rounded-lg ring-1 ring-slate-200 bg-slate-50/80 focus:bg-white focus:ring-brand-blue focus:outline-none transition"
+              oninput="filterStudents(this.value)">
+          </div>
+          <div id="searchNoResults" class="hidden text-center text-sm text-slate-400 py-4">No students match your search.</div>
+        </div>
+
+        <div id="studentList" class="space-y-3">
+          {% for s in students %}
+          <div class="student-row rounded-xl ring-1 ring-slate-200"
+               data-search="{{ s.name|lower }} {{ s.surname|lower }} {{ s.email|lower }} {{ s.student_id|lower }} {{ s.national_id|lower }} {% for e in s.enrollments %}{{ (e.course.title if e.course else '')|lower }} {% endfor %}">
+            <!-- Student row -->
+            <div class="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-slate-50/70 transition"
+                 onclick="toggleStudent('stu-{{ s.id }}')">
+              <div class="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden bg-brand-blue/10 flex items-center justify-center text-brand-blue font-semibold text-sm">
+                {% if s.selfie_filename %}
+                  <img src="/uploads/{{ s.student_id }}/{{ s.selfie_filename }}" class="w-9 h-9 rounded-full object-cover"
+                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                  <span class="hidden w-9 h-9 rounded-full bg-brand-blue/10 items-center justify-center text-brand-blue font-semibold text-sm">
+                    {{ s.name[0] }}{{ s.surname[0] if s.surname else '' }}
+                  </span>
+                {% else %}
+                  {{ s.name[0] }}{{ s.surname[0] if s.surname else '' }}
+                {% endif %}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-slate-900 text-sm">{{ s.name }} {{ s.surname }}</div>
+                <div class="text-xs text-slate-500">
+                  {{ s.email }} &bull; ID: {{ s.student_id }}
+                  {% if is_main_admin and s.branch_id and branch_map.get(s.branch_id) %}
+                    &bull; <i class="fa-solid fa-code-branch text-[10px] text-purple-500"></i> {{ branch_map[s.branch_id].name }}
+                  {% elif is_main_admin and not s.branch_id %}
+                    &bull; <span class="text-slate-400">No branch</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                {# v1.1.2 — Renewal urgency pill. Computed from the soonest
+                   cert_expiry across this student's enrolments so a single
+                   row tells the admin whether renewal is due. Sort order in
+                   the route already floats these students to the top. #}
+                {% set _ns = namespace(soonest=None) %}
+                {% for e in s.enrollments %}
+                  {% set _p = progress_map.get(e.id) %}
+                  {% if _p and _p.cert_expiry and now %}
+                    {% set _d = (_p.cert_expiry - now).days %}
+                    {% if _ns.soonest is none or _d < _ns.soonest %}
+                      {% set _ns.soonest = _d %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                {% if _ns.soonest is not none %}
+                  {% if _ns.soonest < 0 %}
+                    <span class="pill text-xs px-2 py-0.5 bg-rose-100 text-rose-800 ring-1 ring-rose-300 font-semibold">
+                      <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Overdue
+                    </span>
+                  {% elif _ns.soonest <= 30 %}
+                    <span class="pill text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200 font-semibold">
+                      <i class="fa-solid fa-clock mr-0.5"></i> Renew in {{ _ns.soonest }}d
+                    </span>
+                  {% elif _ns.soonest <= 90 %}
+                    <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-800 ring-1 ring-amber-200 font-semibold">
+                      <i class="fa-solid fa-flag mr-0.5"></i> Renewal due
+                    </span>
+                  {% endif %}
+                {% endif %}
+                {% if s.password_setup_token %}
+                  <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">Invite sent</span>
+                  <form method="POST" action="{{ url_for('company_resend_invite', student_id=s.id) }}" style="display:inline;" onclick="event.stopPropagation();">
+                    <button type="submit" class="pill text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100 cursor-pointer" title="Resend Invite Email">
+                      <i class="fa-solid fa-paper-plane mr-0.5"></i> Resend
+                    </button>
+                  </form>
+                {% elif s.otp %}
+                  <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">Pending OTP</span>
+                {% else %}
+                  <span class="pill text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">Active</span>
+                {% endif %}
+                <span class="pill text-xs px-2 py-0.5 bg-slate-50 text-slate-600 ring-1 ring-slate-200">
+                  {{ s.enrollments|length }} course{{ 's' if s.enrollments|length != 1 }}
+                </span>
+                <button type="button" onclick="event.stopPropagation(); resetStudentPassword({{ s.id }}, '{{ s.name }} {{ s.surname }}')"
+                        class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100 cursor-pointer" title="Reset Password">
+                  <i class="fa-solid fa-key mr-0.5"></i> Reset
+                </button>
+                <button type="button"
+                        data-edit-student-id="{{ s.id }}"
+                        data-edit-name="{{ s.name or '' }}"
+                        data-edit-surname="{{ s.surname or '' }}"
+                        data-edit-email="{{ s.email or '' }}"
+                        data-edit-cell="{{ s.cell_number or '' }}"
+                        onclick="event.stopPropagation(); openEditStudentFromButton(this);"
+                        class="pill text-xs px-2 py-0.5 bg-slate-100 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-200 cursor-pointer" title="Edit student details">
+                  <i class="fa-solid fa-pen-to-square mr-0.5"></i> Edit
+                </button>
+                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="chev-stu-{{ s.id }}"></i>
+              </div>
+            </div>
+
+            <!-- Enrollment details (hidden by default) -->
+            <div class="hidden border-t border-slate-100 bg-slate-50/50" id="stu-{{ s.id }}">
+              {% if s.enrollments %}
+                <div class="divide-y divide-slate-100">
+                  {% for enr in s.enrollments %}
+                    {% set prog = progress_map.get(enr.id, {"completed": 0, "total": 0, "percent": 0}) %}
+                    <div class="px-4 py-3">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="font-medium text-sm text-slate-900">
+                          <i class="fa-solid fa-book text-brand-gold mr-1"></i>
+                          {{ enr.course.title if enr.course else 'Course #' ~ enr.course_id }}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          {% if prog.passed and not prog.expired %}
+                            <span class="pill text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                              <i class="fa-solid fa-circle-check mr-0.5"></i> Passed
+                            </span>
+                          {% elif prog.passed and prog.expired %}
+                            <span class="pill text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Expired
+                            </span>
+                          {% elif prog.failed and prog.attempts_left == 0 %}
+                            <span class="pill text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-circle-xmark mr-0.5"></i> Failed ({{ prog.last_score }}%)
+                            </span>
+                          {% elif prog.failed %}
+                            <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-rotate-right mr-0.5"></i> Failed ({{ prog.last_score }}%) — {{ prog.attempts_left }} left
+                            </span>
+                          {% elif enr.approved %}
+                            <span class="pill text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">
+                              <i class="fa-solid fa-spinner mr-0.5"></i> In Progress
+                            </span>
+                          {% else %}
+                            <span class="pill text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-clock mr-0.5"></i> Pending Approval
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <!-- Progress bar -->
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div class="progress-bar h-full rounded-full {{ 'bg-emerald-500' if prog.passed else ('bg-rose-500' if prog.failed and prog.attempts_left == 0 else ('bg-amber-400' if prog.failed else ('bg-brand-blue' if prog.percent > 0 else 'bg-slate-300'))) }}"
+                               style="width: {{ prog.percent }}%"></div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-600 w-10 text-right">{{ prog.percent }}%</span>
+                      </div>
+
+                      <!-- Detail chips -->
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <div><i class="fa-regular fa-calendar mr-1"></i> Enrolled: {{ enr.enrolled_at.strftime('%d %b %Y') if enr.enrolled_at else '—' }}</div>
+                        <div><i class="fa-regular fa-clock mr-1"></i> Last accessed: {{ enr.last_accessed.strftime('%d %b %Y') if enr.last_accessed else 'Never' }}</div>
+                        <div class="relative" id="chapters-chip-{{ enr.id }}">
+                          <button type="button" class="hover:text-brand-blue transition cursor-pointer"
+                            onclick="toggleChapterBreakdown({{ enr.id }})">
+                            <i class="fa-solid fa-list-check mr-1"></i> {{ prog.completed }}/{{ prog.total }} chapters
+                            <i class="fa-solid fa-caret-down ml-1 text-[10px]"></i>
+                          </button>
+                          <div id="chapters-dropdown-{{ enr.id }}" class="hidden absolute left-0 top-full mt-1 z-30 bg-white border border-slate-200 rounded-lg shadow-lg p-3 min-w-[300px] max-h-[300px] overflow-y-auto">
+                            <div class="text-xs text-slate-400 text-center py-2">Loading...</div>
+                          </div>
+                        </div>
+                        {% if prog.attempts_used is defined and prog.attempts_used > 0 %}
+                          <div><i class="fa-solid fa-pen-to-square mr-1"></i> Attempts: {{ prog.attempts_used }} used, {{ prog.attempts_left }} remaining</div>
+                        {% endif %}
+                        {% if prog.passed and prog.passed_date %}
+                          <div><i class="fa-solid fa-award text-emerald-600 mr-1"></i> Passed: {{ prog.passed_date.strftime('%d %b %Y') }}</div>
+                        {% endif %}
+                        {% if prog.cert_expiry %}
+                          {# v1.1.2 — five-tier colour code by days-to-expiry so
+                             admins can spot upcoming renewals at a glance.
+                             Sort order in the route already floats the
+                             most-urgent students to the top of the list. #}
+                          {% set _days = ((prog.cert_expiry - now).days) if now else None %}
+                          {% if prog.expired or (_days is not none and _days < 0) %}
+                            <div class="px-2 py-1 -mx-1 rounded-md bg-rose-50 text-rose-700 ring-1 ring-rose-200 font-semibold inline-flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Renewal overdue (expired {{ prog.cert_expiry.strftime('%d %b %Y') }})</div>
+                          {% elif _days is not none and _days <= 30 %}
+                            <div class="px-2 py-1 -mx-1 rounded-md bg-rose-50 text-rose-700 ring-1 ring-rose-200 font-semibold inline-flex items-center"><i class="fa-solid fa-clock mr-1"></i> Renewal in {{ _days }} day{{ '' if _days == 1 else 's' }}: {{ prog.cert_expiry.strftime('%d %b %Y') }}</div>
+                          {% elif _days is not none and _days <= 90 %}
+                            <div class="px-2 py-1 -mx-1 rounded-md bg-amber-50 text-amber-800 ring-1 ring-amber-200 font-semibold inline-flex items-center"><i class="fa-solid fa-flag mr-1"></i> Renewal due {{ prog.cert_expiry.strftime('%d %b %Y') }} ({{ prog.time_remaining }} left)</div>
+                          {% elif _days is not none and _days <= 365 %}
+                            <div class="px-2 py-1 -mx-1 rounded-md bg-yellow-50 text-yellow-800 ring-1 ring-yellow-200 font-medium inline-flex items-center"><i class="fa-solid fa-rotate mr-1"></i> Renewal: {{ prog.cert_expiry.strftime('%d %b %Y') }} ({{ prog.time_remaining }} left)</div>
+                          {% else %}
+                            <div><i class="fa-solid fa-rotate mr-1"></i> Renewal: {{ prog.cert_expiry.strftime('%d %b %Y') }} <span class="text-emerald-600 font-medium">({{ prog.time_remaining }} left)</span></div>
+                          {% endif %}
+                        {% endif %}
+                        {% if prog.cert_pdf_url %}
+                          <a href="{{ prog.cert_pdf_url }}" target="_blank"
+                             class="inline-flex items-center gap-1 mt-1 px-3 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100 transition">
+                            <i class="fa-solid fa-file-pdf"></i> Download Certificate
+                          </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="px-4 py-4 text-sm text-slate-400 text-center">
+                  No course enrollments yet.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-12 text-slate-400">
+          <i class="fa-solid fa-users text-3xl mb-2"></i>
+          <p class="text-sm">No students yet. Click "Create Student" to get started.</p>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- Branches — only for main admin -->
+    {% if is_main_admin %}
+    <section class="bg-white/95 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200 shadow-soft p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-slate-600">
+          <i class="fa-solid fa-code-branch mr-1 text-brand-gold"></i> Branches
+          <span class="ml-2 pill text-xs px-2 py-0.5 bg-purple-50 text-purple-700 ring-1 ring-purple-200">{{ branches|length }}</span>
+        </h2>
+        <button onclick="document.getElementById('createBranchDialog').showModal()" class="pill bg-brand-blue text-white px-3 py-1.5 text-sm shadow-soft hover:brightness-95">
+          <i class="fa-solid fa-plus mr-1"></i> New Branch
+        </button>
+      </div>
+
+      {% if branches %}
+        <div class="space-y-3">
+          {% for b in branches %}
+          <div class="rounded-xl ring-1 ring-slate-200 overflow-hidden">
+            <div class="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-slate-50/70 transition"
+                 onclick="toggleStudent('branch-{{ b.id }}')">
+              <div class="flex-shrink-0 w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-semibold text-sm">
+                <i class="fa-solid fa-code-branch text-sm"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-slate-900 text-sm">{{ b.name }}</div>
+                <div class="text-xs text-slate-500">
+                  {{ b.address or 'No address' }}
+                  {% if b.contact_email %} &bull; {{ b.contact_email }}{% endif %}
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="pill text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">
+                  {{ branch_student_counts.get(b.id, 0) }} student{{ 's' if branch_student_counts.get(b.id, 0) != 1 }}
+                </span>
+                <span class="pill text-xs px-2 py-0.5 bg-purple-50 text-purple-700 ring-1 ring-purple-200">
+                  {{ branch_admins.get(b.id, [])|length }} admin{{ 's' if branch_admins.get(b.id, [])|length != 1 }}
+                </span>
+                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="chev-branch-{{ b.id }}"></i>
+              </div>
+            </div>
+
+            <!-- Branch details (hidden by default) -->
+            <div class="hidden border-t border-slate-100 bg-slate-50/50" id="branch-{{ b.id }}">
+              <div class="p-4 space-y-4">
+                <!-- Branch info & edit -->
+                <div class="flex items-start justify-between">
+                  <div class="text-xs text-slate-500 space-y-1">
+                    {% if b.contact_name %}<div><i class="fa-solid fa-user mr-1"></i> {{ b.contact_name }}</div>{% endif %}
+                    {% if b.contact_email %}<div><i class="fa-solid fa-envelope mr-1"></i> {{ b.contact_email }}</div>{% endif %}
+                    {% if b.contact_phone %}<div><i class="fa-solid fa-phone mr-1"></i> {{ b.contact_phone }}</div>{% endif %}
+                    {% if b.address %}<div><i class="fa-solid fa-location-dot mr-1"></i> {{ b.address }}</div>{% endif %}
+                  </div>
+                  <div class="flex gap-2">
+                    <button onclick="editBranch({{ b.id }}, '{{ b.name }}', '{{ b.address or '' }}', '{{ b.contact_name or '' }}', '{{ b.contact_email or '' }}', '{{ b.contact_phone or '' }}')"
+                            class="pill text-xs px-2 py-1 bg-blue-50 text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100 cursor-pointer">
+                      <i class="fa-solid fa-pen mr-0.5"></i> Edit
+                    </button>
+                    <form method="POST" action="{{ url_for('company_branch_delete', branch_id=b.id) }}" onsubmit="return confirm('Delete branch \'{{ b.name }}\'? Students and admins will be unassigned.')">
+                      <button type="submit" class="pill text-xs px-2 py-1 bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100 cursor-pointer">
+                        <i class="fa-solid fa-trash mr-0.5"></i> Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Branch admins -->
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Branch Admins</h3>
+                    <button onclick="openAddBranchAdmin({{ b.id }}, '{{ b.name }}')"
+                            class="text-xs text-brand-blue hover:text-brand-gold transition cursor-pointer">
+                      <i class="fa-solid fa-plus mr-0.5"></i> Add Admin
+                    </button>
+                  </div>
+                  {% set admins = branch_admins.get(b.id, []) %}
+                  {% if admins %}
+                    <div class="space-y-2">
+                      {% for admin in admins %}
+                      <div class="flex items-center justify-between bg-white rounded-lg px-3 py-2 ring-1 ring-slate-100">
+                        <div>
+                          <span class="text-sm font-medium text-slate-800">{{ admin.full_name }}</span>
+                          <span class="text-xs text-slate-500 ml-2">{{ admin.email }}</span>
+                        </div>
+                        <form method="POST" action="{{ url_for('company_branch_admin_delete', branch_id=b.id, user_id=admin.id) }}"
+                              onsubmit="return confirm('Remove {{ admin.full_name }} as branch admin?')">
+                          <button type="submit" class="text-xs text-rose-500 hover:text-rose-700 cursor-pointer" title="Remove admin">
+                            <i class="fa-solid fa-xmark"></i>
+                          </button>
+                        </form>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <p class="text-xs text-slate-400">No admins assigned to this branch yet.</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Unassigned students count -->
+        {% if branch_student_counts.get(0, 0) > 0 %}
+        <div class="mt-3 text-xs text-slate-400 text-center">
+          <i class="fa-solid fa-info-circle mr-1"></i> {{ branch_student_counts[0] }} student{{ 's' if branch_student_counts[0] != 1 }} not assigned to any branch
+        </div>
+        {% endif %}
+      {% else %}
+        <div class="text-center py-8 text-slate-400">
+          <i class="fa-solid fa-code-branch text-3xl mb-2"></i>
+          <p class="text-sm">No branches yet. Create your first branch to organise students by location.</p>
+        </div>
+      {% endif %}
+    </section>
+    {% endif %}
+  </main>
+
+  <!-- Settings Dialog -->
+  <dialog id="settingsDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">Company Settings</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form method="post" action="{{ url_for('company_profile_update') }}" class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Company Name</label>
+          <input name="name" value="{{ company.name or '' }}" class="w-full rounded-lg border-slate-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-brand-blue/30">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Name</label>
+            <input name="contact_name" value="{{ company.contact_name or '' }}" class="w-full rounded-lg border-slate-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-brand-blue/30">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Phone</label>
+            <input name="contact_phone" value="{{ company.contact_phone or '' }}" class="w-full rounded-lg border-slate-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-brand-blue/30">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Contact Email</label>
+          <input name="contact_email" value="{{ company.contact_email or '' }}" class="w-full rounded-lg border-slate-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-brand-blue/30">
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:brightness-95 transition">
+          <i class="fa-regular fa-floppy-disk mr-1"></i> Save Settings
+        </button>
+      </form>
+
+      {% if is_main_admin %}
+      <hr class="my-5 border-slate-200">
+      <h3 class="text-sm font-semibold text-brand-blue mb-1"><i class="fa-solid fa-book-open mr-1"></i> Approved Courses</h3>
+      <p class="text-xs text-slate-500 mb-3">Select which courses your company offers. Only these will appear when enrolling students.</p>
+      <form method="post" action="{{ url_for('company_update_approved_courses') }}" class="space-y-2">
+        <div class="max-h-48 overflow-y-auto rounded-lg border border-slate-200 p-3 space-y-2">
+          {% for course in all_courses %}
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5">
+            <input type="checkbox" name="course_ids" value="{{ course.id }}"
+                   {% if course.id in approved_course_ids %}checked{% endif %}
+                   class="rounded border-slate-300 text-brand-blue focus:ring-brand-blue/30">
+            <span class="text-slate-800">{{ course.title }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <button class="w-full bg-brand-gold text-brand-blue rounded-lg py-2.5 font-semibold hover:brightness-95 transition mt-2">
+          <i class="fa-regular fa-floppy-disk mr-1"></i> Save Approved Courses
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </dialog>
+
+  <!-- Create Student Dialog -->
+  <dialog id="createStudentDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">Create Student</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500 mb-4">The student will receive an email with a link to set their password.</p>
+      <form method="post" action="{{ url_for('company_create_student') }}" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">First Name <span class="text-rose-500">*</span></label>
+            <input name="name" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Surname <span class="text-rose-500">*</span></label>
+            <input name="surname" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Email <span class="text-rose-500">*</span></label>
+          <input name="email" type="email" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">National ID <span class="text-rose-500">*</span></label>
+            <input name="national_id" required pattern="[A-Za-z0-9]{6,20}" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Cell Number</label>
+            <input name="cell_number" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+        </div>
+        {% if is_main_admin and branches %}
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Branch</label>
+          <select name="branch_id" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+            <option value="">— No branch (main) —</option>
+            {% for b in branches %}
+              <option value="{{ b.id }}">{{ b.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:brightness-95 transition">
+          <i class="fa-solid fa-paper-plane mr-1"></i> Create & Send Invite
+        </button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Create Branch Dialog -->
+  {% if is_main_admin %}
+  <dialog id="createBranchDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">Create Branch</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form method="post" action="{{ url_for('company_branch_create') }}" class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Branch Name <span class="text-rose-500">*</span></label>
+          <input name="name" required class="w-full rounded-lg border-slate-300 px-3 py-2" placeholder="e.g. Johannesburg Office">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Address</label>
+          <input name="address" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Name</label>
+            <input name="contact_name" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Phone</label>
+            <input name="contact_phone" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Contact Email</label>
+          <input name="contact_email" type="email" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:brightness-95 transition">
+          <i class="fa-solid fa-plus mr-1"></i> Create Branch
+        </button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Edit Branch Dialog -->
+  <dialog id="editBranchDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">Edit Branch</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form id="editBranchForm" method="post" class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Branch Name <span class="text-rose-500">*</span></label>
+          <input name="name" id="editBranchName" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Address</label>
+          <input name="address" id="editBranchAddress" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Name</label>
+            <input name="contact_name" id="editBranchContactName" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-700 mb-1">Contact Phone</label>
+            <input name="contact_phone" id="editBranchContactPhone" class="w-full rounded-lg border-slate-300 px-3 py-2">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Contact Email</label>
+          <input name="contact_email" id="editBranchContactEmail" type="email" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:brightness-95 transition">
+          <i class="fa-regular fa-floppy-disk mr-1"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Add Branch Admin Dialog -->
+  <dialog id="addBranchAdminDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">Add Branch Admin</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500 mb-4">Create a login for <strong id="branchAdminBranchName"></strong>. This user can only see students in their branch.</p>
+      <form id="addBranchAdminForm" method="post" class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Full Name <span class="text-rose-500">*</span></label>
+          <input name="full_name" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Email <span class="text-rose-500">*</span></label>
+          <input name="email" type="email" required class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Phone</label>
+          <input name="phone" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Password <span class="text-rose-500">*</span></label>
+          <input name="password" type="password" required minlength="6" class="w-full rounded-lg border-slate-300 px-3 py-2">
+        </div>
+        <button class="w-full bg-brand-blue text-white rounded-lg py-2.5 font-semibold hover:brightness-95 transition">
+          <i class="fa-solid fa-user-plus mr-1"></i> Create Branch Admin
+        </button>
+      </form>
+    </div>
+  </dialog>
+  {% endif %}
+
+  <!-- Toasts -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md z-50">
+      {% for c,m in messages %}
+        <div class="mb-2 text-sm px-3 py-2 rounded-xl shadow-soft ring-1
+            {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success'
+               else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error']
+               else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}{% endwith %}
+
+  <!-- Reset Password Dialog -->
+  <dialog id="resetPasswordDialog" class="w-full max-w-sm backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue" id="resetDialogTitle">Reset Password</h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Confirm step -->
+      <div id="resetConfirmStep">
+        <p class="text-sm text-slate-600 mb-4">
+          Are you sure you want to reset the password for <strong id="resetStudentName"></strong>?
+        </p>
+        <p class="text-xs text-slate-400 mb-4">A temporary password will be generated. Give it to the student so they can log in.</p>
+        <div class="flex gap-2">
+          <button onclick="document.getElementById('resetPasswordDialog').close()" class="flex-1 rounded-lg py-2 text-sm font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+          <button onclick="confirmResetPassword()" class="flex-1 rounded-lg py-2 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600">Reset Password</button>
+        </div>
+      </div>
+
+      <!-- Result step -->
+      <div id="resetResultStep" class="hidden">
+        <p class="text-sm text-slate-600 mb-2">Temporary password for <strong id="resetResultName"></strong>:</p>
+        <div class="flex items-center gap-2 mb-3">
+          <input type="text" id="resetTempPassword" readonly class="flex-1 rounded-lg border-slate-300 px-3 py-2.5 text-center font-mono text-lg font-bold tracking-wider bg-slate-50">
+          <button onclick="copyTempPassword()" class="rounded-lg px-3 py-2.5 text-sm ring-1 ring-slate-200 hover:bg-slate-50" title="Copy">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+        <p class="text-xs text-slate-400 mb-4">Give this password to the student. They should change it after logging in.</p>
+        <button onclick="document.getElementById('resetPasswordDialog').close()" class="w-full rounded-lg py-2 text-sm font-medium text-white bg-brand-blue hover:brightness-95">Done</button>
+      </div>
+
+      <!-- Loading step -->
+      <div id="resetLoadingStep" class="hidden text-center py-4">
+        <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-blue mb-2"></i>
+        <p class="text-sm text-slate-500">Generating temporary password...</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Edit Student Dialog (v1.1.2 — company-portal edit + resend invite to a new email) -->
+  <dialog id="editStudentDialog" class="w-full max-w-lg backdrop:bg-slate-900/40">
+    <div class="h-1.5 w-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold rounded-t-2xl"></div>
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-brand-blue">
+          <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Student
+        </h2>
+        <button onclick="this.closest('dialog').close()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">
+        Use this to correct a student's details. If the original invite email went to the wrong inbox, fix the email and click <strong>Save &amp; Resend Invite</strong> to send a fresh setup link to the new address.
+      </p>
+
+      <form id="editStudentForm" method="POST" action="" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">First name</label>
+            <input type="text" name="name" id="editStudent_name" required
+                   class="w-full px-3 py-2 rounded-lg ring-1 ring-slate-200 focus:ring-brand-blue focus:outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Surname</label>
+            <input type="text" name="surname" id="editStudent_surname" required
+                   class="w-full px-3 py-2 rounded-lg ring-1 ring-slate-200 focus:ring-brand-blue focus:outline-none text-sm">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+            <input type="email" name="email" id="editStudent_email" required
+                   class="w-full px-3 py-2 rounded-lg ring-1 ring-slate-200 focus:ring-brand-blue focus:outline-none text-sm">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Cell number</label>
+            <input type="text" name="cell_number" id="editStudent_cell"
+                   class="w-full px-3 py-2 rounded-lg ring-1 ring-slate-200 focus:ring-brand-blue focus:outline-none text-sm">
+          </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end items-center gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="this.closest('dialog').close()"
+                  class="pill text-sm px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300">
+            Cancel
+          </button>
+          {# Multiple submit buttons inside one form — the one the user clicks
+             is the only one whose name=value gets posted, so the route can
+             distinguish save-only vs save-and-resend without JS. #}
+          <button type="submit" name="resend_invite" value="1"
+                  onclick="return confirm('Save and send a fresh setup invite to ' + (document.getElementById('editStudent_email').value || 'the address on file') + '?');"
+                  class="pill text-sm px-4 py-2 bg-brand-blue text-white hover:brightness-110">
+            <i class="fa-solid fa-paper-plane mr-1"></i> Save &amp; Resend Invite
+          </button>
+          <button type="submit"
+                  class="pill text-sm px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700">
+            <i class="fa-solid fa-check mr-1"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    let _resetStudentId = null;
+
+    function openEditStudent(studentId, name, surname, email, cell) {
+      const form = document.getElementById('editStudentForm');
+      form.action = '/company/edit_student/' + studentId;
+      document.getElementById('editStudent_name').value = name || '';
+      document.getElementById('editStudent_surname').value = surname || '';
+      document.getElementById('editStudent_email').value = email || '';
+      document.getElementById('editStudent_cell').value = cell || '';
+      document.getElementById('editStudentDialog').showModal();
+    }
+
+    // Called by the Edit pill on each student row. Reads the values from
+    // data-* attributes so apostrophes, quotes, and tojson encoding can't
+    // break the inline onclick handler.
+    function openEditStudentFromButton(btn) {
+      openEditStudent(
+        btn.dataset.editStudentId,
+        btn.dataset.editName,
+        btn.dataset.editSurname,
+        btn.dataset.editEmail,
+        btn.dataset.editCell
+      );
+    }
+
+    function resetStudentPassword(studentId, studentName) {
+      _resetStudentId = studentId;
+      document.getElementById('resetStudentName').textContent = studentName;
+      document.getElementById('resetConfirmStep').classList.remove('hidden');
+      document.getElementById('resetResultStep').classList.add('hidden');
+      document.getElementById('resetLoadingStep').classList.add('hidden');
+      document.getElementById('resetPasswordDialog').showModal();
+    }
+
+    async function confirmResetPassword() {
+      document.getElementById('resetConfirmStep').classList.add('hidden');
+      document.getElementById('resetLoadingStep').classList.remove('hidden');
+
+      try {
+        const resp = await fetch(`/company/reset_student_password/${_resetStudentId}`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.success) {
+          document.getElementById('resetResultName').textContent = data.student_name;
+          document.getElementById('resetTempPassword').value = data.temp_password;
+          document.getElementById('resetLoadingStep').classList.add('hidden');
+          document.getElementById('resetResultStep').classList.remove('hidden');
+        } else {
+          alert(data.error || 'Failed to reset password.');
+          document.getElementById('resetPasswordDialog').close();
+        }
+      } catch (e) {
+        alert('Network error. Please try again.');
+        document.getElementById('resetPasswordDialog').close();
+      }
+    }
+
+    function copyTempPassword() {
+      const input = document.getElementById('resetTempPassword');
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btn = input.nextElementSibling;
+        btn.innerHTML = '<i class="fa-solid fa-check text-emerald-600"></i>';
+        setTimeout(() => { btn.innerHTML = '<i class="fa-regular fa-copy"></i>'; }, 2000);
+      });
+    }
+
+    function filterStudents(query) {
+      const q = query.trim().toLowerCase();
+      const rows = document.querySelectorAll('.student-row');
+      let visible = 0;
+      rows.forEach(row => {
+        const match = !q || row.dataset.search.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      document.getElementById('searchNoResults').classList.toggle('hidden', visible > 0);
+    }
+
+    function toggleStudent(id) {
+      const el = document.getElementById(id);
+      const chev = document.getElementById('chev-' + id);
+      if (!el) return;
+      el.classList.toggle('hidden');
+      if (chev) chev.classList.toggle('rotate-180');
+    }
+
+    // Branch management
+    function editBranch(id, name, address, contactName, contactEmail, contactPhone) {
+      document.getElementById('editBranchForm').action = `/company/branches/${id}/edit`;
+      document.getElementById('editBranchName').value = name;
+      document.getElementById('editBranchAddress').value = address;
+      document.getElementById('editBranchContactName').value = contactName;
+      document.getElementById('editBranchContactEmail').value = contactEmail;
+      document.getElementById('editBranchContactPhone').value = contactPhone;
+      document.getElementById('editBranchDialog').showModal();
+    }
+
+    function openAddBranchAdmin(branchId, branchName) {
+      document.getElementById('addBranchAdminForm').action = `/company/branches/${branchId}/admin/create`;
+      document.getElementById('branchAdminBranchName').textContent = branchName;
+      document.getElementById('addBranchAdminDialog').showModal();
+    }
+
+    // Close dialog on backdrop click
+    document.querySelectorAll('dialog').forEach(dlg => {
+      dlg.addEventListener('click', e => {
+        if (e.target === dlg) dlg.close();
+      });
+    });
+
+    // Chapter breakdown dropdown
+    const _chapterCache = {};
+
+    function toggleChapterBreakdown(enrollmentId) {
+      const dd = document.getElementById(`chapters-dropdown-${enrollmentId}`);
+      if (!dd) return;
+
+      document.querySelectorAll('[id^="chapters-dropdown-"]').forEach(el => {
+        if (el !== dd) el.classList.add('hidden');
+      });
+
+      const isHidden = dd.classList.toggle('hidden');
+      if (isHidden) return;
+
+      if (_chapterCache[enrollmentId]) {
+        renderChapterDropdown(dd, _chapterCache[enrollmentId]);
+        return;
+      }
+
+      dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Loading...</div>';
+
+      fetch(`/api/enrollment/${enrollmentId}/chapters`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.chapters) {
+          dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">Could not load chapters.</div>';
+          return;
+        }
+        _chapterCache[enrollmentId] = data;
+        renderChapterDropdown(dd, data);
+      })
+      .catch(() => {
+        dd.innerHTML = '<div class="text-xs text-rose-500 text-center py-2">Error loading chapters.</div>';
+      });
+    }
+
+    function renderChapterDropdown(dd, data) {
+      const chapters = data.chapters || [];
+      if (!chapters.length) {
+        dd.innerHTML = '<div class="text-xs text-slate-400 text-center py-2">No chapters found.</div>';
+        return;
+      }
+
+      const typeIcons = {
+        quiz: '<i class="fa-solid fa-question-circle text-amber-500 mr-1.5"></i>',
+        video: '<i class="fa-solid fa-video text-blue-500 mr-1.5"></i>',
+        audio: '<i class="fa-solid fa-headphones text-purple-500 mr-1.5"></i>',
+        content: '<i class="fa-solid fa-file-lines text-slate-400 mr-1.5"></i>',
+        text: '<i class="fa-solid fa-file-lines text-slate-400 mr-1.5"></i>',
+      };
+
+      let html = '';
+      chapters.forEach((ch, i) => {
+        const icon = typeIcons[ch.type] || typeIcons.content;
+        const check = ch.completed
+          ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>'
+          : '<i class="fa-regular fa-circle text-slate-300"></i>';
+        const textClass = ch.completed ? 'text-slate-700' : 'text-slate-400';
+        html += `<div class="flex items-center gap-2 py-1 ${i > 0 ? 'border-t border-slate-50' : ''} text-xs">
+          <span class="w-4 text-center">${check}</span>
+          <span>${icon}</span>
+          <span class="${textClass} flex-1 truncate">${ch.title}</span>
+        </div>`;
+      });
+
+      // Feedback row
+      const fbDone = data.feedback_submitted;
+      const fbCheck = fbDone
+        ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>'
+        : '<i class="fa-regular fa-circle text-slate-300"></i>';
+      const fbClass = fbDone ? 'text-slate-700' : 'text-slate-400';
+      const fbLabel = fbDone ? 'Feedback submitted' : 'Feedback not submitted';
+      html += `<div class="flex items-center gap-2 py-1 border-t border-slate-200 text-xs mt-1 pt-1">
+        <span class="w-4 text-center">${fbCheck}</span>
+        <span><i class="fa-solid fa-comment-dots ${fbDone ? 'text-emerald-500' : 'text-slate-300'} mr-1.5"></i></span>
+        <span class="${fbClass} flex-1">${fbLabel}</span>
+      </div>`;
+
+      dd.innerHTML = html;
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('[id^="chapters-chip-"]')) {
+        document.querySelectorAll('[id^="chapters-dropdown-"]').forEach(el => el.classList.add('hidden'));
+      }
+    });
+  </script>
+</body>
+</html>

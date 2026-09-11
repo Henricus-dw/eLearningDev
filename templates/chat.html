@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <div class="bg-white shadow-lg rounded-lg w-96 h-[600px] flex flex-col">
+    <div class="bg-blue-900 text-white p-3 rounded-t-lg">
+      <h2 class="text-lg font-semibold">💬 Live Support</h2>
+    </div>
+    <div id="messages" class="flex-1 p-3 overflow-y-auto text-gray-700"></div>
+    <div class="p-3 flex border-t">
+      <input id="msgInput" type="text" placeholder="Type a message..."
+             class="flex-1 p-2 border rounded-l">
+      <button id="sendBtn" class="bg-blue-900 text-white px-4 rounded-r">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    const chatId = "user-" + Date.now(); 
+    socket.emit("join_chat", { user_id: chatId });
+
+    const msgBox = document.getElementById("messages");
+    const input = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    sendBtn.onclick = () => {
+      const msg = input.value.trim();
+      if (!msg) return;
+      msgBox.innerHTML += `<div class="mb-2"><b>You:</b> ${msg}</div>`;
+      socket.emit("send_message", { chat_id: chatId, message: msg });
+      input.value = "";
+      msgBox.scrollTop = msgBox.scrollHeight;
+    };
+
+    socket.on("receive_message", data => {
+      msgBox.innerHTML += `<div class="mb-2 text-blue-600"><b>Support:</b> ${data.message}</div>`;
+      msgBox.scrollTop = msgBox.scrollHeight;
+    });
+  </script>
+
+</body>
+</html>

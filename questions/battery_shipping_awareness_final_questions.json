@@ -1,0 +1,620 @@
+[
+  {
+    "id": 1,
+    "type": "mcq",
+    "question": "Which Batteries pose the biggest danger to aircrafts?",
+    "points": 1,
+    "options": {
+      "A": "Sodium Ion Batteries",
+      "B": "Nicad Batteries",
+      "C": "Lithium Ion Batteries",
+      "D": "Car Batteries"
+    },
+    "correct": "C",
+    "position": 1
+  },
+  {
+    "id": 2,
+    "type": "mcq",
+    "question": "Which battery can cause thermal runaway?",
+    "points": 1,
+    "options": {
+      "A": "Alkaline Batteries",
+      "B": "Coin Batteries",
+      "C": "Lithium Ion Batteries",
+      "D": "Sodium Ion Batteries"
+    },
+    "correct": "C",
+    "position": 2
+  },
+  {
+    "id": 3,
+    "type": "mcq",
+    "question": "What is the cause of thermal runaway?",
+    "points": 1,
+    "options": {
+      "A": "Damaged batteries",
+      "B": "Manufacture defects",
+      "C": "Overheating of the battery",
+      "D": "All of the above"
+    },
+    "correct": "D",
+    "position": 3
+  },
+  {
+    "id": 4,
+    "type": "tf",
+    "question": "Do lithium Ion batteries batteries pose a significant risk to the aviation industry?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 4
+  },
+  {
+    "id": 5,
+    "type": "tf",
+    "question": "This training program is based on the IATA Battery Shipping Regulations",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 5
+  },
+  {
+    "id": 6,
+    "type": "tf",
+    "question": "Are the following items forbidden in air travel - Attaché Cases, Cash Boxes/Bags, Electro Shock Weapons, Lithium Battery-Powered Lighters",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 6
+  },
+  {
+    "id": 7,
+    "type": "mcq",
+    "question": "Fill in the missing words: Hazard is something that ____________ causes _______ .",
+    "points": 1,
+    "options": {
+      "A": "Dangerous Goods & Harm",
+      "B": "Can & Harm",
+      "C": "You & Harm",
+      "D": "Potentially & Harm"
+    },
+    "correct": "D",
+    "position": 7
+  },
+  {
+    "id": 8,
+    "type": "mcq",
+    "question": "What is the purpose of the UN Subcommittee of Experts on the Transport of Dangerous Goods (SCoETDG)",
+    "points": 1,
+    "options": {
+      "A": "Develops recommended procedures for the transport of all types of dangerous goods except radioactive material. Recommendations on the Transport of Dangerous Goods (Model Regulations)",
+      "B": "Develops recommended procedures for the safe transport of radioactive material. IAEA Regulations for the Safe Transport of Radioactive Materials.",
+      "C": "Develop regulations for the safe transport of dangerous goods by air, based on UN Model Regulations and IAEA Regulations. Technical Instructions for the Safe Transport of Dangerous Goods by Air (ICAO TI)",
+      "D": "States Civil Aviation Authorities (CAA) may require additional variations which is being notified to ICAO or IATA and implemented in local regulations. In South Africa, the legislation for Dangerous Goods is under Part 92 – Conveyance of Dangerous Goods."
+    },
+    "correct": "A",
+    "position": 8
+  },
+  {
+    "id": 9,
+    "type": "mcq",
+    "question": "What is the purpose of International Civil Aviation Organization (ICAO)",
+    "points": 1,
+    "options": {
+      "A": "Contains ICAO Technical Instructions (TI) and additional restrictive requirements to reflect industry standard practices and operational considerations. IATA Dangerous Goods Regulations (DGR 67th edition).",
+      "B": "Develop regulations for the safe transport of dangerous goods by air, based on UN Model Regulations and IAEA Regulations. Technical Instructions for the Safe Transport of Dangerous Goods by Air (ICAO TI)",
+      "C": "Develops recommended procedures for the safe transport of radioactive material. IAEA Regulations for the Safe Transport of Radioactive Materials.",
+      "D": "Develops recommended procedures for the transport of all types of dangerous goods except radioactive material. Recommendations on the Transport of Dangerous Goods (Model Regulations)"
+    },
+    "correct": "B",
+    "position": 9
+  },
+  {
+    "id": 10,
+    "type": "tf",
+    "question": "Is this statement true - Risk is the combination of the probability (the chance, likelihood) and severity (the level, how serious) of the harm that may result. (Risk = Probability x Severity). The level of risk can vary depending on various factors, such as the level of exposure (how much, how long, how often), the vulnerability of the person exposed.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 10
+  },
+  {
+    "id": 11,
+    "type": "mcq",
+    "question": "What Dangerous Goods class does Lithium Ion and Sodium Ion fall under?",
+    "points": 1,
+    "options": {
+      "A": "Class 7",
+      "B": "Class 3",
+      "C": "Class 9",
+      "D": "Class 6",
+      "E": "Class 1"
+    },
+    "correct": "C",
+    "position": 11
+  },
+  {
+    "id": 12,
+    "type": "tf",
+    "question": "Are Wheelchairs/Mobility Aids with Lithium Batteries allowed with Operator Approval, as Checked Baggage Only?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 12
+  },
+  {
+    "id": 13,
+    "type": "tf",
+    "question": "Are Spare Lithium Batteries Goods Acceptable with Operator Approval, as Checked Baggage Only?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 13
+  },
+  {
+    "id": 14,
+    "type": "tf",
+    "question": "Are Spare Lithium Batteries Goods Acceptable with Operator Approval as Carry-on Baggage Only?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 14
+  },
+  {
+    "id": 15,
+    "type": "mcq",
+    "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Pharmaceuticals",
+    "points": 1,
+    "options": {
+      "A": "Radioactives",
+      "B": "Flammable Liquids",
+      "C": "Corrosive substances",
+      "D": "All of the above"
+    },
+    "correct": "D",
+    "position": 15
+  },
+  {
+    "id": 16,
+    "type": "mcq",
+    "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Frozen Fruit, Vegetables",
+    "points": 1,
+    "options": {
+      "A": "Cardboard",
+      "B": "Plastic",
+      "C": "Drums",
+      "D": "Dry Ice"
+    },
+    "correct": "D",
+    "position": 16
+  },
+  {
+    "id": 17,
+    "type": "mcq",
+    "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Dental Apparatus",
+    "points": 1,
+    "options": {
+      "A": "Plastic",
+      "B": "Compressed Gas",
+      "C": "Rubber",
+      "D": "Steel casing"
+    },
+    "correct": "B",
+    "position": 17
+  },
+  {
+    "id": 18,
+    "type": "mcq",
+    "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Machinery Parts",
+    "points": 1,
+    "options": {
+      "A": "Lithium Batteries",
+      "B": "Mercury",
+      "C": "Paints",
+      "D": "All of the above"
+    },
+    "correct": "A",
+    "position": 18
+  },
+  {
+    "id": 19,
+    "type": "mcq",
+    "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Breathing Apparatus",
+    "points": 1,
+    "options": {
+      "A": "Value",
+      "B": "Straps",
+      "C": "Chemical Oxygen generators",
+      "D": "Labels"
+    },
+    "correct": "C",
+    "position": 19
+  },
+  {
+    "id": 20,
+    "type": "tf",
+    "question": "Refer to Table 2.3A - The pilot-in-command must be informed of the location of Baggage with installed lithium batteries?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 20
+  },
+  {
+    "id": 21,
+    "type": "tf",
+    "question": "Refer to Table 2.3A - Permitted in or as carry-on baggage - Batteries, spare/loose",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 21
+  },
+  {
+    "id": 22,
+    "type": "tf",
+    "question": "Refer to Table 2.3A - Permitted in or as checked baggage - e-cigarettes",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 22
+  },
+  {
+    "id": 23,
+    "type": "tf",
+    "question": "Refer to Table 2.3A - The approval of the operator is required - Thermometer, medical or clinical",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 23
+  },
+  {
+    "id": 24,
+    "type": "mcq",
+    "question": "Shippers responsibilities, please select the correct answer.",
+    "points": 1,
+    "options": {
+      "A": "Provide such information to their employees as will enable them to carry out the functions for which they are responsible",
+      "B": "Determine whether the article or substance is forbidden for transport by air",
+      "C": "Ensure that the dangerous goods are identified, classified, packed, marked, labelled and documented in full compliance with the Regulations",
+      "D": "Ensure the dangerous goods are packed in compliance with all applicable transport requirements",
+      "E": "All of the above"
+    },
+    "correct": "E",
+    "position": 24
+  },
+  {
+    "id": 25,
+    "type": "tf",
+    "question": "Training Requirements - The employer of personnel that perform functions aimed at ensuring that dangerous goods are trans-ported in accordance with the DGR must establish and maintain a dangerous goods training program",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 25
+  },
+  {
+    "id": 26,
+    "type": "tf",
+    "question": "Training Requirements - The employer must ensure that personnel are competent to perform any function for which they are responsible prior to performing any of these functions. This must be achieved through training and assessment commensurate with the functions for which they are responsible.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 26
+  },
+  {
+    "id": 27,
+    "type": "mcq",
+    "question": "Adequate Instruction for Shipping Section II Batteries - At a minimum, an employer should consider the following as being adequate instruction",
+    "points": 1,
+    "options": {
+      "A": "Classification of the lithium or sodium ion batteries being shipped.",
+      "B": "Documentation of procedures applied to lithium and sodium batteries being shipped.",
+      "C": "Written work instructions or other documentation, including automated controls.",
+      "D": "Review and understanding of documented procedures as applicable to the job function.",
+      "E": "All of the above"
+    },
+    "correct": "E",
+    "position": 27
+  },
+  {
+    "id": 28,
+    "type": "tf",
+    "question": "An operator or the operator's handling agent and the airport operator must ensure that information on the types of dangerous goods which are forbidden for carriage aboard an aircraft is communicated effectively to passengers.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 28
+  },
+  {
+    "id": 29,
+    "type": "mcq",
+    "question": "How many South African State Variations are there?",
+    "points": 1,
+    "options": {
+      "A": "4",
+      "B": "11",
+      "C": "1",
+      "D": "6",
+      "E": "5"
+    },
+    "correct": "A",
+    "position": 29
+  },
+  {
+    "id": 30,
+    "type": "mcq",
+    "question": "How many classes of dangerous good are there?",
+    "points": 1,
+    "options": {
+      "A": "5",
+      "B": "6",
+      "C": "8",
+      "D": "9",
+      "E": "7"
+    },
+    "correct": "D",
+    "position": 30
+  },
+  {
+    "id": 31,
+    "type": "tf",
+    "question": "Is this statement true or false? - Dangerous goods are assigned a UN (United Nations) number or ID (Identification) number and proper shipping name according to their hazard classification and their composition. The proper shipping name is used to identify the dangerous article or substance on the outside of the package and, where required, on the “Shipper's Declaration for Dangerous Goods”",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 31
+  },
+  {
+    "id": 32,
+    "type": "tf",
+    "question": "True or False? - There are 6 possible classifications depending on the chemistry (lithium metal or lithium ion) and the packaging configuration.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 32
+  },
+  {
+    "id": 33,
+    "type": "tf",
+    "question": "There a two class 9 labels?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 33
+  },
+  {
+    "id": 34,
+    "type": "tf",
+    "question": "The shipper is responsible for the correct marking and labelling of the packages presented for transport.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 34
+  },
+  {
+    "id": 35,
+    "type": "tf",
+    "question": "The operator is responsible for the correct marking and labelling of the packages presented for transport.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 35
+  },
+  {
+    "id": 36,
+    "type": "tf",
+    "question": "Accurate and appropriate transport documentation for dangerous goods is an essential component of the safe transport process.\r\nThe main documents are:\r\n• the Shipper's Declaration for Dangerous Goods (DGD)\r\n• the air waybill (AWB).",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 36
+  },
+  {
+    "id": 37,
+    "type": "tf",
+    "question": "Shipments of lithium and sodium ion batteries in compliance with Section II do not require a Shipper's Declaration for Dangerous Goods.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 37
+  },
+  {
+    "id": 38,
+    "type": "tf",
+    "question": "Emergency procedures do not always have to be available wherever dangerous goods are handled.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 38
+  },
+  {
+    "id": 39,
+    "type": "mcq",
+    "question": "In the event of an incident or emergency that may occur, following actions are recommended where safe and practicable to do so:",
+    "points": 1,
+    "options": {
+      "A": "Isolate the area, advise other persons to move away, inform the supervisor",
+      "B": "do not touch and avoid inhalation of fumes, smoke, dusts and vapours",
+      "C": "inform emergency services, provide as much information about the incident or accident and substances involved as possible",
+      "D": "keep the transport documents readily available for responders when they arrive",
+      "E": "All of the above"
+    },
+    "correct": "E",
+    "position": 39
+  },
+  {
+    "id": 40,
+    "type": "tf",
+    "question": "Each employer or location may have different or additional requirements and procedures. It is the employer’s responsibility to ensure everyone is trained and aware about the emergency response requirements. This would be delivered in collaboration with local emergency services or authorities.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 40
+  },
+  {
+    "id": 41,
+    "type": "tf",
+    "question": "The transport of batteries requires co-ordinated action by the shipper, the operator and the consignee to ensure safe transport and arrival on time and in proper condition. To this end, the operator or their agent must perform an acceptance check for shipments of fully regulated batteries, including Section I/IA and Section IB battery shipments.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 41
+  },
+  {
+    "id": 42,
+    "type": "mcq",
+    "question": "Rejection of shipments of batteries happen due to:",
+    "points": 1,
+    "options": {
+      "A": "Improperly prepared documentation",
+      "B": "Absent or incorrect marks",
+      "C": "Absent or incorrect labels",
+      "D": "All of the above"
+    },
+    "correct": "D",
+    "position": 42
+  },
+  {
+    "id": 43,
+    "type": "tf",
+    "question": "Is this statement true or false - With the aim of preventing dangerous goods which a passenger is not permitted to have from being taken aboard an aircraft in excess baggage consigned as cargo, any organization or enterprise accepting excess baggage consigned as cargo should seek confirmation from the passenger, or a person acting on behalf of the passenger, that the excess baggage does not contain dangerous goods that are not permitted and seek further confirmation about the contents of any item where there are suspicions that it may contain dangerous goods that are not permitted.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 43
+  },
+  {
+    "id": 44,
+    "type": "tf",
+    "question": "Is this statement true or false? - Any spills, leaks, emissions, or accidents involving batteries (or other dangerous goods) that have entered the supply chain, must be reported to the appropriate authority in the country in which the accidents or incidents occurred, as required by that authority.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 44
+  },
+  {
+    "id": 45,
+    "type": "tf",
+    "question": "Is this statement true or false - Any type of dangerous goods occurrence must be reported, irrespective of whether dangerous goods are contained in cargo, mail or baggage, to the authorities of the State of the operator and where these occasions occurred with the reporting requirements of those authorities.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "A",
+    "position": 45
+  },
+  {
+    "id": 46,
+    "type": "tf",
+    "question": "Are shipments of Lithium batteries on their own is allowed on passenger aircraft?",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 46
+  },
+  {
+    "id": 47,
+    "type": "tf",
+    "question": "The Class 9 Battery mark must be applied to packages containing that exclusively contain button cell batteries installed in equipment.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 47
+  },
+  {
+    "id": 48,
+    "type": "tf",
+    "question": "Shipments containing Lithium batteries that are damaged can be loaded onto the aircraft.",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 48
+  }
+]

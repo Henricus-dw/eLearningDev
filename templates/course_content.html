@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="page-context" data-page="Course Content" data-course="{{ course.title }}" data-chapter="" />
+  <title>{{ course.title }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* ===== Bigger checkbox + green accent ===== */
+    #confirmCompletion {
+      transform: scale(1.8);
+      transform-origin: left center;
+      accent-color: #22c55e;            /* green */
+      margin-right: .65rem;
+      cursor: pointer;
+    }
+    /* Big green tick that toggles on purely with CSS */
+    #confirmTick {
+      display: none;
+      font-size: 1.8rem;
+      color: #22c55e;                  /* green */
+      line-height: 1;
+      margin-left: .25rem;
+      user-select: none;
+    }
+    /* Show the tick when the checkbox is checked (same parent) */
+    #confirmCompletion:checked ~ #confirmTick {
+      display: inline-block;
+    }
+
+    /* Chapter status badges a bit larger */
+    .badge-status {
+      font-size: 1rem;
+      padding: .45rem .65rem;
+    }
+  </style>
+</head>
+<body class="container py-4">
+  <h2 class="mb-1">{{ course.title }}</h2>
+  <p class="text-muted">{{ course.description }}</p>
+
+  <h3 class="mt-4">📚 Course Chapters</h3>
+  {% if course.chapters %}
+    <ul class="list-group">
+      {% for chapter in course.chapters %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="me-3">
+              <h5 class="mb-1">{{ chapter.title }}</h5>
+              <div class="mt-2">{{ chapter.content|safe }}</div>
+            </div>
+            <div>
+              {% if chapter.id in completed_chapters %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle badge-status">
+                  ✔ Completed
+                </span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle badge-status">
+                  ❌ Not Completed
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No chapters available for this course.</p>
+  {% endif %}
+
+  <!-- Debug (keep if helpful) -->
+  <div class="alert alert-info mt-4">
+    <strong>Debug Info:</strong><br>
+    Total Chapters: {{ total_chapters }}<br>
+    Completed Chapters: {{ completed_chapters|length }}<br>
+    Show Button? {{ 'Yes' if total_chapters > 0 and completed_chapters|length == total_chapters else 'No' }}
+  </div>
+
+  {% if total_chapters > 0 and completed_chapters|length == total_chapters %}
+    <div class="mt-3">
+      <p class="mb-2">✅ You have completed this course.</p>
+
+      <!-- Put checkbox, label, and tick as siblings so CSS can toggle the tick -->
+      <div class="d-flex align-items-center mb-2">
+        <input type="checkbox" id="confirmCompletion" aria-describedby="confirmHelp" onchange="toggleCompleteButton()">
+        <label for="confirmCompletion" class="mb-0 fw-medium">I have read and understood this page.</label>
+        <span id="confirmTick" aria-hidden="true">✔</span>
+      </div>
+      <div id="confirmHelp" class="form-text">Tick to enable the completion button.</div>
+
+      <form action="{{ url_for('complete_course', course_id=course.id) }}" method="POST" class="mt-2">
+        <button type="submit" id="completeCourseBtn" class="btn btn-success btn-lg" disabled>
+          ✅ Complete Course
+        </button>
+      </form>
+    </div>
+  {% elif total_chapters == 0 %}
+    <p class="text-muted mt-3">⚠ No chapters found in this course.</p>
+  {% endif %}
+
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-4">⬅ Back to Dashboard</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleCompleteButton() {
+      const checkbox = document.getElementById('confirmCompletion');
+      const button = document.getElementById('completeCourseBtn');
+      button.disabled = !checkbox.checked;
+    }
+  </script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

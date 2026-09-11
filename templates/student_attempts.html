@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Attempts — {{ student_number }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+  <h3 class="mb-3">Final Assessment Attempts — {{ student_number }}</h3>
+  {% if rows %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Course</th>
+          <th>Attempt #</th>
+          <th>Score %</th>
+          <th>Passed</th>
+          <th>Submitted</th>
+          <th>View Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.course_key }}</td>
+          <td>{{ r.attempt_no }}</td>
+          <td>{{ (r.percentage|round(0)|int) if r.percentage is not none else 0 }}%</td>
+          <td>
+            {% if r.passed %}
+              <span class="badge bg-success">PASS</span>
+            {% else %}
+              <span class="badge bg-danger">FAIL</span>
+            {% endif %}
+          </td>
+          <td>{{ (r.submitted_at.strftime('%Y-%m-%d %H:%M:%S') if r.submitted_at) }}</td>
+          <td><a href="{{ url_for('assessment_submitted_attempt', attempt_id=r.id) }}" class="btn btn-sm btn-primary">Open</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-info">No attempts found.</div>
+  {% endif %}
+  <a class="btn btn-secondary mt-3" href="{{ url_for('dashboard') }}">Back</a>
+</body>
+</html>

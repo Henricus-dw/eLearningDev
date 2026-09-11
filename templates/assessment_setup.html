@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <title>⚙️ Assessment Setup</title>
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen font-sans bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-950 text-gray-800 dark:text-slate-100 p-6">
+  <div class="max-w-7xl mx-auto">
+
+    <h1 class="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-yellow-300 mb-4 flex items-center gap-2">
+      <span>⚙️ Assessment Setup</span>
+      <a href="{{ url_for('assessment_builder') }}"
+         class="ml-auto inline-flex items-center gap-2 rounded-xl px-3 py-2 border border-blue-200 bg-white text-blue-900 shadow-sm hover:shadow transition
+                dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        🛠 Open Builder
+      </a>
+    </h1>
+
+    <!-- Form -->
+    <form method="POST"
+          class="rounded-2xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-slate-700 p-6 shadow grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Course</label>
+        <select name="course_code" class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700" required>
+          {% for course in courses %}
+            <option value="{{ course.code }}">{{ course.title }} ({{ course.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Title</label>
+        <input name="title" value="Final Assessment"
+               class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700" required>
+      </div>
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Pass Mark (%)</label>
+        <input type="number" name="pass_mark" value="70" min="0" max="100"
+               class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700" required>
+      </div>
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Time Limit (minutes)</label>
+        <input type="number" name="time_limit_minutes" value="0" min="0"
+               class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700">
+        <p class="text-xs text-slate-500 mt-1">0 = no time limit</p>
+      </div>
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Attempts Allowed</label>
+        <input type="number" name="attempts_allowed" value="1" min="1"
+               class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700">
+      </div>
+
+      <div>
+        <label class="block font-medium text-blue-900 dark:text-slate-200">Random Question Limit (optional)</label>
+        <input type="number" name="limit_questions" value="{{ cfg.limit_questions if cfg and cfg.limit_questions else '' }}" min="0" placeholder="e.g. 40"
+               class="mt-1 w-full rounded-xl border border-blue-200 p-3 dark:bg-slate-800 dark:border-slate-700">
+        <p class="text-xs text-slate-500 mt-1">Leave blank or 0 to use all questions.</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="inline-flex items-center">
+          <input type="checkbox" name="enabled" class="mr-2" checked> Enabled
+        </label>
+      </div>
+
+      <div class="md:col-span-2">
+        <button type="submit"
+                class="inline-flex items-center gap-2 rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition">
+          💾 Save Configuration
+        </button>
+      </div>
+    </form>
+
+    <!-- Existing configs -->
+    <h2 class="text-xl font-bold text-blue-900 dark:text-slate-100 mb-2">Existing Configurations</h2>
+    <div class="rounded-2xl overflow-hidden shadow border border-blue-100 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <table class="min-w-full text-sm">
+        <thead class="bg-blue-50 dark:bg-slate-800 text-blue-900 dark:text-slate-200">
+          <tr>
+            <th class="p-3 text-left">Course Code</th>
+            <th class="p-3 text-left">Title</th>
+            <th class="p-3 text-left">Pass Mark</th>
+            <th class="p-3 text-left">Time Limit</th>
+            <th class="p-3 text-left">Attempts</th>
+            <th class="p-3 text-left">Limit</th>
+            <th class="p-3 text-left">Enabled</th>
+            <th class="p-3 text-left">Builder</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cfg in configs %}
+          <tr class="border-t border-blue-100 dark:border-slate-700">
+            <td class="p-3">{{ cfg.course_code }}</td>
+            <td class="p-3">{{ cfg.title }}</td>
+            <td class="p-3">{{ cfg.pass_mark }}%</td>
+            <td class="p-3">{{ cfg.time_limit_minutes }} min</td>
+            <td class="p-3">{{ cfg.attempts_allowed }}</td>
+            <td class="p-3">{{ cfg.limit_questions if cfg.limit_questions else '—' }}</td>
+            <td class="p-3">{{ "✅" if cfg.enabled else "❌" }}</td>
+            <td class="p-3">
+              <a href="{{ url_for('assessment_builder_manage', course_code=cfg.course_code) }}"
+                 class="inline-flex items-center gap-2 rounded-lg px-3 py-1 border border-blue-200 bg-white text-blue-900 hover:shadow
+                        dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+                🛠 Manage Questions
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="p-4 text-center text-slate-500">No configs yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>

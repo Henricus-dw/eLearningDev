@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Chapter</title>
+
+  <!-- TinyMCE (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js"></script>
+
+  <!-- Aptos font -->
+  <link href="https://fonts.cdnfonts.com/css/aptos" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand-blue:#17306B;
+      --brand-gold:#C7A434;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --line:rgba(0,0,0,.08);
+    }
+
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      padding:32px 20px;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 500px at -10% -10%, rgba(199,164,52,.08), transparent 60%),
+        radial-gradient(800px 500px at 110% 0%, rgba(23,48,107,.12), transparent 55%),
+        linear-gradient(#f8fbff, #f2f5fb);
+    }
+
+    .wrap{ max-width: 1080px; margin: 0 auto; }
+
+    .page-head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; margin-bottom:18px;
+    }
+    .title{
+      display:flex; align-items:center; gap:.8rem;
+      font-weight:800; color:var(--brand-blue);
+      font-size: clamp(22px, 3.2vw, 28px);
+    }
+    .title-badge{
+      width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
+      background:linear-gradient(135deg,var(--brand-gold),#f1d473); color:#262b3a; font-size:22px;
+      box-shadow:0 10px 22px rgba(199,164,52,.38);
+    }
+
+    form{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow: 0 14px 28px rgba(0,0,0,.06);
+      padding: 22px;
+      margin: 0 auto;
+    }
+
+    label{ font-weight:700; display:block; margin-top:14px; color:var(--brand-blue); }
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      box-sizing:border-box;
+      background:#fff;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus, textarea:focus{
+      outline: none;
+      border-color: var(--brand-gold);
+      box-shadow: 0 0 0 3px rgba(199,164,52,.20);
+    }
+
+    .help-hint{ color:var(--muted); font-size:.92rem; margin-top:6px; }
+
+    .btn-primary{
+      margin-top: 18px;
+      padding: 12px 22px;
+      border: none; border-radius:10px;
+      background: var(--brand-blue);
+      color: #fff; font-weight:800; cursor: pointer;
+      box-shadow: 0 10px 22px rgba(23,48,107,.25);
+      transition: transform .03s ease, filter .15s ease;
+    }
+    .btn-primary:hover{ filter:brightness(.98); }
+    .btn-primary:active{ transform: translateY(1px); }
+
+    a.back-link{
+      display:inline-block; margin-top:18px; text-decoration:none; font-weight:700;
+      color:var(--brand-blue);
+      border:1px solid var(--line); background:#fff; padding:10px 14px; border-radius:10px;
+    }
+
+    .quiz-info{
+      display:none; margin-top:14px; background:#fff8e1;
+      border:1px dashed #edab1e; border-left:4px solid #edab1e;
+      color:#5a3d00; padding:14px 16px; border-radius:10px;
+    }
+
+    #uploadProgress{
+      position: fixed; right: 16px; bottom: 16px;
+      width: 320px; max-width: 92vw; z-index: 1060; display: none;
+      background:#fff; border-radius: 12px; overflow:hidden;
+      border:1px solid var(--line); box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    }
+    #uploadProgress .card-body{ padding: 12px 14px; }
+    .progress{ width:100%; height:10px; background:#eef2f7; border-radius:999px; overflow:hidden; }
+    .progress-bar{ height:10px; background: linear-gradient(90deg, var(--brand-gold), #f2d471); width:0%; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="title">
+        <span class="title-badge">➕</span>
+        Add Chapter to “{{ course.title }}”
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <label for="title">Chapter Title:</label>
+      <input type="text" name="title" id="title" required>
+
+      <label for="chapter_type">Chapter Type:</label>
+      <select name="chapter_type" id="chapter_type" onchange="toggleChapterTypeFields()" required>
+        <option value="text">Text</option>
+        <option value="video">Video</option>
+        <option value="image">Image</option>
+        <option value="audio_gate">Audio (gated)</option>
+        <option value="quiz">Quiz</option>
+      </select>
+
+      <div id="audio-info" class="quiz-info" style="display:none; border-color:#3b82f6; background:#eff6ff;">
+        <strong>🔊 This is an Audio (gated) chapter.</strong><br>
+        The Next button will be locked until the student finishes listening to the audio.
+        <label for="audio_path" style="margin-top:10px; display:block;">Audio File Path:</label>
+        <input type="text" name="audio_path" id="audio_path" placeholder="e.g., General_Aviation_Security_Awareness_general.mp3"
+               style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px;">
+        <small style="color:#666;">Filename in <code>/static/audio/</code> folder.</small>
+      </div>
+
+      <div id="quiz-info" class="quiz-info">
+        <strong>🧠 This is a Quiz chapter.</strong><br>
+        Save this chapter first. After it’s created, open <em>Edit Chapter</em> and use
+        <strong>“Add Question”</strong> to add and manage quiz questions.
+      </div>
+
+      <label for="content-editor">Content (text, images, video, or audio):</label>
+      <div class="help-hint">
+        ✍️ Tips: Paste from Word works well. Use <strong>Insert → Media</strong> for
+        YouTube / video / audio, or the <strong>Upload Video</strong> button for MP4.
+      </div>
+
+      <textarea id="content-editor" name="content"></textarea>
+
+      <button class="btn-primary" type="submit">✅ Save Chapter</button>
+    </form>
+
+    <a class="back-link" href="{{ url_for('manage_courses') }}">← Back to Course Manager</a>
+  </div>
+
+  <div id="uploadProgress" class="card">
+    <div class="card-body py-2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <strong id="uploadLabel" class="small">Uploading…</strong>
+        <span id="uploadPct" class="small" style="color:#6b7280;">0%</span>
+      </div>
+      <div class="progress" role="progressbar">
+        <div id="uploadBar" class="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== TinyMCE INIT with unified media upload =====
+    tinymce.init({
+      selector: '#content-editor',
+      height: 480,
+      menubar: true,
+      branding: false,
+
+      convert_urls: true,
+      relative_urls: false,
+      remove_script_host: true,
+      document_base_url: '/',
+
+      toolbar:
+        'undo redo | blocks fontfamily fontsize lineheight | bold italic underline strikethrough forecolor backcolor ' +
+        '| alignleft aligncenter alignright alignjustify | outdent indent | bullist numlist checklist | ' +
+        'table tabledelete | link image media uploadvideo | hr blockquote superscript subscript | ' +
+        'removeformat | searchreplace fullscreen preview print | charmap emoticons',
+
+      plugins: [
+        'advlist','anchor','autolink','autosave',
+        'charmap','code','codesample','directionality',
+        'emoticons','fullscreen','help','image','editimage','importcss',
+        'insertdatetime','link','lists','media','nonbreaking',
+        'pagebreak','preview','print','quickbars','searchreplace',
+        'table','visualblocks','visualchars','wordcount'
+      ],
+
+      object_resizing: 'img',
+      image_dimensions: true,
+      image_caption: false,
+
+      extended_valid_elements:
+        'img[src|alt|title|width|height|style|referrerpolicy|loading],' +
+        'video[controls|src|width|height|poster|preload|autoplay|loop|muted|playsinline],' +
+        'audio[controls|src|preload|loop|autoplay],' +
+        'source[src|type],iframe[src|frameborder|allowfullscreen|allow]',
+
+      content_style:
+        '@import url("https://fonts.cdnfonts.com/css/aptos"); ' +
+        'body { font-family: Arial, sans-serif; } ' +
+        'img { max-width:100%; height:auto; display:inline-block; border:1px solid #e2e8f0; } ' +
+        'img[data-mce-selected="1"] { outline:2px solid ' +
+        getComputedStyle(document.documentElement).getPropertyValue('--brand-gold').trim() +
+        '; outline-offset:2px; } ' +
+        'table, th, td { border: 1px solid #d1d5db; border-collapse: collapse; } ' +
+        'th, td { padding: 6px 8px; } table { width: 100%; }',
+
+      content_css: "https://fonts.cdnfonts.com/css/aptos",
+
+      /* unified upload endpoint */
+      images_upload_url: '/editor_upload_media',
+      automatic_uploads: true,
+      images_upload_credentials: true,
+      images_dataimg_filter: () => false,
+
+      images_upload_handler: function (blobInfo, progress) {
+        return new Promise(function (resolve, reject) {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/editor_upload_media');
+          xhr.withCredentials = true;
+          showUploadProgress(0, 'Uploading image…');
+          xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
+              const pct = (e.loaded / e.total) * 100;
+              showUploadProgress(pct);
+              progress(pct);
+            }
+          };
+          xhr.onload = function () {
+            hideUploadProgress();
+            if (xhr.status < 200 || xhr.status >= 300) { reject('HTTP Error: ' + xhr.status); return; }
+            let json = {};
+            try { json = JSON.parse(xhr.responseText); }
+            catch { reject('Invalid JSON from server.'); return; }
+            if (!json || typeof json.location !== 'string') { reject('Upload failed: "location" missing.'); return; }
+            resolve(json.location);
+          };
+          xhr.onerror = function () { hideUploadProgress(); reject('Image upload failed.'); };
+          const formData = new FormData();
+          formData.append('file', blobInfo.blob(), blobInfo.filename());
+          xhr.send(formData);
+        });
+      },
+
+      file_picker_types: 'image media',
+      file_picker_callback: function (cb, value, meta) {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+
+        if (meta.filetype === 'image') {
+          input.setAttribute('accept', 'image/*');
+        } else if (meta.filetype === 'media') {
+          input.setAttribute('accept', 'audio/*,video/*');
+        }
+
+        input.onchange = function () {
+          const file = this.files[0];
+          if (!file) return;
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          showUploadProgress(0, 'Uploading media…');
+
+          fetch('/editor_upload_media', {
+            method: 'POST',
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            hideUploadProgress();
+            if (!data || !data.location) {
+              alert('Upload failed.');
+              return;
+            }
+            cb(data.location);
+          })
+          .catch(err => {
+            console.error('Upload failed', err);
+            hideUploadProgress();
+            alert('Upload failed.');
+          });
+        };
+
+        input.click();
+      },
+
+      setup: (editor) => {
+        const form = document.querySelector('form');
+        form.addEventListener('submit', () => editor.save());
+
+        // Custom Upload Video button -> same media endpoint
+        editor.ui.registry.addButton('uploadvideo', {
+          text: 'Upload Video',
+          tooltip: 'Upload and insert a video',
+          onAction: function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*';
+            input.onchange = function () {
+              const file = this.files[0];
+              if (!file) return;
+
+              const fd = new FormData();
+              fd.append('file', file);
+
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', '/editor_upload_media');
+              showUploadProgress(0, 'Uploading video…');
+              xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                  const pct = (e.loaded / e.total) * 100;
+                  showUploadProgress(pct);
+                }
+              };
+              xhr.onload = function () {
+                hideUploadProgress();
+                let json = {};
+                try { json = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
+                if (xhr.status >= 200 && xhr.status < 300 && json.location) {
+                  editor.insertContent(
+                    '<video controls style="max-width:100%;height:auto;" src="' +
+                    json.location + '" data-mce-selected="1"></video>'
+                  );
+                } else {
+                  alert('Upload failed: ' + (json.error || 'Unknown error'));
+                }
+              };
+              xhr.onerror = function () { hideUploadProgress(); alert('Network error during upload.'); };
+              xhr.send(fd);
+            };
+            input.click();
+          }
+        });
+      }
+    });
+
+    function toggleChapterTypeFields() {
+      const type = document.getElementById("chapter_type").value;
+      document.getElementById("quiz-info").style.display = (type === "quiz") ? "block" : "none";
+      document.getElementById("audio-info").style.display = (type === "audio_gate") ? "block" : "none";
+    }
+    // Alias for backwards compatibility
+    function toggleQuizInfo() { toggleChapterTypeFields(); }
+
+    // Upload progress helpers
+    function showUploadProgress(pct, label) {
+      const wrap = document.getElementById('uploadProgress');
+      const bar  = document.getElementById('uploadBar');
+      const pctT = document.getElementById('uploadPct');
+      const lab  = document.getElementById('uploadLabel');
+      if (label) lab.textContent = label;
+      wrap.style.display = 'block';
+      const p = Math.max(0, Math.min(100, Math.round(pct || 0)));
+      bar.style.width = p + '%';
+      pctT.textContent = p + '%';
+    }
+    function hideUploadProgress() {
+      const wrap = document.getElementById('uploadProgress');
+      const bar  = document.getElementById('uploadBar');
+      const pctT = document.getElementById('uploadPct');
+      wrap.style.display = 'none';
+      bar.style.width = '0%';
+      pctT.textContent = '0%';
+    }
+
+    // init
+    toggleQuizInfo();
+  </script>
+</body>
+</html>

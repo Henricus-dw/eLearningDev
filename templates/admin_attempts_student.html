@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><title>Attempts – {{ student_number }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="container py-4">
+  <h2>Attempts – {{ student_name or student_number }}</h2>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead><tr>
+        <th>#</th><th>Course</th><th>%</th><th>Passed</th><th>Attempt</th><th>Submitted</th><th>Review</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for x in attempts %}
+        <tr>
+          <td>{{ x.id }}</td>
+          <td>{{ x.course_key }}</td>
+          <td>{{ x.percentage }}%</td>
+          <td>{{ '✅' if x.passed else '❌' }}</td>
+          <td>{{ x.attempt_no }}</td>
+          <td>{{ x.submitted_at.strftime('%Y-%m-%d %H:%M') if x.submitted_at else '' }}</td>
+          <td>{{ x.review_status }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_attempt_detail', attempt_id=x.id) }}">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-muted">No attempts found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

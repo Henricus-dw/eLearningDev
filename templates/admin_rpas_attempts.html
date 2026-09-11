@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title or 'RPAS Attempts' }}</title>
+  <!-- Tailwind (proper CDN usage) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6">
+  <div class="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-2xl font-semibold text-blue-900">
+        📋 {{ title or ('RPAS Attempts' ~ (student_id and (' — ' ~ student_id) or '')) }}
+      </h2>
+
+      <div class="flex items-center gap-2">
+        {# Show "Reset All" only if a reset_url is provided by the view #}
+        {% if reset_url %}
+          <form method="POST" action="{{ reset_url }}"
+                onsubmit="return confirm('Delete ALL RPAS attempts for this student? This cannot be undone.');">
+            <button type="submit" class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700">
+              ♻️ Reset All
+            </button>
+          </form>
+        {% endif %}
+
+        <a href="{{ back_url or '/' }}"
+           class="px-3 py-2 rounded bg-slate-800 text-white hover:bg-slate-900">
+          ⬅ Back
+        </a>
+      </div>
+    </div>
+
+    {% if student %}
+      <div class="mt-4 text-sm text-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div><strong>Name:</strong> {{ student.name }} {{ student.surname }}</div>
+        <div><strong>Email:</strong> {{ student.email }}</div>
+        <div><strong>Student #:</strong> {{ student.student_number or '—' }}</div>
+      </div>
+    {% endif %}
+
+    {% if stats and stats.count %}
+      <div class="mt-4 mb-4 text-sm">
+        <span class="px-2 py-1 rounded bg-slate-100">Attempts: {{ stats.count }}</span>
+        {% if stats.latest_score is not none %}
+          <span class="ml-2 px-2 py-1 rounded {{ 'bg-green-100 text-green-700' if stats.latest_passed else 'bg-red-100 text-red-700' }}">
+            {{ 'PASS' if stats.latest_passed else 'FAIL' }} • {{ '%.0f'|format(stats.latest_score) }}%
+          </span>
+          {% if stats.latest_when %}
+            <span class="ml-2 text-slate-500">{{ stats.latest_when.strftime('%Y-%m-%d %H:%M') }}</span>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="mt-2 overflow-x-auto border rounded">
+      <table class="min-w-full text-sm">
+        <thead class="bg-blue-900 text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">When (UTC)</th>
+            <th class="px-4 py-2 text-left">Student</th>
+            <th class="px-4 py-2 text-left">Score</th>
+            <th class="px-4 py-2 text-left">Result</th>
+            <th class="px-4 py-2 text-left">Duration</th>
+            <th class="px-4 py-2 text-left">Video</th>
+            <th class="px-4 py-2 text-left">Answers</th>
+            <th class="px-4 py-2 text-left">PDF</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for a in attempts %}
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-2">
+                {{ a.created_at.strftime('%Y-%m-%d %H:%M:%S') if a.created_at else '—' }}
+              </td>
+              <td class="px-4 py-2">
+                {{ a.full_name or '—' }} <span class="text-slate-500">({{ a.student_id }})</span>
+              </td>
+              <td class="px-4 py-2">{{ '%.0f'|format(a.score or 0) }}%</td>
+              <td class="px-4 py-2">
+                <span class="px-2 py-0.5 rounded {{ 'bg-green-100 text-green-800' if a.passed else 'bg-red-100 text-red-700' }}">
+                  {{ 'PASS' if a.passed else 'FAIL' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 whitespace-nowrap">
+                {% set d = a.duration_s or 0 %}
+                {{ (d // 60) }}m {{ (d % 60) }}s
+              </td>
+              <td class="px-4 py-2">
+                {% if a.video_filename %}
+                  <a class="text-blue-700 underline" href="{{ '/' + a.video_filename }}" target="_blank" download>
+                    Download
+                  </a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="px-4 py-2">
+                <a class="text-indigo-700 underline" href="{{ url_for('rpas_result', attempt_id=a.id) }}" target="_blank">
+                  View
+                </a>
+              </td>
+              <td class="px-4 py-2">
+                <!-- Use the UNIQUE RPAS PDF endpoint to avoid collisions -->
+                <a class="text-emerald-700 underline"
+                   href="{{ url_for('admin_rpas_attempt_pdf_v2', attempt_id=a.id) }}"
+                   target="_blank">
+                  PDF
+                </a>
+              </td>
+              <td class="px-4 py-2">
+                {% if delete_url %}
+                  <form method="POST" action="{{ delete_url|format(a.id) }}"
+                        onsubmit="return confirm('Delete this RPAS attempt? This cannot be undone.');">
+                    <button type="submit" class="px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700">
+                      Delete
+                    </button>
+                  </form>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td class="px-4 py-4 text-slate-500" colspan="9">No attempts yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-slate-400 mt-3">
+      Tip: The PDF shows every question, the student’s selected option (letter + text), the correct answer, and correctness per item.
+    </p>
+  </div>
+</body>
+</html>

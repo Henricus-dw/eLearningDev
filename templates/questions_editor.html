@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📝 Q&A Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    textarea.code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height: 1.4;
+      tab-size: 2;
+    }
+    .file-btn { transition: .15s; }
+    .file-btn:hover { transform: translateY(-2px); }
+    .pill { border-radius: 9999px; padding: 0.25rem 0.6rem; font-size: .75rem; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">📝 Q&A Editor</h1>
+      <a href="{{ url_for('admin_dashboard') }}" class="px-3 py-2 rounded bg-slate-800 text-white hover:bg-slate-900">⬅ Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for cat,msg in messages %}
+            <div class="px-4 py-3 rounded {{ 'bg-green-100 text-green-800' if cat=='success'
+                                                else 'bg-red-100 text-red-800' if cat=='danger'
+                                                else 'bg-yellow-100 text-yellow-800' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Sidebar: files -->
+      <aside class="lg:col-span-4 bg-white/80 dark:bg-slate-800/60 border border-blue-100 dark:border-slate-700 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">📁 Files</h2>
+          <span class="pill bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ files|length }} JSON</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+          {% for f in files %}
+            <a class="file-btn block px-3 py-2 rounded border bg-white hover:bg-slate-50 dark:bg-slate-700 dark:hover:bg-slate-600 border-slate-200 dark:border-slate-600 {{ 'ring-2 ring-blue-500' if f==selected }}"
+               href="{{ url_for('edit_question_file', filename=f) }}">
+              <i class="fa fa-file-code mr-2"></i>{{ f }}
+            </a>
+          {% endfor %}
+        </div>
+      </aside>
+
+      <!-- Editor -->
+      <main class="lg:col-span-8">
+        {% if selected %}
+          <div class="bg-white/80 dark:bg-slate-800/60 border border-blue-100 dark:border-slate-700 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h2 class="font-semibold">Editing: <span class="text-blue-700 dark:text-yellow-300">{{ selected }}</span></h2>
+                {% if last_saved %}<p class="text-xs opacity-70">Last saved: {{ last_saved }}</p>{% endif %}
+              </div>
+              <div class="flex gap-2">
+                <button id="btnFormat" type="button" class="pill bg-slate-200 dark:bg-slate-700">Format</button>
+                <button id="btnValidate" type="button" class="pill bg-slate-200 dark:bg-slate-700">Validate</button>
+                <a href="{{ url_for('edit_question_file', filename=selected) }}" class="pill bg-slate-200 dark:bg-slate-700">Reload</a>
+              </div>
+            </div>
+
+            <form method="POST" onsubmit="return validateBeforeSave();">
+              <textarea name="content" id="editor" rows="26"
+                        class="code w-full p-3 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                        spellcheck="false">{{ content }}</textarea>
+              <div id="lint" class="mt-2 text-sm"></div>
+              <div class="mt-4 flex items-center gap-3">
+                <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">💾 Save</button>
+                <span class="text-xs opacity-70">Saves a timestamped .bak and pretty-prints JSON.</span>
+              </div>
+            </form>
+          </div>
+        {% else %}
+          <div class="text-slate-600 dark:text-slate-300">
+            <p>Select a file on the left to begin editing.</p>
+          </div>
+        {% endif %}
+      </main>
+    </div>
+  </div>
+
+  <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
+  <script>
+    const ed = document.getElementById('editor');
+    const lint = document.getElementById('lint');
+    function showLint(msg, ok=false){
+      lint.textContent = msg || '';
+      lint.className = 'mt-2 text-sm ' + (ok ? 'text-green-700' : 'text-red-700');
+    }
+    function validateBeforeSave(){
+      if(!ed) return true;
+      try{ JSON.parse(ed.value); showLint('✓ JSON is valid', true); return true; }
+      catch(e){ showLint('✗ ' + e.message); alert('Fix JSON errors before saving.'); return false; }
+    }
+    document.getElementById('btnValidate')?.addEventListener('click', ()=>validateBeforeSave());
+    document.getElementById('btnFormat')?.addEventListener('click', ()=>{
+      if(!ed) return;
+      try{ ed.value = JSON.stringify(JSON.parse(ed.value), null, 2); showLint('✓ Formatted', true); }
+      catch(e){ showLint('✗ ' + e.message); }
+    });
+  </script>
+</body>
+</html>

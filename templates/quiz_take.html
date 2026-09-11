@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="{{ url_for('static', filename='js/dragdrop_player.js') }}"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-blue-dark: #10224E;
+      --brand-gold: #C7A434;
+    }
+    body { background: #f4f6fb; }
+    .question-card { transition: border-color 0.25s ease; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="text-white shadow-lg" style="background: var(--brand-blue);">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3 min-w-0">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10 flex-shrink-0">
+        <div class="min-w-0">
+          <h1 class="text-base sm:text-lg font-semibold truncate">{{ title }}</h1>
+          <p class="text-xs opacity-80">Pre-final quiz &middot; Pass mark {{ pass_mark }}%</p>
+        </div>
+      </div>
+      <a href="{{ url_for('dashboard') }}"
+         class="inline-flex items-center gap-2 px-4 py-2 border border-white/40 hover:bg-white/10 rounded-lg text-sm font-medium transition flex-shrink-0">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 flex-1">
+
+    <p class="text-sm text-slate-600 mb-4">
+      This quiz is not proctored. Take your time, you can move between questions freely, and you can retake the quiz as many times as you need to.
+    </p>
+
+    {% if not questions %}
+      <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-6 text-center">
+        <i class="fas fa-triangle-exclamation text-2xl mb-2"></i>
+        <p class="font-semibold">This quiz has no questions yet.</p>
+        <p class="text-sm mt-1">Ask your instructor to add some.</p>
+      </div>
+    {% else %}
+
+    <form id="quizForm" method="POST" autocomplete="off" class="space-y-5">
+
+      <!-- Progress + question-jump navigator -->
+      <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-5">
+        <div class="flex flex-col lg:flex-row lg:items-start gap-5">
+          <div class="flex-1">
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div id="progressBarQ" class="h-2 bg-blue-600 transition-all" style="width:0%"></div>
+            </div>
+            <div class="mt-2 text-sm text-slate-600 flex items-center gap-4 flex-wrap">
+              <span><span id="answeredCount">0</span>/<span id="totalCount">{{ questions|length }}</span> answered</span>
+              <span class="hidden md:flex items-center gap-2 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-slate-200 ring-1 ring-slate-200"></span>Unanswered</span>
+                <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-blue-600"></span>Current</span>
+                <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-emerald-600"></span>Answered</span>
+              </span>
+            </div>
+          </div>
+          <div class="lg:w-[520px]">
+            <div id="qNav" class="grid grid-cols-10 gap-2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Question container (one question at a time) -->
+      <section id="questionContainer" class="space-y-4">
+        {% for q in questions %}
+        {% set qid = q.id or loop.index %}
+        {% set qtype = (q.type or 'mcq')|lower %}
+        <section class="question-card bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6 hidden"
+                 data-qid="{{ qid }}" data-qtype="{{ qtype }}" data-index="{{ loop.index0 }}">
+          <div class="flex items-start gap-4">
+            <div class="shrink-0 mt-1 text-slate-500 font-semibold">Q{{ loop.index }}.</div>
+            <div class="w-full">
+              <div class="flex items-start justify-between gap-3">
+                <h5 class="text-slate-900 font-semibold mb-3 leading-6">{{ q.question }}</h5>
+                {% if q.points %}
+                <span class="shrink-0 text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+                  {{ q.points }} {{ 'mark' if q.points == 1 else 'marks' }}
+                </span>
+                {% endif %}
+              </div>
+              {% if q.image %}
+              <div class="mb-3">
+                <img src="{{ url_for('static', filename='uploads/questions/' + q.image) }}"
+                     alt="Question image"
+                     class="max-w-full max-h-64 rounded-lg border border-slate-200 shadow-sm">
+              </div>
+              {% endif %}
+
+              {# ===== Type dispatch (identical to proctored_assessment.html) ===== #}
+              {% if qtype == 'short_answer' %}
+              <div class="mt-1">
+                <input type="text" name="q_{{ qid }}" autocomplete="off"
+                       placeholder="Type your answer..."
+                       class="q-answer-input w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-500">
+                {% if q.hint %}
+                <p class="text-xs text-slate-500 mt-1 italic">{{ q.hint }}</p>
+                {% endif %}
+              </div>
+
+              {% elif qtype == 'table_fill' %}
+              <div class="mt-1 overflow-x-auto">
+                <table class="w-full text-sm border border-slate-200 rounded-lg">
+                  <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+                    <tr>
+                      {% if q.rows and q.rows[0].prompt is defined %}
+                      <th class="text-left px-3 py-2 font-semibold border-b border-slate-200">&nbsp;</th>
+                      {% endif %}
+                      {% for col in q.columns %}
+                      <th class="text-left px-3 py-2 font-semibold border-b border-slate-200">{{ col.label }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in q.rows %}
+                    <tr class="border-b border-slate-100 last:border-b-0">
+                      {% if row.prompt is defined %}
+                      <td class="px-3 py-2 font-semibold text-slate-700 bg-slate-50/50">{{ row.prompt }}</td>
+                      {% endif %}
+                      {% for col in q.columns %}
+                      {% set field_name = 'q_' ~ qid ~ '_' ~ row.id ~ '_' ~ col.id %}
+                      <td class="px-2 py-2">
+                        {% if col.kind == 'select' %}
+                          <select name="{{ field_name }}"
+                                  class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                            <option value="">--</option>
+                            {% for opt in col.options or [] %}
+                            <option value="{{ opt }}">{{ opt }}</option>
+                            {% endfor %}
+                          </select>
+                        {% elif col.kind == 'yesno' %}
+                          <select name="{{ field_name }}"
+                                  class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                            <option value="">--</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                          </select>
+                        {% else %}
+                          <input type="text" name="{{ field_name }}" autocomplete="off"
+                                 class="q-answer-input w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                        {% endif %}
+                      </td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              {% elif qtype == 'drag_drop' %}
+              {% set safe_items = q.get('items') | strip_correct_zone %}
+              <div x-data='dragdropQuestion({{ qid|tojson }}, {{ safe_items|tojson }}, {{ q.zones|tojson }})'
+                   x-init="init()">
+                <p class="text-xs text-slate-500 italic mb-3">
+                  Tap an item to select it, then tap a zone on the image to place it. On desktop you can drag items directly. Leave items in the tray if they don't belong anywhere.
+                </p>
+
+                <div class="gap-4 items-start"
+                     :class="layout === 'bottom' ? 'flex flex-col' : 'flex flex-col lg:flex-row'">
+                  <div class="relative w-full select-none"
+                       :class="layout === 'bottom' ? '' : 'lg:flex-1'"
+                       style="touch-action: manipulation;">
+                    <img src="{{ url_for('static', filename='uploads/questions/' + q.background) }}"
+                         alt="Drag-and-drop target image"
+                         class="w-full h-auto rounded-lg border border-slate-200 pointer-events-none"
+                         draggable="false"
+                         @load="onImageLoad($event.target.naturalWidth, $event.target.naturalHeight)">
+                    <template x-for="zone in zones" :key="zone.id">
+                      <div class="absolute border-2 border-dashed rounded transition-colors flex items-center justify-center"
+                           :class="(selected_item_id ? 'border-purple-500 bg-purple-100/30 cursor-pointer' : 'border-slate-400/60 bg-slate-100/10 hover:bg-slate-100/30')"
+                           :style="`left: ${zone.x}%; top: ${zone.y}%; width: ${zone.w}%; height: ${zone.h}%;`"
+                           :title="zone.label || ''"
+                           @click="onZoneTap(zone.id)"
+                           @dragover.prevent
+                           @drop.prevent="onZoneDrop(zone.id, $event)">
+                        <template x-for="item in items.filter(it => placements[it.id] === zone.id)" :key="item.id">
+                          <div class="absolute inset-0 flex items-center justify-center p-1 cursor-move"
+                               draggable="true"
+                               @click.stop="onItemTap(item.id)"
+                               @dragstart="onDragStart(item.id, $event)">
+                            <template x-if="item.image">
+                              <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                                   :alt="item.label || 'item'"
+                                   class="max-w-full max-h-full object-contain pointer-events-none"
+                                   draggable="false">
+                            </template>
+                            <template x-if="!item.image && item.label">
+                              <span class="text-[10px] sm:text-xs font-semibold text-center text-slate-800 leading-tight whitespace-pre-line" x-text="item.label"></span>
+                            </template>
+                          </div>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+
+                  <div class="w-full"
+                       :class="layout === 'bottom' ? '' : 'lg:w-56 lg:flex-shrink-0 lg:sticky lg:top-4'">
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Items</p>
+                    <div class="flex flex-row flex-wrap gap-2 p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg min-h-[88px]"
+                         :class="layout === 'bottom' ? '' : 'lg:flex-col'"
+                         @dragover.prevent
+                         @drop.prevent="onTrayDrop($event)">
+                      <template x-for="item in items.filter(it => !placements[it.id])" :key="item.id">
+                        <button type="button"
+                                class="flex flex-col items-center text-center border-2 rounded-lg p-2 bg-white shadow-sm cursor-pointer transition hover:border-purple-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 max-w-[8rem]"
+                                :class="[
+                                  selected_item_id === item.id ? 'border-purple-600 ring-2 ring-purple-400' : 'border-slate-300',
+                                  layout === 'bottom' ? '' : 'lg:max-w-none lg:w-full'
+                                ]"
+                                draggable="true"
+                                @click="onItemTap(item.id)"
+                                @dragstart="onDragStart(item.id, $event)">
+                          <template x-if="item.image">
+                            <img :src="`{{ url_for('static', filename='uploads/questions/') }}${item.image}`"
+                                 :alt="item.label || 'item'"
+                                 class="w-16 h-16 object-contain pointer-events-none"
+                                 draggable="false">
+                          </template>
+                          <template x-if="item.label">
+                            <span class="block text-xs font-medium text-slate-700 mt-1 whitespace-pre-line" x-text="item.label"></span>
+                          </template>
+                        </button>
+                      </template>
+                      <template x-if="items.filter(it => !placements[it.id]).length === 0">
+                        <p class="text-sm text-slate-400 italic self-center">All items placed. Tap an item in a zone to pick it back up.</p>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+
+                <template x-for="item in items" :key="item.id">
+                  <input type="hidden"
+                         class="q-answer-input dragdrop-input"
+                         :name="`q_${qid}_${item.id}`"
+                         :value="placements[item.id] || ''">
+                </template>
+              </div>
+
+              {% else %}
+              {# --- Legacy MCQ / True-False --- #}
+              <div class="space-y-3">
+                {% if q.options is mapping %}
+                {% for key, text in q.options.items() %}
+                <label class="flex items-start gap-3 cursor-pointer rounded-lg ring-1 ring-slate-200 p-3 hover:bg-slate-50">
+                  <input class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 q-option"
+                         type="radio" name="q_{{ qid }}" id="q{{ qid }}_{{ key }}" value="{{ key }}">
+                  <span class="text-slate-800"><strong class="text-slate-900">{{ key }})</strong> {{ text }}</span>
+                </label>
+                {% endfor %}
+                {% else %}
+                {% for opt in q.options %}
+                {% if opt is mapping %}
+                {% set key = opt.get('key', opt.get('value', loop.index|string)) %}
+                {% set text = opt.get('text', opt.get('label', opt|string)) %}
+                {% elif opt is sequence %}
+                {% set key = opt[0] %}
+                {% set text = (opt[1] if opt|length > 1 else opt[0]) %}
+                {% else %}
+                {% set key = loop.index|string %}
+                {% set text = opt|string %}
+                {% endif %}
+                <label class="flex items-start gap-3 cursor-pointer rounded-lg ring-1 ring-slate-200 p-3 hover:bg-slate-50">
+                  <input class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 q-option"
+                         type="radio" name="q_{{ qid }}" id="q{{ qid }}_{{ key }}" value="{{ key }}">
+                  <span class="text-slate-800"><strong class="text-slate-900">{{ key }})</strong> {{ text }}</span>
+                </label>
+                {% endfor %}
+                {% endif %}
+              </div>
+              {% endif %}
+
+              <!-- Controls. On the last question the right-side button
+                   becomes the actual form submit, so the learner can finish
+                   without scrolling to find a separate Submit Quiz button. -->
+              <div class="mt-7 flex items-center justify-between">
+                <button type="button" class="px-4 py-2 rounded-lg ring-1 ring-slate-200 hover:bg-slate-50" data-prev>&larr; Previous</button>
+                <div class="text-slate-500 text-sm"><span data-counter></span></div>
+                {% if loop.last %}
+                <button type="submit"
+                        class="px-5 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 inline-flex items-center gap-2">
+                  <i class="fa-solid fa-paper-plane"></i>
+                  Submit Quiz
+                </button>
+                {% else %}
+                <button type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" data-next>Next &rarr;</button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
+        {% endfor %}
+      </section>
+
+      {# Submit lives inline on the last question's controls (see the
+         loop.last branch above), so the learner reaches it naturally as the
+         right-side button on the final question instead of needing to scroll
+         past a permanent Submit Quiz block. #}
+
+    </form>
+    {% endif %}
+
+  </main>
+
+  <footer class="text-white/70 text-center py-4 mt-auto" style="background: var(--brand-blue);">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <script>
+    // ===== Wizard navigation (lifted from proctored_assessment.html, with
+    //       all proctoring/violation/timer logic stripped). =====
+    const questionCards = Array.from(document.querySelectorAll('.question-card'));
+    const nav = document.getElementById('qNav');
+    const progressBarQ = document.getElementById('progressBarQ');
+    const answeredCountEl = document.getElementById('answeredCount');
+    let currentIndex = 0;
+
+    function showQuestion(idx) {
+      currentIndex = Math.max(0, Math.min(questionCards.length - 1, idx));
+      questionCards.forEach((card, i) => {
+        card.classList.toggle('hidden', i !== currentIndex);
+      });
+      // Focus the first input in the now-visible card (radios, then text inputs).
+      const activeCard = questionCards[currentIndex];
+      if (activeCard) {
+        const first = activeCard.querySelector('input[type="radio"]')
+          || activeCard.querySelector('.q-answer-input');
+        if (first && typeof first.focus === 'function') {
+          try { first.focus({ preventScroll: true }); } catch (_) { first.focus(); }
+        }
+      }
+      updateProgress();
+    }
+
+    function isAnswered(card) {
+      const qid = card.getAttribute('data-qid');
+      const qtype = (card.getAttribute('data-qtype') || 'mcq').toLowerCase();
+      if (qtype === 'mcq' || qtype === 'tf') {
+        return !!card.querySelector(`input[name="q_${qid}"]:checked`);
+      }
+      if (qtype === 'short_answer') {
+        const el = card.querySelector(`input[name="q_${qid}"]`);
+        return !!(el && el.value && el.value.trim().length > 0);
+      }
+      if (qtype === 'table_fill') {
+        const inputs = card.querySelectorAll('.q-answer-input');
+        if (!inputs.length) return false;
+        for (const el of inputs) {
+          if (!el.value || !String(el.value).trim().length) return false;
+        }
+        return true;
+      }
+      if (qtype === 'drag_drop') {
+        const inputs = card.querySelectorAll('.dragdrop-input');
+        if (!inputs.length) return false;
+        for (const el of inputs) {
+          if (el.value && String(el.value).trim().length) return true;
+        }
+        return false;
+      }
+      return !!card.querySelector(`input[name="q_${qid}"]:checked`);
+    }
+
+    function goNext() { if (currentIndex < questionCards.length - 1) showQuestion(currentIndex + 1); }
+    function goPrev() { if (currentIndex > 0) showQuestion(currentIndex - 1); }
+
+    function updateProgress() {
+      const answered = questionCards.filter(isAnswered).length;
+      const total = questionCards.length || 1;
+      const pct = Math.round((answered / total) * 100);
+      if (progressBarQ) progressBarQ.style.width = pct + '%';
+      if (answeredCountEl) answeredCountEl.textContent = String(answered);
+
+      Array.from(nav.children).forEach((btn, i) => {
+        const card = questionCards[i];
+        const state = i === currentIndex ? 'current' : (isAnswered(card) ? 'answered' : 'idle');
+        btn.className = 'h-9 rounded text-xs font-semibold ring-1 transition '
+          + (state === 'current'
+              ? 'bg-blue-600 text-white ring-blue-600'
+              : state === 'answered'
+                ? 'bg-emerald-600 text-white ring-emerald-600'
+                : 'bg-slate-100 text-slate-700 ring-slate-200 hover:bg-slate-200');
+      });
+    }
+
+    // Build the jump-nav grid: one numbered button per question.
+    questionCards.forEach((card, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = String(i + 1);
+      b.setAttribute('data-jump', String(i));
+      nav.appendChild(b);
+    });
+
+    // Wire up controls on each card.
+    questionCards.forEach((card, i) => {
+      const isLast = (i === questionCards.length - 1);
+      card.querySelectorAll('input.q-option').forEach(r => {
+        r.addEventListener('change', () => {
+          updateProgress();
+          if (!isLast) setTimeout(() => goNext(), 120);
+        });
+      });
+      card.querySelectorAll('.q-answer-input').forEach(el => {
+        el.addEventListener('input', updateProgress);
+        el.addEventListener('change', updateProgress);
+      });
+      // Card-level delegated listeners so events from Alpine-added inputs
+      // (drag_drop hidden fields) still trigger updateProgress.
+      card.addEventListener('input', updateProgress);
+      card.addEventListener('change', updateProgress);
+      card.querySelector('[data-prev]')?.addEventListener('click', () => goPrev());
+      card.querySelector('[data-next]')?.addEventListener('click', () => goNext());
+      const counter = card.querySelector('[data-counter]');
+      if (counter) counter.textContent = `Question ${i + 1} of ${questionCards.length}`;
+    });
+
+    nav.addEventListener('click', (e) => {
+      const t = e.target.closest('button[data-jump]');
+      if (!t) return;
+      showQuestion(parseInt(t.getAttribute('data-jump'), 10));
+    });
+
+    if (questionCards.length) {
+      showQuestion(0);
+      updateProgress();
+    }
+
+    // Keyboard nav: arrows move between questions.
+    window.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) return;
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goPrev();
+    });
+  </script>
+</body>
+</html>

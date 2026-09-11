@@ -1,0 +1,467 @@
+{
+  "questions": [
+    {
+      "question": "This training program is based on the IATA Dangerous Goods Regulations",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Fill in the missing words: Hazard is something that ____________ (possibility) causes _______ .",
+      "options": [
+        "Dangerous Goods & Harm",
+        "Can & Harm",
+        "Potentially & Harm",
+        "You & Harm"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Which documents must be provided the minimum by the shipper to transport fully regulated dangerous goods consignments?",
+      "options": [
+        "NOTOC & ULD TAG",
+        "Shippers Declaration & Air Waybill"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Breathing Apparatus",
+      "options": [
+        "Value",
+        "Straps",
+        "Chemical Oxygen generators",
+        "Labels"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Machinery Parts",
+      "options": [
+        "Lithium Batteries",
+        "Mercury",
+        "Paints",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Dental Apparatus",
+      "options": [
+        "Compressed Gas",
+        "Plastic",
+        "Rubber",
+        "Steel casing"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Frozen Fruit, Vegetables",
+      "options": [
+        "Cardboard",
+        "Plastic",
+        "Dry Ice",
+        "Drums"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "What kind of HIDDEN DANGEROUS GOODS could be contained in the following items: Pharmaceuticals",
+      "options": [
+        "Radioactives",
+        "Flammable Liquids",
+        "Corrosive substances",
+        "All of the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Packages containing dangerous goods are secured on board the aircraft to prevent damage or movement during flight.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Packages of incompatible dangerous goods do not need to be segregated when loaded into the aircraft",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Packing Group I is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "Medium, Y",
+        "Low, Z",
+        "High, X"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Packing Group II is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "High, X",
+        "Low, Z",
+        "Medium, Y"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Packing Group II is what degree of Danger and the corresponding Alphabetical Code?",
+      "options": [
+        "Medium, Y",
+        "High, X",
+        "Low, Z"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 6.1 and Class 3?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 4.3 and Class 8",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 3 and Class 8?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 5.1 and Class 3?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 3 and UN3481(Lithium-ion batteries)?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 4.1 and Division 5.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? UN3480 (Lithium Metal Batteries) and Division 4.1?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Class 1 and Division 2.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Division 5.1 and Division 4.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Can the following packages of dangerous goods be loaded next to each other on an aircraft or in a warehouse? Div 1.4S and Division 4.2?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Live animals should not be loaded near...",
+      "options": [
+        "Crew meals",
+        "Vehicles",
+        "water bottles",
+        "Dry Ice"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "When a “Cargo Aircraft Only” label is required, it must be affixed on the same surface of the package near the hazard label(s).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The maintenance crew deliver a chemical oxygen generator (company material - COMAT) to the aircraft and advise that it is urgently required for an aircraft AOG at the destination. The chemical oxygen generator has not been processed by the cargo department. The flight on which it is to be loaded is a passenger aircraft. This information is provided after the captain has received and signed the NOTOC. What action should be taken?",
+      "options": [
+        "The chemical oxygen generator can be loaded onto the aircraft.",
+        "The shipment can be accepted once the captain has checked it.",
+        "The chemical oxygen generator can be processed by the cargo department after it is loaded onto the aircraft and delivered.",
+        "The shipment should be rejected, as it needs to be processed by the cargo department for a full acceptance check, to ensure compliance with the Dangerous Goods Regulations."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Use marks need to contain a proper shipping name, a UN/ID number and the full name and address of the shipper and consignee.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of the NOTOC?",
+      "options": [
+        "To provide the cabin crew with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the passengers with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the pilot-in-command with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo.",
+        "To provide the warehouse staff with accurate and legible written or printed information, concerning Dangerous Goods that are to be carried as cargo."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Passengers and crew members can carry blue-flame lighters or cigar lighters on board an aircraft.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Placeholder Q30 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q31 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q32 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q33 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q34 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q35 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q36 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q37 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q38 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q39 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q40 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q41 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q42 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q43 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q44 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q45 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q46 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q47 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q48 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q49 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Placeholder Q50 for z",
+      "options": [
+        "{'key': 'A', 'text': 'Option A'}",
+        "{'key': 'B', 'text': 'Option B'}",
+        "{'key': 'C', 'text': 'Option C'}",
+        "{'key': 'D', 'text': 'Option D'}"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

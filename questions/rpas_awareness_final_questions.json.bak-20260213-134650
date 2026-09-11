@@ -1,0 +1,444 @@
+{
+  "questions": [
+    {
+      "question": "sabotage of aircraft, armed attacks on off airport facilities are both threats to Civil Aviation",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A person can be used as an Improvised Explosive Device (IED)",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following can be used as attacks against airports?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "You are allowed to tamper with a suspicious device.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following have been used as an IED before?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "RISK - The possibility that something unpleasant or unwelcome will happen.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "In which year was the Hague Convention held?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "When you find a prohibited item, you must panic and run away.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Which of the following are “categories of restricted articles”?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "With Aviation terrorism, since the dawn of the aviation industry, ............. have attacked it for criminal or personal reasons.",
+      "options": [
+        "Man",
+        "People",
+        "Goods",
+        "Vehicles"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "You can use simple items to hide an IED.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following responses are appropriate in the event of a bomb threat?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Security is a concern for everyone in the industry, affecting virtually all areas of operation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A bomb threat is a communicated threat (anonymous or otherwise) suggesting danger to aircraft, airport facilities or persons from an explosive or other device.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Annex 17, Standard 3.1.1 requires Each contracting state to implement a written National Civil Aviation Security Program (NCASP).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What does NCASP stand for?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "When you find a suspicious explosive device you should not open, unwrap, shake, unscrew, cut strings.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Where do you need to practice aviation security awareness?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "In past events, drones or RPAS have been used in an attack.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the procedure when a person is found in an RPA hangar or remote pilot station, and they are not authorised to be in those areas?",
+      "options": [
+        "Call the police",
+        "Attack the intruder",
+        "Declare the RPA Hangar or Remote Pilot Station as unsecure.",
+        "Show them who's the boss"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Drones or RPAS are becoming a common threat to Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "We can help prevent attacks on Civil Aviation by being aware of the threats posed to civil aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which statements relate to the Civil Aviation industry’s Regulations and Standards?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The following are all examples of aviation security conventions: Tokyo – 1963, The Hague – 1970, Montreal – 1971, and IATA – 1962.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following are explosive device components?",
+      "options": [
+        "Battery",
+        "Toch",
+        "C2 Link",
+        "Camera"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The local authority in South Africa is ICAO.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Terrorist attacks can happen any time, in any place and they are irregular and hard to predict. Three main characteristics that terror attacks produce:",
+      "options": [
+        "Uncertainty, Violence, Fear",
+        "Kill. Terror, Crime",
+        "Power, Violence, Freedom",
+        "Torcher, Fear, Violance"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Man-Portable Air Defense Systems (e.g., rocket launchers) is an RPAS.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Which of the following are considered “offenders” within Aviation?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Permits should be valid for specific areas and times.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Ex-employees can be a risk to Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which abbreviation definitions are correct?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Flexibility and covertness in selection of take-off sites are the advantages that an RPA system can bring to a terrorist organization.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "There are a total of 19 annexures in the Chicago Convention of International Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is another name for the ICAO security manual?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of a permit system in the aviation industry?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which actions must be taken when a suspicious article is discovered?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The abbreviation IED stands for Improvised Explosive Detector.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "By establishing a Security Culture where each person is aware of basic security procedures. By knowing what the procedures should be, you will be able to distinguish when something is suspicious and be able to respond accordingly.",
+      "options": [
+        "Written report / Report incidents or Accidents",
+        "Pigeon post",
+        "Last minute response",
+        "All the above"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What does the Dirty Dozen of Human Factors refers too?",
+      "options": [
+        "Lack of teamwork",
+        "Poverty",
+        "Negligence",
+        "Obsession"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Acts of Unlawful Interference may include: unlawful seizure of an aircraft; and hostage-taking on board an aircraft or on aerodromes.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Aviation security awareness is not being aware of your surroundings and the potential security concerns in your everyday aviation working environment.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The abbreviation ASP stands for Airport Safety Programme.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What are the following measures, if there is an attempted or actual takeover of the RPS?\n•\tConsider activating the auto land/return to base or landing the RPA.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "How many annexures are there to the Chicago Convention?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "“Model aircraft” means a non-human-carrying aircraft capable of sustained flight in the atmosphere and used exclusively for air display, recreational use etc.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Terrorists attack civil aviation to gain international attention and publicity for their cause.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Suspicious behaviour is behaviour that does not appear to be normal in the circumstances.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Cyber attacks have become a growing threat to Civil Aviation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Prior compulsory requirements for a pilot license is...\n•\tApplicants must pass the RPL practical assessment and all applications must be submitted to the SACAA.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    }
+  ]
+}

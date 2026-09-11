@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17306B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ProTraining">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/PAS_Training_Logo.png') }}">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link href="{{ url_for('static', filename='css/asimo.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{blue:'#17306B',gold:'#C7A434'}}}}}</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<style>
+  :root {
+    --colorPrimary: #212D65;
+    --colorSecondary: #EDAB1E;
+    --cardWidth: 385px;
+  }
+
+  .sidebar-logo-top {
+    background-image: url('../static/images/proftraining.png');
+  }
+
+  .sidebar-logo-bottom {
+    background-image: url('../static/images/asimopower.png');
+  }
+
+  .sidebar.collapsed .sidebar-logo-top {
+    background-image: url('../static/images/proftrainingcompact.png');
+  }
+
+  .sidebar.collapsed .sidebar-logo-bottom {
+    background-image: url('../static/images/asimopowercompact.png');
+  }
+
+  /* ===== Reusable Confirmation Modal ===== */
+  .confirm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .confirm-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  .confirm-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 420px;
+    width: 90%;
+    transform: scale(0.9) translateY(-20px);
+    transition: transform 0.25s ease;
+    overflow: hidden;
+  }
+  .confirm-modal-overlay.active .confirm-modal {
+    transform: scale(1) translateY(0);
+  }
+  .confirm-modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .confirm-modal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .confirm-modal-icon.warning { background: #fef3c7; }
+  .confirm-modal-icon.danger { background: #fee2e2; }
+  .confirm-modal-icon.info { background: #dbeafe; }
+  .confirm-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+  .confirm-modal-body {
+    padding: 20px 24px;
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .confirm-modal-footer {
+    padding: 16px 24px 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  .confirm-modal-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+  }
+  .confirm-modal-btn.cancel {
+    background: #f3f4f6;
+    color: #374151;
+  }
+  .confirm-modal-btn.cancel:hover {
+    background: #e5e7eb;
+  }
+  .confirm-modal-btn.confirm {
+    background: var(--colorPrimary, #212D65);
+    color: #fff;
+  }
+  .confirm-modal-btn.confirm:hover {
+    filter: brightness(1.1);
+  }
+  .confirm-modal-btn.danger {
+    background: #dc2626;
+    color: #fff;
+  }
+  .confirm-modal-btn.danger:hover {
+    background: #b91c1c;
+  }
+
+  /* ===== Modern Dashboard Overrides ===== */
+  /* Hide old sidebar */
+  .sidebar, #sidebar, .sidebar-logo-top, .sidebar-logo-bottom { display: none !important; }
+  .infoRightCon { display: none !important; }
+
+  /* Override page-container to be vertical */
+  .page-container {
+    display: block !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* Override main-content */
+  .main-content {
+    height: auto !important;
+    overflow-y: visible !important;
+    padding: 0 !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem !important;
+  }
+
+  /* Override old card styles */
+  .beveled-box-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: white !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+    transition: box-shadow 0.2s ease !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    border: 1px solid #e8e8e8 !important;
+  }
+  .beveled-box-wrapper:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+  }
+  .imgtest {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    height: 0 !important;
+    padding-bottom: 56% !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .beveled-box-content {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    padding: 14px 16px 2px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    font-family: 'Roboto', sans-serif !important;
+    line-height: 1.35 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+  .beveled-box-content-2 {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: auto !important;
+    padding: 2px 16px 18px !important;
+    font-size: 0.78rem !important;
+    color: #6b7280 !important;
+    font-family: 'Roboto', sans-serif !important;
+    text-align: left !important;
+  }
+  .progress-bar {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: auto !important;
+    margin: 10px 16px 0 !important;
+    height: 4px !important;
+    border-radius: 4px !important;
+    background: #f0f0f0 !important;
+    overflow: hidden !important;
+  }
+  .progress-bar-fill {
+    height: 4px !important;
+    border-radius: 4px !important;
+    width: var(--progress, 0%) !important;
+    transition: width 0.5s ease !important;
+  }
+  .button-beveled {
+    position: relative !important;
+    bottom: auto !important;
+    right: auto !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 4px 0 0 !important;
+    padding: 8px 18px !important;
+    line-height: normal !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    font-family: 'Roboto', sans-serif !important;
+    letter-spacing: 0.03em !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    color: white !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    transition: filter 0.15s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .button-beveled:hover {
+    filter: brightness(1.1) !important;
+  }
+  /* Give buttons breathing room inside the card — side padding + bottom spacing,
+     so they don't run to the card edges. Applies to direct button children and
+     anchor-wrapped buttons alike. */
+  .beveled-box-wrapper > .button-beveled {
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    margin-bottom: 14px !important;
+  }
+  .beveled-box-wrapper > a {
+    display: block !important;
+    margin: 4px 16px 14px 16px !important;
+    text-decoration: none !important;
+  }
+  .beveled-box-wrapper > a .button-beveled {
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  /* Kill old title-row layout */
+  .beveled-box-title-row {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+  }
+  /* No courses text on light bg */
+  #section-courses p {
+    color: #6b7280 !important;
+  }
+  /* Card bottom: button on its own line, right-aligned */
+  .beveled-box-wrapper > a,
+  .beveled-box-wrapper > div > a {
+    display: block !important;
+    text-align: right !important;
+    padding: 0 16px 14px !important;
+    text-decoration: none !important;
+  }
+  /* Responsive course grid */
+  .contentMiddle {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1024px) {
+    .contentMiddle { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .contentMiddle { grid-template-columns: 1fr; }
+  }
+  /* dashBreak header */
+  .dashBreak {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    padding: 0.5rem 0 0.75rem;
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: -0.01em;
+  }
+  .dashBreakHr {
+    height: 0;
+    display: none;
+  }
+  /* Hide Continue Learning header since tab already says Learn */
+  #section-dashboard > .dashBreak { display: none !important; }
+  /* Background override — kill old clouds + animation */
+  body, body.selectBgWhite, body.selectSecondary {
+    background: #f5f5f5 !important;
+  }
+  body::before, body::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* Mobile bottom tabs padding */
+  @media (max-width: 768px) {
+    .main-content { padding-bottom: 6rem !important; }
+  }
+
+  /* Support & Profile sections — full width on desktop */
+  #section-support .contentMiddle,
+  #section-profile .contentMiddle {
+    display: block !important;
+    max-width: 100% !important;
+  }
+  #section-support .support-container {
+    max-width: 100%;
+    margin: 0;
+    background: white !important;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  #section-support .support-form-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 640px) {
+    #section-support .support-form-grid {
+      grid-template-columns: 1fr !important;
+    }
+    #section-support .support-tab-content {
+      padding: 1rem !important;
+    }
+    #section-support .support-field input,
+    #section-support .support-field textarea,
+    #section-support .support-field select {
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+  }
+  @media (min-width: 769px) {
+    #section-support .support-tab-content {
+      padding: 2rem 2.5rem !important;
+    }
+  }
+  /* Profile section — full width, merged look */
+  #section-profile .contentMiddle {
+    display: block !important;
+  }
+  #section-profile .beveled-container {
+    clip-path: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  #section-profile .beveled-content {
+    clip-path: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  /* Merge all profile cards into one white block */
+  #section-profile .contentMiddle {
+    display: block !important;
+    grid-template-columns: none !important;
+    background: white !important;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 2rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  /* ID preview — center the clickable image container */
+  #section-profile div[onclick*="id-preview-modal"] {
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+  }
+  #section-profile img[alt="Your ID document"] {
+    max-height: 300px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+  }
+  /* ID preview modal */
+  #id-preview-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+  }
+  #section-profile .profile-card {
+    max-width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  #section-profile .profile-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  #section-profile .profile-card:first-child {
+    padding-top: 0;
+  }
+  #section-profile .profile-card-head {
+    margin-bottom: 1rem;
+  }
+  #section-profile .profile-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  #section-profile .profile-card-sub {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+  #section-profile .profile-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  #section-profile .profile-form,
+  #section-profile .profile-upload,
+  #section-profile .profile-actions,
+  #section-profile form {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  #section-profile .profile-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #section-profile .profile-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+    max-width: 100% !important;
+  }
+  #section-profile .profile-col {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  #section-profile .profile-card-head {
+    max-width: 100% !important;
+  }
+  /* Profile header hidden — accessed via dropdown */
+  #section-profile > .dashBreak { display: none !important; }
+  /* Center all profile buttons and content */
+  #section-profile .profile-actions,
+  #section-profile div[style*="display:flex"][style*="justify-content:center"],
+  #section-profile div[style*="gap:8px"] {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  #section-profile form.profile-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  #section-profile .profile-upload {
+    width: 100% !important;
+  }
+  #section-profile #selfie-current {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Profile responsive — stack on mobile */
+  @media (max-width: 640px) {
+    #section-profile .contentMiddle {
+      padding: 1rem !important;
+    }
+    #section-profile .profile-grid {
+      grid-template-columns: 1fr !important;
+    }
+    #section-profile .profile-card {
+      padding: 1rem 0 !important;
+    }
+    /* Center buttons on mobile */
+    #section-profile .profile-actions {
+      text-align: center !important;
+    }
+    #section-support button[type="submit"] {
+      display: block !important;
+      margin: 0 auto !important;
+    }
+  }
+
+  /* Active tab states */
+  .nav-tab.active { color: white !important; background: rgba(255,255,255,0.15); }
+  .mob-tab.active { color: #17306B !important; }
+  .mob-tab.active i { color: #C7A434; }
+
+  /* Reset .button styles inside new nav areas */
+  header .nav-tab, nav .mob-tab {
+    display: flex !important;
+    width: auto !important;
+    font-size: inherit !important;
+    padding: inherit !important;
+  }
+
+  /* Tab content animations */
+  .section-animate-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+  .section-animate-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+  .section-animate {
+    animation: sectionFadeIn 0.3s ease-out;
+  }
+  @keyframes sectionFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Profile dropdown */
+  .profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    min-width: 220px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    z-index: 100;
+  }
+  .profile-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+</style>
+
+<body class="selectSecondary selectBgWhite">
+  <meta name="page-context" data-page="Dashboard" data-course="" data-chapter="">
+
+  <!-- Modern Top Navigation -->
+  <header class="sticky top-0 z-50 bg-brand-blue shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-9 max-[768px]:h-6">
+
+      <!-- Desktop Nav Tabs -->
+      <nav class="hidden md:flex items-center gap-5" style="display:none" id="desktopNav">
+        <button onclick="switchTab('dashboard')" class="nav-tab px-5 py-2 rounded-lg text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition inline-flex items-center gap-2 border-0 bg-transparent cursor-pointer" data-tab="dashboard">
+          <i class="fa-solid fa-book-open text-xs"></i> Learn
+        </button>
+        {% if not is_company_student %}
+        <button onclick="switchTab('courses')" class="nav-tab px-5 py-2 rounded-lg text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition inline-flex items-center gap-2 border-0 bg-transparent cursor-pointer" data-tab="courses">
+          <i class="fa-solid fa-book-open text-xs"></i> Courses
+        </button>
+        {% endif %}
+        {% if has_virtual_enrollments %}
+        <button onclick="switchTab('virtual')" class="nav-tab px-5 py-2 rounded-lg text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition inline-flex items-center gap-2 border-0 bg-transparent cursor-pointer" data-tab="virtual">
+          <i class="fa-solid fa-video text-xs"></i> Virtual
+        </button>
+        {% endif %}
+        <button onclick="switchTab('support')" class="nav-tab px-5 py-2 rounded-lg text-sm font-semibold text-white/70 hover:text-white hover:bg-white/10 transition inline-flex items-center gap-2 border-0 bg-transparent cursor-pointer" data-tab="support">
+          <i class="fa-solid fa-headset text-xs"></i> Support
+        </button>
+      </nav>
+
+      <!-- Profile Picture + Dropdown -->
+      <div class="relative" id="profileDropdownWrap">
+        <button onclick="document.getElementById('profileDropdown').classList.toggle('open')" class="flex items-center gap-3 border-0 bg-transparent cursor-pointer px-2 py-1 rounded-lg hover:bg-white/10 transition">
+          <span class="hidden sm:block text-white/70 text-sm font-medium">{{ user.name }}</span>
+          <img src="{{ selfie_path }}" alt="Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-brand-gold">
+          <i class="fa-solid fa-chevron-down text-[10px] text-white/50"></i>
+        </button>
+
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="px-4 py-3 border-b border-slate-100">
+            <div class="text-sm font-semibold text-slate-800">{{ user.name }} {{ user.surname }}</div>
+            <div class="text-xs text-slate-400">{{ user.email }}</div>
+            <div class="text-xs text-slate-400">ID: {{ user.student_id }}</div>
+          </div>
+          <button onclick="switchTab('profile'); document.getElementById('profileDropdown').classList.remove('open');" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition flex items-center gap-2 border-0 bg-transparent cursor-pointer">
+            <i class="fa-solid fa-user-gear text-slate-400 text-xs w-4"></i> Profile Settings
+          </button>
+          <a href="{{ url_for('logout', from='student') }}" class="block px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition flex items-center gap-2" style="text-decoration:none;">
+            <i class="fa-solid fa-right-from-bracket text-xs w-4"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Tab Bar -->
+  <nav id="mobileNav" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 md:hidden" style="box-shadow:0 -4px 12px rgba(0,0,0,0.08); display:none;">
+    <div class="flex items-center justify-around py-2">
+      <button onclick="switchTab('dashboard')" class="mob-tab flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 border-0 bg-transparent cursor-pointer" data-tab="dashboard">
+        <i class="fa-solid fa-book-open text-lg"></i>
+        <span style="font-size:10px;font-weight:500;">Learn</span>
+      </button>
+      {% if not is_company_student %}
+      <button onclick="switchTab('courses')" class="mob-tab flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 border-0 bg-transparent cursor-pointer" data-tab="courses">
+        <i class="fa-solid fa-book-open text-lg"></i>
+        <span style="font-size:10px;font-weight:500;">Courses</span>
+      </button>
+      {% endif %}
+      {% if has_virtual_enrollments %}
+      <button onclick="switchTab('virtual')" class="mob-tab flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 border-0 bg-transparent cursor-pointer" data-tab="virtual">
+        <i class="fa-solid fa-video text-lg"></i>
+        <span style="font-size:10px;font-weight:500;">Virtual</span>
+      </button>
+      {% endif %}
+      <button onclick="switchTab('support')" class="mob-tab flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 border-0 bg-transparent cursor-pointer" data-tab="support">
+        <i class="fa-solid fa-headset text-lg"></i>
+        <span style="font-size:10px;font-weight:500;">Support</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Tab Switching Script (self-contained) -->
+  <script>
+    // Tab order for swipe navigation
+    var _tabOrder = ['dashboard', {% if not is_company_student %}'courses', {% endif %}{% if has_virtual_enrollments %}'virtual', {% endif %}'support'];
+    var _allTabs = ['dashboard', {% if not is_company_student %}'courses', {% endif %}{% if has_virtual_enrollments %}'virtual', {% endif %}'support', 'profile'];
+    var _currentTab = 'dashboard';
+
+    function switchTab(tab, direction) {
+      // Determine animation direction
+      if (!direction) {
+        var oldIdx = _tabOrder.indexOf(_currentTab);
+        var newIdx = _tabOrder.indexOf(tab);
+        direction = newIdx > oldIdx ? 'right' : (newIdx < oldIdx ? 'left' : 'fade');
+      }
+
+      // Hide all sections
+      var sections = ['section-dashboard', 'section-courses', 'section-virtual', 'section-profile', 'section-support'];
+      sections.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          el.classList.remove('section-animate', 'section-animate-left', 'section-animate-right');
+        }
+      });
+
+      // Show target section with directional animation
+      var target = document.getElementById('section-' + tab);
+      if (target) {
+        target.style.display = 'block';
+        void target.offsetWidth;
+        if (direction === 'right') target.classList.add('section-animate-right');
+        else if (direction === 'left') target.classList.add('section-animate-left');
+        else target.classList.add('section-animate');
+      } else if (tab === 'courses') {
+        var dash = document.getElementById('section-dashboard');
+        if (dash) { dash.style.display = 'block'; void dash.offsetWidth; dash.classList.add('section-animate'); }
+        tab = 'dashboard';
+      }
+
+      _currentTab = tab;
+
+      // Update active states
+      document.querySelectorAll('[data-tab]').forEach(function(btn) { btn.classList.remove('active'); });
+      document.querySelectorAll('[data-tab="' + tab + '"]').forEach(function(btn) { btn.classList.add('active'); });
+
+      localStorage.setItem('activeModule', tab);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Swipe detection
+    (function() {
+      var startX = 0, startY = 0, startTime = 0;
+      var MIN_SWIPE = 60, MAX_TIME = 400;
+
+      document.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+
+      document.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        var dt = Date.now() - startTime;
+        if (dt > MAX_TIME || Math.abs(dy) > Math.abs(dx)) return; // too slow or vertical
+        if (Math.abs(dx) < MIN_SWIPE) return;
+
+        var idx = _tabOrder.indexOf(_currentTab);
+        var len = _tabOrder.length;
+        if (dx < 0) {
+          // Swipe left -> next tab (wrap to first)
+          switchTab(_tabOrder[(idx + 1) % len], 'right');
+        } else if (dx > 0) {
+          // Swipe right -> prev tab (wrap to last)
+          switchTab(_tabOrder[(idx - 1 + len) % len], 'left');
+        }
+      }, { passive: true });
+    })();
+
+    // Mobile info banner (show once)
+    if (window.innerWidth <= 768 && !localStorage.getItem('mobileBannerDismissed')) {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:9999;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.12);font-size:0.8rem;color:#334155;line-height:1.5;';
+      banner.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">'
+        + '<div><strong style="color:#17306B;">Mobile & Tablet Ready</strong><br>'
+        + 'Course content and learning are optimised for your device. For final assessments with video proctoring, we recommend using a desktop or laptop.</div>'
+        + '<button onclick="this.closest(\'div\').parentElement.remove();localStorage.setItem(\'mobileBannerDismissed\',\'true\');" style="background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;flex-shrink:0;padding:0;line-height:1;">&times;</button>'
+        + '</div>';
+      document.body.appendChild(banner);
+    }
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').then(function() {
+        console.log('[PWA] Service worker registered');
+      }).catch(function(err) {
+        console.log('[PWA] SW registration failed:', err);
+      });
+    }
+
+    // Move ID preview modal to body so it escapes all parent containers
+    document.addEventListener('DOMContentLoaded', function() {
+      var modal = document.getElementById('id-preview-modal');
+      if (modal) document.body.appendChild(modal);
+      var cropModal = document.getElementById('id-crop-modal');
+      if (cropModal) document.body.appendChild(cropModal);
+    });
+
+    // Close profile dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      var wrap = document.getElementById('profileDropdownWrap');
+      var dd = document.getElementById('profileDropdown');
+      if (dd && wrap && !wrap.contains(e.target)) {
+        dd.classList.remove('open');
+      }
+    });
+
+    // On page load: restore last tab + show navs
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show nav bars (hidden initially to prevent FOUC)
+      var dn = document.getElementById('desktopNav');
+      if (dn) dn.style.display = '';
+      var mn = document.getElementById('mobileNav');
+      if (mn) mn.style.display = '';
+
+      // Check URL params, hash, or localStorage
+      var urlParams = new URLSearchParams(window.location.search);
+      var tabParam = urlParams.get('tab');
+      var hashParam = window.location.hash ? window.location.hash.substring(1) : null;
+      var activeModule = tabParam || hashParam || localStorage.getItem('activeModule') || 'dashboard';
+
+      if (tabParam || hashParam) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      switchTab(activeModule);
+    });
+  </script>
+
+  <div class="page-container">
+    <!-- Old sidebar hidden via CSS -->
+    <div class="sidebar" id="sidebar"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Dashboard -->
+      <div id="section-dashboard">
+
+        {# News banner (v1.1.2). Latest active announcement, dismissible per
+           student via localStorage so the same admin update doesn't keep
+           popping up after it's been read. The key includes the announcement
+           id so a NEW announcement re-shows automatically. #}
+        {% if latest_announcement %}
+        <div id="news-banner-{{ latest_announcement.id }}"
+             class="news-banner"
+             style="display:none; position:relative; margin:0 0 1.25rem; padding:0; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(23,48,107,0.12); background:linear-gradient(135deg,#17306B 0%,#1f3f87 100%); color:#fff;">
+          {% if latest_announcement.image_filename %}
+          <img src="{{ url_for('static', filename='uploads/announcements/' ~ latest_announcement.image_filename) }}"
+               alt="{{ latest_announcement.title }}"
+               style="display:block; width:100%; max-height:240px; object-fit:cover;">
+          {% endif %}
+          <div style="padding:1rem 1.25rem;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+              <div style="flex:1; min-width:0;">
+                <div style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.15rem 0.6rem; background:rgba(199,164,52,0.25); border:1px solid rgba(199,164,52,0.5); border-radius:9999px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#C7A434; margin-bottom:0.5rem;">
+                  <span>&#128226;</span> News
+                </div>
+                <h3 style="margin:0 0 0.4rem; font-size:1.15rem; font-weight:800; color:#fff;">{{ latest_announcement.title }}</h3>
+                <p style="margin:0; font-size:0.9rem; line-height:1.5; color:rgba(255,255,255,0.92); white-space:pre-wrap;">{{ latest_announcement.content }}</p>
+              </div>
+              <button type="button"
+                      onclick="dismissNewsBanner('news-banner-{{ latest_announcement.id }}', {{ latest_announcement.id }})"
+                      title="Dismiss"
+                      style="flex-shrink:0; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center;">
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
+        <script>
+          (function () {
+            var id = {{ latest_announcement.id }};
+            var key = 'news_dismissed_' + id;
+            var el = document.getElementById('news-banner-' + id);
+            if (el && localStorage.getItem(key) !== '1') {
+              el.style.display = 'block';
+            }
+          })();
+          function dismissNewsBanner(elId, annId) {
+            try { localStorage.setItem('news_dismissed_' + annId, '1'); } catch (_) {}
+            var el = document.getElementById(elId);
+            if (el) el.style.display = 'none';
+          }
+        </script>
+        {% endif %}
+
+        {% if not id_doc_path %}
+        <!-- ID upload required banner -->
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem 2rem; text-align:center;">
+          <div style="width:90px; height:90px; border-radius:50%; background:rgba(199,164,52,0.15); display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; font-size:42px;">
+            &#128466;
+          </div>
+          <h2 style="color:#17306B; font-size:1.5rem; font-weight:700; margin-bottom:0.5rem;">ID Document Required</h2>
+          <p style="color:#334155; max-width:420px; margin-bottom:1.5rem; line-height:1.5;">
+            Please upload a copy of your South African ID or Passport before accessing your courses. This is required for verification and moderation purposes.
+          </p>
+          <button onclick="switchTab('profile');" style="background:linear-gradient(135deg,#C7A434,#e0c04a); color:#17306B; border:none; padding:14px 32px; border-radius:12px; font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 4px 15px rgba(199,164,52,0.35); transition:transform 0.15s ease;">
+            Go to Profile &amp; Upload ID
+          </button>
+        </div>
+        {% else %}
+        <!-- News -->
+        <!-- <div class="news-dashBreak">
+          <span class="news-title whiteFull">News</span>
+          <div class="news-indicators-unit">
+            <div class="news-carousel-indicators">
+              <div class="dashboard-carousel-indicator bevC3" onclick="dashboardGoToSlide(0)">
+                <div class="dashboard-carousel-indicator-bar"></div>
+              </div>
+              <div class="dashboard-carousel-indicator bevC1C3" onclick="dashboardGoToSlide(1)">
+                <div class="dashboard-carousel-indicator-bar"></div>
+              </div>
+              <div class="dashboard-carousel-indicator bevC1C3" onclick="dashboardGoToSlide(2)">
+                <div class="dashboard-carousel-indicator-bar"></div>
+              </div>
+              <div class="dashboard-carousel-indicator bevC1C3" onclick="dashboardGoToSlide(3)">
+                <div class="dashboard-carousel-indicator-bar"></div>
+              </div>
+              <div class="dashboard-carousel-indicator bevC1" onclick="dashboardGoToSlide(4)">
+                <div class="dashboard-carousel-indicator-bar"></div>
+              </div>
+            </div>
+            <div class="dashBreakHrNews"></div>
+          </div>
+        </div>
+        <div class="dashboard-carousel-wrapper">
+          <div class="dashboard-carousel-container">
+            <div class="dashboard-carousel-slide active">
+              <div class="dashboard-carousel-image-container">
+                <img class="news-image-index" src="../static/images/indexnews01.png" alt="News Image">
+              </div>
+              <div class="dashboard-carousel-content-container">
+                <div class="news-heading-index bold">Exciting Title Of Titles</div>
+                <div class="news-meta-index">
+                  <span class="meta-by-index">by</span>
+                  <span class="meta-author-index">Adminia</span>
+                  <span class="meta-posted-index opa50">posted 2 hours ago</span>
+                </div>
+                <div class="news-description-index">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida convallis eros.
+                </div>
+                <button class="button-beveled-news news-button-index bev tintHB1 bgSecondary">Experience Now</button>
+              </div>
+            </div>
+            <div class="dashboard-carousel-slide">
+              <div class="dashboard-carousel-image-container">
+                <img class="news-image-index" src="../static/images/indexnews02.png" alt="News Image">
+              </div>
+              <div class="dashboard-carousel-content-container">
+                <div class="news-heading-index">New Horizons of Tech</div>
+                <div class="news-meta-index">
+                  <span class="meta-by-index">by</span>
+                  <span class="meta-author-index">Chronos</span>
+                  <span class="meta-posted-index opa50">posted 3 days ago</span>
+                </div>
+                <div class="news-description-index">
+                  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.
+                </div>
+                <button class="button-beveled-news news-button-index bev tintHB1 bgSecondary">Explore Today</button>
+              </div>
+            </div>
+            <div class="dashboard-carousel-slide">
+              <div class="dashboard-carousel-image-container">
+                <img class="news-image-index" src="../static/images/indexnews03.png" alt="News Image">
+              </div>
+              <div class="dashboard-carousel-content-container">
+                <div class="news-heading-index">Breakthrough Achieved</div>
+                <div class="news-meta-index">
+                  <span class="meta-by-index">by</span>
+                  <span class="meta-author-index">Nova</span>
+                  <span class="meta-posted-index opa50">posted 5 days ago</span>
+                </div>
+                <div class="news-description-index">
+                  Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.
+                </div>
+                <button class="button-beveled-news news-button-index bev tintHB1 bgSecondary">Take A Look</button>
+              </div>
+            </div>
+            <div class="dashboard-carousel-slide">
+              <div class="dashboard-carousel-image-container">
+                <img class="news-image-index" src="../static/images/indexnews04.png" alt="News Image">
+              </div>
+              <div class="dashboard-carousel-content-container">
+                <div class="news-heading-index">Science Reimagined</div>
+                <div class="news-meta-index">
+                  <span class="meta-by-index">by</span>
+                  <span class="meta-author-index">Aether</span>
+                  <span class="meta-posted-index opa50">posted 7 days ago</span>
+                </div>
+                <div class="news-description-index">
+                  At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.
+                </div>
+                <button class="button-beveled-news news-button-index bev tintHB1 bgSecondary">Learn More</button>
+              </div>
+            </div>
+            <div class="dashboard-carousel-slide">
+              <div class="dashboard-carousel-image-container">
+                <img class="news-image-index" src="../static/images/indexnews05.png" alt="News Image">
+              </div>
+              <div class="dashboard-carousel-content-container">
+                <div class="news-heading-index">Quantum Leap Confirmed</div>
+                <div class="news-meta-index">
+                  <span class="meta-by-index">by</span>
+                  <span class="meta-author-index">Vega</span>
+                  <span class="meta-posted-index opa50">posted 2 weeks ago</span>
+                </div>
+                <div class="news-description-index">
+                  Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe.
+                </div>
+                <button class="button-beveled-news news-button-index bev tintHB1 bgSecondary">Check It Out</button>
+              </div>
+            </div>
+          </div>
+        </div>-->
+        <!-- Continue Learning -->
+        <div class="dashBreak">Continue Learning<div class="dashBreakHr"></div>
+        </div>
+        <div class="contentMiddle">
+          {% if normal_progress %}
+          {% for progress in normal_progress %}
+            {% include 'partials/dashboard_course_card.html' %}
+          {% endfor %}
+          {% else %}
+          <p style="color:white; text-align:center;">
+            {% if is_company_student %}
+            No courses assigned yet. Your company administrator will enroll you in courses.
+            {% else %}
+            No approved courses yet. Enroll in a course to get started!
+            {% endif %}
+          </p>
+          {% endif %}
+
+        </div>
+        {% endif %}
+      </div>
+      <!-- Virtual Training (v1.1.0) -->
+      {% if has_virtual_enrollments %}
+      <div id="section-virtual" style="display: none;">
+        <div class="dashBreak">Virtual Training<div class="dashBreakHr"></div></div>
+        <div class="contentMiddle">
+          {% for progress in virtual_progress %}
+            {% include 'partials/dashboard_course_card.html' %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- View Courses -->
+      {% if not is_company_student %}
+      <div id="section-courses" style="display: none;">
+        {% if not id_doc_path %}
+        <!-- ID upload required banner -->
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem 2rem; text-align:center;">
+          <div style="width:90px; height:90px; border-radius:50%; background:rgba(199,164,52,0.15); display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; font-size:42px;">
+            &#128466;
+          </div>
+          <h2 style="color:#17306B; font-size:1.5rem; font-weight:700; margin-bottom:0.5rem;">ID Document Required</h2>
+          <p style="color:#334155; max-width:420px; margin-bottom:1.5rem; line-height:1.5;">
+            Please upload a copy of your South African ID or Passport before browsing courses.
+          </p>
+          <button onclick="switchTab('profile');" style="background:linear-gradient(135deg,#C7A434,#e0c04a); color:#17306B; border:none; padding:14px 32px; border-radius:12px; font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 4px 15px rgba(199,164,52,0.35); transition:transform 0.15s ease;">
+            Go to Profile &amp; Upload ID
+          </button>
+        </div>
+        {% else %}
+        <!-- Available Courses (header removed) -->
+        <div class="contentMiddle">
+          {% if courses and courses|length > 0 %}
+          {% for course in courses %}
+          {% set preview_url = (url_for('static', filename='uploads/courses/' ~ course.cover_image) if course.cover_image else url_for('static', filename='images/coursepreview.jpg')) %}
+          <div class="beveled-box-wrapper">
+            <!-- Top image (same style as Continue Learning) -->
+            <div class="imgtest" style="background-image: url('{{ preview_url }}');"></div>
+
+            <div class="beveled-box-content">{{ course.title }}</div>
+            <div class="beveled-box-content-2">
+              {% if course.id in enrolled_courses %}
+                <span style="color:#16a34a; font-weight:600;">Enrolled</span>
+              {% else %}
+                <span style="color:#6b7280;">Available to enroll</span>
+              {% endif %}
+            </div>
+            <div style="text-align:right; padding:0 16px 14px;">
+              <button type="button"
+                class="button-beveled {% if course.id in enrolled_courses %}details-enrolled{% else %}details-default{% endif %}"
+                data-bs-toggle="modal" data-bs-target="#courseModal-{{ course.id }}"
+                style="{% if course.id in enrolled_courses %}background:#94a3b8 !important;{% else %}background:linear-gradient(135deg,#17306B,#1e3a8a) !important;{% endif %}">
+                DETAILS
+              </button>
+            </div>
+
+
+          </div>
+
+          <!-- Quick View Modal -->
+          <div class="modal fade" id="courseModal-{{ course.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content beveled-modal">
+                <div class="modal-header">
+                  <h5 class="modal-title">{{ course.title }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                  <div class="course-modal-media" style="background-image:url('{{ preview_url }}')"></div>
+                  <p class="course-modal-desc">
+                    {{ course.description or 'No description provided.' }}
+                  </p>
+                </div>
+
+                <div class="modal-footer">
+                  {% if course.id in enrolled_courses %}
+                  <button class="btn btn-secondary" disabled>ALREADY ENROLLED</button>
+                  {% else %}
+                  <a href="{{ url_for('enroll', course_id=course.id) }}" class="btn"
+                    style="background:#17306B; color:white; font-weight:600;">ENROLL</a>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <p style="color:white; text-align:center;">
+            No courses available yet. Please check back later.
+          </p>
+          {% endif %}
+
+        </div>
+        {% endif %}
+
+      </div>
+      {% endif %}
+      <!-- Profile Settings -->
+      <div id="section-profile" style="display: none;">
+        <div class="dashBreak">
+          Profile Settings
+          <div class="dashBreakHr"></div>
+        </div>
+
+        <div class="beveled-container bevDeep">
+          <div class="beveled-content">
+            <div class="contentMiddle">
+
+              <!-- Card: Account & Preferences -->
+              <div class="profile-card">
+                <div class="profile-card-head">
+                  <div class="profile-card-title">Account & Preferences</div>
+                  <div class="profile-card-sub">Update your contact info and password.</div>
+                </div>
+
+                <form action="{{ url_for('update_profile') }}" method="POST" class="profile-form" novalidate>
+                  <div class="profile-grid">
+                    <!-- Left column -->
+                    <div class="profile-col">
+                      <label class="profile-label" for="email">New Email Address</label>
+                      <input type="email" class="profile-input" id="email" name="email" value="{{ user.email }}" required>
+
+                      <label class="profile-label" for="cell_number">New Cell Number</label>
+                      <input type="tel" class="profile-input" id="cell_number" name="cell_number" value="{{ user.cell_number }}" required>
+                    </div>
+
+                    <!-- Right column -->
+                    <div class="profile-col">
+                      <label class="profile-label" for="new_password">New Password (leave blank to keep current)</label>
+                      <input type="password" class="profile-input" id="new_password" name="new_password" autocomplete="new-password">
+
+                      <label class="profile-label" for="confirm_password">Confirm New Password</label>
+                      <input type="password" class="profile-input" id="confirm_password" name="confirm_password" autocomplete="new-password">
+                    </div>
+                  </div>
+
+                  <div class="profile-actions">
+                    <button type="submit" class="submit-normal">SAVE CHANGES</button>
+                  </div>
+                </form>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert-box alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+              </div>
+
+              <!-- Card: ID Upload -->
+              <div class="profile-card">
+                <div class="profile-card-head">
+                  <div class="profile-card-title">Verify Your Identity</div>
+                  <div class="profile-card-sub">Upload a photo/scan of your ID document.</div>
+                </div>
+
+                {% if id_doc_path %}
+                <div style="padding:1rem; text-align:center;">
+                  <div style="display:inline-flex; align-items:center; gap:6px; background:#d1fae5; color:#065f46; font-size:0.8rem; font-weight:600; padding:4px 12px; border-radius:20px; margin-bottom:0.75rem;">
+                    <span>&#10003;</span> ID Uploaded
+                  </div>
+                  {% if id_doc_path.endswith('.pdf') %}
+                  <div style="border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer;" onclick="document.getElementById('id-preview-modal').style.display='flex'">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:8px; padding:2rem; background:#f8fafc;">
+                      <span style="font-size:2rem;">📄</span>
+                      <span style="font-size:0.85rem; color:#334155; font-weight:600;">ID Document (PDF) — Click to view</span>
+                    </div>
+                  </div>
+                  <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.5rem;">Click to open viewer with zoom</div>
+                  {% else %}
+                  <div style="border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; cursor:pointer;" onclick="document.getElementById('id-preview-modal').style.display='flex'">
+                    <img src="{{ id_doc_path }}" alt="Your ID document" style="width:100%; max-height:180px; object-fit:cover; display:block;">
+                  </div>
+                  <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.5rem;">Click to enlarge &amp; zoom</div>
+                  {% endif %}
+
+                  <!-- ID preview modal with zoom -->
+                  <div id="id-preview-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:1rem;" onclick="this.style.display='none'">
+                    <div style="max-width:900px; width:95%; max-height:92vh; position:relative; background:#fff; border-radius:12px; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
+                      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:#1e3a5f; color:#fff; border-radius:12px 12px 0 0;">
+                        <span style="font-weight:600; font-size:0.9rem;">🪪 Your ID Document</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                          {% if not id_doc_path.endswith('.pdf') %}
+                          <button onclick="event.stopPropagation(); idZoomStudent(-1)" style="width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.2); color:#fff; font-size:1.1rem; font-weight:bold; cursor:pointer;" title="Zoom out">−</button>
+                          <button onclick="event.stopPropagation(); idZoomStudent(1)" style="width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.2); color:#fff; font-size:1.1rem; font-weight:bold; cursor:pointer;" title="Zoom in">+</button>
+                          <button onclick="event.stopPropagation(); idZoomStudentReset()" style="padding:0 8px; height:30px; border-radius:15px; border:none; background:rgba(255,255,255,0.2); color:#fff; font-size:0.7rem; font-weight:600; cursor:pointer;" title="Reset zoom">Reset</button>
+                          {% endif %}
+                          <button onclick="document.getElementById('id-preview-modal').style.display='none'" style="width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.2); color:#fff; font-size:1.2rem; cursor:pointer;">&times;</button>
+                        </div>
+                      </div>
+                      <div style="flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; background:#f8fafc; padding:8px; min-height:200px;">
+                        {% if id_doc_path.endswith('.pdf') %}
+                        <iframe src="{{ id_doc_path }}" style="width:100%; height:78vh; border:none; border-radius:8px;"></iframe>
+                        {% else %}
+                        <img id="id-zoom-img-student" src="{{ id_doc_path }}" alt="Your ID document" style="max-width:100%; max-height:78vh; object-fit:contain; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.15); transform-origin:center center; transition:transform .2s;" onwheel="event.preventDefault(); idZoomWheelStudent(event);" ondblclick="this.style.transform='scale(1)'; this.dataset.zoom='1';">
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('upload_id') }}" enctype="multipart/form-data" class="profile-form" id="id-upload-form" novalidate>
+                  <div class="profile-upload">
+                    <input type="file" class="profile-input profile-file" name="id_file" accept="image/*,application/pdf,.pdf" required id="id-file-input" onchange="checkIdUpload(this)">
+                    <div class="profile-actions">
+                      <button type="button" class="submit-normal" id="id-upload-btn" onclick="submitIdForm()">{{ 'REPLACE ID' if id_doc_path else 'UPLOAD ID' }}</button>
+                    </div>
+                  </div>
+                </form>
+                <div id="id-upload-msg" style="text-align:center; padding:0 1rem; margin-top:0.25rem;"></div>
+
+                <!-- ID Crop Modal -->
+                <div id="id-crop-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:1rem;">
+                  <div style="max-width:720px; width:95%; max-height:92vh; background:#fff; border-radius:12px; display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(135deg,#17306B 0%,#1e3a8a 100%); color:#fff;">
+                      <span style="font-weight:600; font-size:0.95rem;">✂️ Crop Your ID Document</span>
+                      <button onclick="closeIdCropModal()" style="width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.2); color:#fff; font-size:1.2rem; cursor:pointer;">&times;</button>
+                    </div>
+                    <div style="flex:1; overflow:hidden; background:#1a1a2e; display:flex; align-items:center; justify-content:center; max-height:60vh;">
+                      <img id="id-crop-img" src="" alt="Crop" style="display:block; max-width:100%;">
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+                      <span style="font-size:0.8rem; color:#64748b;">Drag to reposition. Resize the box to crop.</span>
+                      <div style="display:flex; gap:8px;">
+                        <button type="button" onclick="closeIdCropModal()" style="padding:8px 16px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-weight:600; font-size:0.85rem; cursor:pointer;">Cancel</button>
+                        <button type="button" onclick="applyIdCrop()" style="padding:8px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,#17306B 0%,#1e3a8a 100%); color:#fff; font-weight:600; font-size:0.85rem; cursor:pointer;">Apply Crop</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card: Update Selfie -->
+              <div class="profile-card">
+                <div class="profile-card-head">
+                  <div class="profile-card-title">Update Profile Photo</div>
+                  <div class="profile-card-sub">Take a new selfie or upload a photo.</div>
+                </div>
+
+                <div style="text-align:center; padding: 1rem 0;">
+                  <img id="selfie-current" src="{{ selfie_path }}" alt="Current selfie"
+                       style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #C7A434; margin-bottom:0.5rem; cursor:pointer;"
+                       onclick="document.getElementById('selfiePreviewModal').style.display='flex'">
+                  <div style="font-size:0.75rem; color:#94a3b8;">Click to preview</div>
+                </div>
+
+                <!-- Camera capture mode -->
+                <div id="selfie-camera-section" style="display:none; padding:0 1rem 1rem;">
+                  <div style="border-radius:12px; overflow:hidden; background:#0f172a; margin-bottom:0.75rem;">
+                    <video id="selfie-video" autoplay playsinline style="width:100%; display:block;"></video>
+                    <canvas id="selfie-canvas" style="display:none;"></canvas>
+                    <img id="selfie-preview" style="width:100%; display:none; border-radius:12px;" alt="Preview">
+                  </div>
+                  <div style="display:flex; gap:8px; justify-content:center; margin-bottom:0.75rem;">
+                    <button type="button" id="selfie-capture-btn" onclick="dashCaptureSelfie()" class="submit-normal" style="font-size:0.85rem;">
+                      Capture
+                    </button>
+                    <button type="button" id="selfie-retake-btn" onclick="dashRetakeSelfie()" class="submit-normal" style="font-size:0.85rem; background:#64748b; display:none;">
+                      Retake
+                    </button>
+                  </div>
+                  <div id="selfie-face-msg" style="margin-bottom:0.5rem; text-align:center;"></div>
+                  <form method="POST" action="{{ url_for('update_selfie') }}" id="selfie-camera-form">
+                    <input type="hidden" name="selfie" id="selfie-data-input">
+                    <input type="hidden" name="method" value="camera">
+                    <button type="submit" id="selfie-save-btn" class="submit-normal" style="width:100%;" disabled>
+                      SAVE SELFIE
+                    </button>
+                  </form>
+                </div>
+
+                <!-- File upload mode -->
+                <form method="POST" action="{{ url_for('update_selfie') }}" enctype="multipart/form-data" class="profile-form" id="selfie-upload-form" novalidate>
+                  <input type="hidden" name="method" value="upload">
+                  <div class="profile-upload">
+                    <input type="file" class="profile-input profile-file" name="selfie_file" accept="image/*" id="selfie-file-input" onchange="checkUploadedPhoto(this)">
+                  </div>
+                </form>
+                <div id="selfie-upload-msg" style="text-align:center; padding:0 1rem; margin-bottom:0.5rem;"></div>
+
+                <div style="display:flex; gap:8px; padding:0 1rem 1rem; justify-content:center;">
+                  <button type="button" onclick="toggleSelfieCamera()" class="submit-normal" style="font-size:0.85rem;">
+                    USE CAMERA
+                  </button>
+                  <button type="button" id="selfie-upload-btn" onclick="submitUploadForm()" class="submit-normal" style="font-size:0.85rem; background:#64748b;">
+                    UPLOAD FILE
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support Centre -->
+      <div id="section-support" style="display: none;">
+        <div class="contentMiddle">
+
+          <style>
+            .support-container {
+              background: rgba(255,255,255,0.95);
+              border-radius: 12px;
+              box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+              overflow: hidden;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            .support-tabs {
+              display: flex;
+              background: #f1f5f9;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            .support-tab {
+              flex: 1;
+              padding: 0.875rem 1.25rem;
+              border: none;
+              background: transparent;
+              font-weight: 600;
+              font-size: 0.9rem;
+              color: #64748b;
+              cursor: pointer;
+              transition: all 0.2s;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 0.5rem;
+              border-bottom: 3px solid transparent;
+              margin-bottom: -1px;
+            }
+            .support-tab:hover {
+              color: #17306B;
+              background: rgba(255,255,255,0.5);
+            }
+            .support-tab.active {
+              background: white;
+              color: #17306B;
+              border-bottom-color: #C7A434;
+            }
+            .support-tab .tab-badge {
+              background: #ef4444;
+              color: white;
+              font-size: 0.7rem;
+              padding: 0.1rem 0.45rem;
+              border-radius: 999px;
+              font-weight: 700;
+            }
+            .support-tab.active .tab-badge {
+              background: #C7A434;
+              color: #17306B;
+            }
+            .support-tab-content {
+              display: none;
+              padding: 1.5rem;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            .support-tab-content.active {
+              display: block;
+            }
+            .support-form-title {
+              font-size: 1rem;
+              font-weight: 700;
+              color: #17306B;
+              margin-bottom: 0.25rem;
+            }
+            .support-form-sub {
+              font-size: 0.8rem;
+              color: #64748b;
+              margin-bottom: 1.25rem;
+            }
+            .support-form-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 1.25rem;
+            }
+            @media (max-width: 768px) {
+              .support-form-grid { grid-template-columns: 1fr; }
+            }
+            .support-field {
+              margin-bottom: 0.875rem;
+            }
+            .support-field-label {
+              display: block;
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: #374151;
+              margin-bottom: 0.35rem;
+            }
+            .support-field-label i {
+              color: #C7A434;
+              margin-right: 0.35rem;
+            }
+            .support-field-input {
+              width: 100%;
+              padding: 0.7rem 0.9rem;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              font-size: 0.9rem;
+              background: #f8fafc;
+              color: #0f172a;
+              transition: all 0.15s;
+            }
+            .support-field-input:focus {
+              outline: none;
+              border-color: #17306B;
+              box-shadow: 0 0 0 3px rgba(23,48,107,0.1);
+              background: white;
+            }
+            .support-field-input:disabled {
+              background: #f1f5f9;
+              color: #64748b;
+            }
+            .support-field-input.textarea {
+              min-height: 145px;
+              resize: vertical;
+            }
+            .support-submit-btn {
+              background: #17306B;
+              color: white;
+              border: none;
+              padding: 0.75rem 1.5rem;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              cursor: pointer;
+              transition: all 0.2s;
+              display: inline-flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-top: 0.5rem;
+            }
+            .support-submit-btn:hover {
+              background: #1e3a7a;
+              transform: translateY(-1px);
+            }
+            .support-tips {
+              background: #f0f9ff;
+              border: 1px solid #bae6fd;
+              border-radius: 8px;
+              padding: 0.875rem 1rem;
+              margin-top: 1.25rem;
+              font-size: 0.8rem;
+              color: #475569;
+            }
+            .support-tips strong {
+              color: #0369a1;
+            }
+            .support-tips ul {
+              margin: 0.5rem 0 0 1.25rem;
+              padding: 0;
+            }
+            .support-tips li {
+              margin-bottom: 0.25rem;
+              color: #64748b;
+            }
+            .ticket-section-title {
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 0.75rem;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              width: 100%;
+            }
+            .ticket-section-title i {
+              font-size: 0.85rem;
+            }
+            .ticket-list {
+              display: flex;
+              flex-direction: column;
+              gap: 0.625rem;
+              margin-bottom: 1.25rem;
+              width: 100%;
+            }
+            .ticket-item {
+              background: #f8fafc;
+              border-radius: 8px;
+              padding: 0.875rem 1rem;
+              cursor: pointer;
+              transition: all 0.2s;
+              text-decoration: none;
+              color: inherit;
+              display: block;
+              border-left: 3px solid #C7A434;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            .ticket-item:hover {
+              background: #f1f5f9;
+              transform: translateX(3px);
+            }
+            .ticket-item.closed {
+              border-left-color: #10b981;
+              opacity: 0.7;
+            }
+            .ticket-item-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.35rem;
+            }
+            .ticket-item-id {
+              font-weight: 700;
+              color: #17306B;
+              font-size: 0.9rem;
+            }
+            .ticket-item-status {
+              font-size: 0.65rem;
+              font-weight: 600;
+              padding: 0.2rem 0.5rem;
+              border-radius: 999px;
+            }
+            .status-open { background: #FEF3C7; color: #92400E; }
+            .status-progress { background: #DBEAFE; color: #1E3A8A; }
+            .status-closed { background: #DCFCE7; color: #065F46; }
+            .ticket-item-course {
+              font-size: 0.8rem;
+              color: #475569;
+              margin-bottom: 0.25rem;
+            }
+            .ticket-item-preview {
+              font-size: 0.75rem;
+              color: #94a3b8;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+            .ticket-item-meta {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-top: 0.4rem;
+              font-size: 0.7rem;
+              color: #94a3b8;
+            }
+            .empty-tickets-state {
+              text-align: center;
+              padding: 2rem 1rem;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            .empty-tickets-state i {
+              font-size: 2rem;
+              color: #cbd5e1;
+              margin-bottom: 0.5rem;
+            }
+            .empty-tickets-state p {
+              color: #64748b;
+              margin: 0;
+              font-size: 0.9rem;
+            }
+            .empty-tickets-state .sub {
+              font-size: 0.8rem;
+              color: #94a3b8;
+              margin-top: 0.25rem;
+            }
+            .create-ticket-btn {
+              background: #17306B;
+              color: white;
+              border: none;
+              padding: 0.5rem 1rem;
+              border-radius: 6px;
+              font-weight: 600;
+              font-size: 0.8rem;
+              cursor: pointer;
+              margin-top: 0.75rem;
+              transition: all 0.2s;
+            }
+            .create-ticket-btn:hover {
+              background: #1e3a7a;
+            }
+          </style>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert-box alert alert-{{ category }}" style="margin-bottom: 1rem;">{{ message }}</div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+
+          <!-- Support Container -->
+          <div class="support-container">
+            <!-- Tabs -->
+            <div class="support-tabs">
+              <button class="support-tab active" onclick="showSupportTab('new-ticket-tab')">
+                <i class="fa fa-plus-circle"></i>
+                New Ticket
+              </button>
+              <button class="support-tab" onclick="showSupportTab('my-tickets-tab')">
+                <i class="fa fa-ticket"></i>
+                My Tickets
+                {% if open_tickets %}
+                <span class="tab-badge">{{ open_tickets|length }}</span>
+                {% endif %}
+              </button>
+            </div>
+
+            <!-- Tab: New Ticket -->
+            <div id="new-ticket-tab" class="support-tab-content active">
+              <div class="support-form-title">Submit a Support Request</div>
+              <div class="support-form-sub">Describe your issue and we'll get back to you within 24 hours.</div>
+
+              <form action="{{ url_for('support') }}" method="POST" novalidate>
+                <div class="support-form-grid">
+                  <div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-user"></i>Your Name</label>
+                      <input type="text" class="support-field-input" value="{{ user.name }} {{ user.surname }}" disabled>
+                    </div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-envelope"></i>Email</label>
+                      <input type="email" class="support-field-input" value="{{ user.email }}" disabled>
+                    </div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-book"></i>Related Course</label>
+                      <select name="course_id" class="support-field-input" required>
+                        <option value="">Select a course...</option>
+                        {% for course in approved_courses %}
+                        <option value="{{ course.id }}">{{ course.title }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-comment-alt"></i>Describe Your Issue</label>
+                      <textarea name="problem_description" class="support-field-input textarea"
+                        placeholder="Please describe your issue in detail. Include any error messages you've seen and what you were trying to do..." required></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" class="support-submit-btn">
+                  <i class="fa fa-paper-plane"></i>
+                  Submit Ticket
+                </button>
+              </form>
+
+              <div class="support-tips">
+                <strong><i class="fa fa-lightbulb"></i> Tips for faster resolution:</strong>
+                <ul>
+                  <li>Include specific error messages if you see any</li>
+                  <li>Describe what you were trying to do when the issue occurred</li>
+                  <li>We typically respond within 24 hours</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab: My Tickets -->
+            <div id="my-tickets-tab" class="support-tab-content">
+            {% if open_tickets or closed_tickets %}
+
+              <!-- Open Tickets -->
+              {% if open_tickets %}
+              <div class="ticket-section-title">
+                <i class="fa fa-folder-open" style="color: #C7A434;"></i>
+                Open Tickets ({{ open_tickets|length }})
+              </div>
+              <div class="ticket-list">
+                {% for ticket in open_tickets %}
+                <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" class="ticket-item">
+                  <div class="ticket-item-header">
+                    <span class="ticket-item-id">#{{ ticket.ticket_id }}</span>
+                    <span class="ticket-item-status {% if ticket.status == 'Open' %}status-open{% else %}status-progress{% endif %}">
+                      {{ ticket.status }}
+                    </span>
+                  </div>
+                  <div class="ticket-item-course">{{ ticket.course.title }}</div>
+                  <div class="ticket-item-preview">{{ ticket.problem_description }}</div>
+                  <div class="ticket-item-meta">
+                    <span>{{ ticket.created_at.strftime('%d %b %Y') }}</span>
+                    <span>{{ ticket.messages.count() }} message{% if ticket.messages.count() != 1 %}s{% endif %}</span>
+                  </div>
+                </a>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Closed Tickets -->
+              {% if closed_tickets %}
+              <div class="ticket-section-title">
+                <i class="fa fa-check-circle" style="color: #10b981;"></i>
+                Closed ({{ closed_tickets|length }})
+              </div>
+              <div class="ticket-list">
+                {% for ticket in closed_tickets[:3] %}
+                <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" class="ticket-item closed">
+                  <div class="ticket-item-header">
+                    <span class="ticket-item-id">#{{ ticket.ticket_id }}</span>
+                    <span class="ticket-item-status status-closed">Closed</span>
+                  </div>
+                  <div class="ticket-item-course">{{ ticket.course.title }}</div>
+                  <div class="ticket-item-preview">{{ ticket.problem_description }}</div>
+                  <div class="ticket-item-meta">
+                    <span>{{ ticket.created_at.strftime('%d %b') }}</span>
+                    <span>{{ ticket.messages.count() }} messages</span>
+                  </div>
+                </a>
+                {% endfor %}
+              </div>
+              {% if closed_tickets|length > 3 %}
+              <p style="text-align: center; color: #94a3b8; font-size: 0.85rem;">+ {{ closed_tickets|length - 3 }} more closed tickets</p>
+              {% endif %}
+              {% endif %}
+
+            {% else %}
+              <!-- Empty State -->
+              <div class="empty-tickets-state">
+                <i class="fa fa-inbox"></i>
+                <p>No support tickets yet</p>
+                <p class="sub">Submit a ticket if you need help with anything.</p>
+                <button class="create-ticket-btn" onclick="showSupportTab('new-ticket-tab')">
+                  <i class="fa fa-plus"></i> Create Ticket
+                </button>
+              </div>
+            {% endif %}
+            </div>
+          </div><!-- /support-container -->
+
+        </div>
+      </div>
+
+      <script>
+        function showSupportTab(tabId) {
+          // Hide all tab content
+          document.querySelectorAll('.support-tab-content').forEach(el => el.classList.remove('active'));
+          document.querySelectorAll('.support-tab').forEach(el => el.classList.remove('active'));
+
+          // Show selected tab
+          document.getElementById(tabId).classList.add('active');
+          event.target.closest('.support-tab').classList.add('active');
+        }
+      </script>
+
+    </div>
+    <!-- Right Panel (hidden - PFP now in top nav) -->
+    <div class="infoRightCon" style="display:none;">
+      <div class="pfpCon" id="profileQuickTrigger" role="button" tabindex="0" aria-label="Open profile">
+        <img class="pfpImg" src="{{ selfie_path }}" alt="Profile photo">
+      </div>
+      <div class="infoRightText" aria-hidden="true">
+        {{ user.name }} {{ user.surname }}<br>
+        {{ user.email }}<br>
+        Cell: {{ user.cell_number }}<br>
+        Student ID: {{ user.student_id }}<br>
+        National ID: {{ user.national_id }}
+      </div>
+    </div>
+  </div>
+  <!-- Profile Quick View Modal -->
+  <!-- Selfie Preview Modal -->
+  <div id="selfiePreviewModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:1rem; cursor:pointer;" onclick="this.style.display='none'">
+    <div style="max-width:400px; width:90%; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+      <div style="background:#17306B; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <span style="color:white; font-weight:600; font-size:0.9rem;"><i class="fa-solid fa-camera" style="margin-right:6px;"></i> Profile Photo</span>
+        <button onclick="document.getElementById('selfiePreviewModal').style.display='none'" style="background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.1rem;">&times;</button>
+      </div>
+      <div style="padding:20px; text-align:center;">
+        <img src="{{ selfie_path }}" alt="Profile Photo" style="width:100%; max-width:300px; border-radius:12px; object-fit:cover; box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="profileQuickView" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content beveled-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body profile-modal-body">
+          <div class="profile-modal-photo">
+            <img src="{{ selfie_path }}" alt="Profile photo (large)">
+          </div>
+
+          <div class="profile-modal-info">
+            <div class="profile-row"><span class="label">Name</span><span class="value">{{ user.name }} {{ user.surname }}</span></div>
+            <div class="profile-row"><span class="label">Email</span><span class="value">{{ user.email }}</span></div>
+            <div class="profile-row"><span class="label">Cell</span><span class="value">{{ user.cell_number }}</span></div>
+            <div class="profile-row"><span class="label">Student ID</span><span class="value">{{ user.student_id }}</span></div>
+            <div class="profile-row"><span class="label">National ID</span><span class="value">{{ user.national_id }}</span></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="openProfileSettings" class="submit-normal">SETTINGS</button>
+          <button type="button" class="close-normal" data-bs-dismiss="modal">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+  <script>
+    /* Carousel */
+    /*let dashboardCurrentSlide = 0;
+    const dashboardSlides = document.querySelectorAll('.dashboard-carousel-slide');
+    const dashboardIndicatorBars = document.querySelectorAll('.dashboard-carousel-indicator-bar');
+    const dashboardSlideDuration = 15000;
+    let dashboardIntervalId = null;*/
+    /*function dashboardShowSlide(index) {
+      dashboardSlides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+        dashboardIndicatorBars[i].style.transition = 'none';
+        dashboardIndicatorBars[i].style.width = '0%';
+      });
+      setTimeout(() => {
+        dashboardIndicatorBars[index].style.transition = `width ${dashboardSlideDuration}ms linear`;
+        dashboardIndicatorBars[index].style.width = '100%';
+      }, 50);
+      dashboardCurrentSlide = index;
+    }
+    function dashboardNextSlide() {
+      const nextIndex = (dashboardCurrentSlide + 1) % dashboardSlides.length;
+      dashboardShowSlide(nextIndex);
+    }
+    function dashboardGoToSlide(index) {
+      clearInterval(dashboardIntervalId);
+      dashboardShowSlide(index);
+      dashboardIntervalId = setInterval(dashboardNextSlide, dashboardSlideDuration);
+    }
+    function dashboardStartCarousel() {
+      dashboardIntervalId = setInterval(dashboardNextSlide, dashboardSlideDuration);
+      dashboardShowSlide(dashboardCurrentSlide);
+    }*/
+    /* document.addEventListener("DOMContentLoaded", dashboardStartCarousel);*/
+    /* Old sidebar + tab JS removed — replaced by switchTab() in new nav */
+
+    /* Old "Remember Tab" removed — handled by switchTab() in new nav */
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const input = document.getElementById("courseSearchInput");
+      const emptyMsg = document.getElementById("courseSearchEmpty");
+      // Only target Available Courses
+      const container = document.querySelector("#section-courses .contentMiddle");
+      if (!input || !container) return;
+
+      // Cards: each course lives in .beveled-box-wrapper
+      const cards = Array.from(container.querySelectorAll(".beveled-box-wrapper"));
+
+      // Build a search index (title + instructor text)
+      function textOf(el, sel) {
+        const n = el.querySelector(sel);
+        return n ? n.textContent.trim().toLowerCase() : "";
+      }
+      const index = cards.map(card => ({
+        card,
+        text: (textOf(card, ".beveled-box-content") + " " + textOf(card, ".beveled-box-subtext")).toLowerCase()
+      }));
+
+      // Small debounce for nicer typing
+      let t = null;
+      function filterNow(q) {
+        const query = q.trim().toLowerCase();
+        let visibleCount = 0;
+
+        index.forEach(({ card, text }) => {
+          const match = query === "" || text.includes(query);
+          card.style.display = match ? "" : "none";
+          if (match) visibleCount++;
+        });
+
+        if (emptyMsg) emptyMsg.hidden = visibleCount !== 0;
+        // Persist the last query so returning users see the same filter
+        try { localStorage.setItem("coursesSearchQuery", q); } catch { }
+      }
+
+      function onInput() {
+        clearTimeout(t);
+        t = setTimeout(() => filterNow(input.value), 120);
+      }
+
+      input.addEventListener("input", onInput);
+
+      // Restore previous search if any
+      try {
+        const saved = localStorage.getItem("coursesSearchQuery");
+        if (saved) {
+          input.value = saved;
+          filterNow(saved);
+        }
+      } catch { }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const trigger = document.getElementById("profileQuickTrigger");
+      const modalEl = document.getElementById("profileQuickView");
+      if (trigger && modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+
+        // Click or Enter/Space opens the modal
+        const openModal = (e) => {
+          if (e.type === "click" || (e.type === "keydown" && (e.key === "Enter" || e.key === " "))) {
+            e.preventDefault();
+            modal.show();
+          }
+        };
+        trigger.addEventListener("click", openModal);
+        trigger.addEventListener("keydown", openModal);
+        trigger.style.cursor = "pointer";
+      }
+
+      // Optional: Button to switch to Profile Settings section from the modal
+      const toProfileBtn = document.getElementById("openProfileSettings");
+      if (toProfileBtn) {
+        toProfileBtn.addEventListener("click", function () {
+          try {
+            // Remember the selection for your sidebar/tab logic
+            localStorage.setItem("activeModule", "profile");
+            // If you already have the tab-switch code in place, just reload or manually toggle:
+            document.getElementById('section-dashboard').style.display = 'none';
+            var _sc5 = document.getElementById('section-courses'); if (_sc5) _sc5.style.display = 'none';
+            document.getElementById('section-profile').style.display = 'block';
+            document.getElementById('section-support').style.display = 'none';
+
+            // Highlight the sidebar button if present
+            const btn = document.querySelector('.sidebar .button[data-module="profile"]');
+            if (btn) {
+              document.querySelectorAll('.sidebar .button[data-module]').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              btn.setAttribute('aria-current', 'page');
+            }
+          } catch {}
+          // Close the modal after switching
+          const m = bootstrap.Modal.getInstance(document.getElementById("profileQuickView"));
+          if (m) m.hide();
+        });
+      }
+    });
+
+    // ===== Auto-refresh when new courses are approved =====
+    (function() {
+      let knownApprovedCount = {{ approved_courses|length if approved_courses else 0 }};
+      const POLL_INTERVAL = 5000; // Check every 5 seconds
+      let isRefreshing = false;
+
+      console.log('[Dashboard] Auto-refresh initialized. Known approved courses:', knownApprovedCount);
+
+      async function checkForNewApprovals() {
+        if (isRefreshing) return; // Don't poll if already refreshing
+
+        try {
+          const response = await fetch('/api/student/approved-courses');
+          if (!response.ok) {
+            console.warn('[Dashboard] API returned non-OK status:', response.status);
+            return;
+          }
+
+          const data = await response.json();
+          const newCount = data.count || 0;
+
+          console.log('[Dashboard] Poll check - Known:', knownApprovedCount, 'Current:', newCount);
+
+          // If we have more approved courses than before, reload the page
+          if (newCount > knownApprovedCount) {
+            isRefreshing = true;
+            console.log(`[Dashboard] New course approved! (${knownApprovedCount} -> ${newCount}). Reloading...`);
+            showApprovalNotification();
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          }
+        } catch (err) {
+          console.error('[Dashboard] Error checking for new approvals:', err);
+        }
+      }
+
+      function showApprovalNotification() {
+        const toast = document.createElement('div');
+        toast.innerHTML = '🎉 A new course has been approved! Refreshing...';
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          padding: 16px 24px;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+          z-index: 9999;
+          font-weight: 600;
+          animation: slideIn 0.3s ease-out;
+        `;
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(toast);
+      }
+
+      // Run first check after a short delay, then continue polling
+      setTimeout(checkForNewApprovals, 2000);
+      setInterval(checkForNewApprovals, POLL_INTERVAL);
+    })();
+
+    // ===== Reusable Confirmation Modal =====
+    const ConfirmModal = (function() {
+      let overlay = null;
+      let resolvePromise = null;
+
+      function init() {
+        if (overlay) return;
+
+        overlay = document.createElement('div');
+        overlay.className = 'confirm-modal-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-modal">
+            <div class="confirm-modal-header">
+              <div class="confirm-modal-icon" id="confirmModalIcon"></div>
+              <h3 class="confirm-modal-title" id="confirmModalTitle"></h3>
+            </div>
+            <div class="confirm-modal-body" id="confirmModalBody"></div>
+            <div class="confirm-modal-footer">
+              <button class="confirm-modal-btn cancel" id="confirmModalCancel">Cancel</button>
+              <button class="confirm-modal-btn confirm" id="confirmModalConfirm">Confirm</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close(false);
+        });
+
+        // Button handlers
+        document.getElementById('confirmModalCancel').addEventListener('click', () => close(false));
+        document.getElementById('confirmModalConfirm').addEventListener('click', () => close(true));
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && overlay.classList.contains('active')) {
+            close(false);
+          }
+        });
+      }
+
+      function show(options = {}) {
+        init();
+
+        const {
+          title = 'Confirm Action',
+          message = 'Are you sure you want to proceed?',
+          icon = '⚠️',
+          iconType = 'warning', // warning, danger, info
+          confirmText = 'Confirm',
+          cancelText = 'Cancel',
+          confirmStyle = 'confirm' // confirm, danger
+        } = options;
+
+        document.getElementById('confirmModalIcon').className = `confirm-modal-icon ${iconType}`;
+        document.getElementById('confirmModalIcon').textContent = icon;
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalBody').innerHTML = message;
+        document.getElementById('confirmModalCancel').textContent = cancelText;
+
+        const confirmBtn = document.getElementById('confirmModalConfirm');
+        confirmBtn.textContent = confirmText;
+        confirmBtn.className = `confirm-modal-btn ${confirmStyle}`;
+
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        return new Promise((resolve) => {
+          resolvePromise = resolve;
+        });
+      }
+
+      function close(result) {
+        if (overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        if (resolvePromise) {
+          resolvePromise(result);
+          resolvePromise = null;
+        }
+      }
+
+      return { show, close };
+    })();
+
+    // ===== Logout Confirmation =====
+    document.addEventListener('DOMContentLoaded', function() {
+      const logoutLink = document.querySelector('a[href*="logout"]');
+      if (logoutLink) {
+        logoutLink.addEventListener('click', async function(e) {
+          e.preventDefault();
+
+          const confirmed = await ConfirmModal.show({
+            title: 'Log Out',
+            message: 'Are you sure you want to log out?<br><br>Any unsaved progress will be lost.',
+            icon: '🚪',
+            iconType: 'warning',
+            confirmText: 'Log Out',
+            cancelText: 'Stay',
+            confirmStyle: 'danger'
+          });
+
+          if (confirmed) {
+            window.location.href = this.href;
+          }
+        });
+      }
+    });
+
+    // ===== Dashboard Selfie Camera =====
+    let selfieStream = null;
+
+    function toggleSelfieCamera() {
+      const section = document.getElementById('selfie-camera-section');
+      if (!section) return;
+      const isVisible = section.style.display !== 'none';
+      if (isVisible) {
+        // Hide and stop stream
+        section.style.display = 'none';
+        if (selfieStream) {
+          selfieStream.getTracks().forEach(t => t.stop());
+          selfieStream = null;
+        }
+      } else {
+        // Show and start camera
+        section.style.display = 'block';
+        const video = document.getElementById('selfie-video');
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+          .then(stream => {
+            selfieStream = stream;
+            video.srcObject = stream;
+            video.style.display = 'block';
+            document.getElementById('selfie-preview').style.display = 'none';
+            document.getElementById('selfie-capture-btn').style.display = '';
+            document.getElementById('selfie-retake-btn').style.display = 'none';
+            document.getElementById('selfie-save-btn').disabled = true;
+          })
+          .catch(err => {
+            alert('Could not access camera. Please check permissions.');
+            section.style.display = 'none';
+          });
+      }
+    }
+
+    const _FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    let _faceModelLoaded = false;
+
+    (async function() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(_FACE_MODEL_URL);
+        _faceModelLoaded = true;
+        console.log('Face detection model loaded.');
+      } catch (e) { console.warn('Could not load face model:', e); }
+    })();
+
+    async function _detectFace(canvas) {
+      if (!_faceModelLoaded) return true;
+      try {
+        const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }));
+        return detections.length > 0;
+      } catch (e) { return true; }
+    }
+
+    async function dashCaptureSelfie() {
+      const video = document.getElementById('selfie-video');
+      const canvas = document.getElementById('selfie-canvas');
+      const preview = document.getElementById('selfie-preview');
+      const faceMsg = document.getElementById('selfie-face-msg');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+      video.style.display = 'none';
+      document.getElementById('selfie-capture-btn').style.display = 'none';
+      document.getElementById('selfie-retake-btn').style.display = '';
+
+      // Face detection check
+      if (faceMsg) { faceMsg.textContent = 'Checking for face...'; faceMsg.style.color = ''; }
+      const hasFace = await _detectFace(canvas);
+      if (hasFace) {
+        document.getElementById('selfie-data-input').value = dataUrl;
+        document.getElementById('selfie-save-btn').disabled = false;
+        if (faceMsg) { faceMsg.textContent = ''; faceMsg.style.color = ''; }
+      } else {
+        document.getElementById('selfie-data-input').value = '';
+        document.getElementById('selfie-save-btn').disabled = true;
+        if (faceMsg) {
+          faceMsg.textContent = 'No face detected. Please retake with your face clearly visible.';
+          faceMsg.style.color = '#dc2626';
+        }
+      }
+
+      // Stop the stream to free camera
+      if (selfieStream) {
+        selfieStream.getTracks().forEach(t => t.stop());
+        selfieStream = null;
+      }
+    }
+
+    function dashRetakeSelfie() {
+      const video = document.getElementById('selfie-video');
+      const preview = document.getElementById('selfie-preview');
+      const faceMsg = document.getElementById('selfie-face-msg');
+      preview.style.display = 'none';
+      video.style.display = 'block';
+      document.getElementById('selfie-data-input').value = '';
+      document.getElementById('selfie-capture-btn').style.display = '';
+      document.getElementById('selfie-retake-btn').style.display = 'none';
+      document.getElementById('selfie-save-btn').disabled = true;
+      if (faceMsg) { faceMsg.textContent = ''; faceMsg.style.color = ''; }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+        .then(stream => {
+          selfieStream = stream;
+          video.srcObject = stream;
+        })
+        .catch(() => {
+          alert('Could not restart camera.');
+        });
+    }
+
+    /* --- File upload face detection --- */
+    let uploadFaceOk = false;
+
+    async function checkUploadedPhoto(input) {
+      const msg = document.getElementById('selfie-upload-msg');
+      uploadFaceOk = false;
+      if (!input.files || !input.files[0]) {
+        if (msg) { msg.textContent = ''; }
+        return;
+      }
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        if (msg) { msg.textContent = 'Please select an image file.'; msg.style.color = '#dc2626'; }
+        input.value = '';
+        return;
+      }
+
+      if (msg) { msg.textContent = 'Checking for face...'; msg.style.color = '#64748b'; }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          // Use a temporary canvas for detection
+          const tmpCanvas = document.createElement('canvas');
+          tmpCanvas.width = img.naturalWidth;
+          tmpCanvas.height = img.naturalHeight;
+          tmpCanvas.getContext('2d').drawImage(img, 0, 0);
+
+          const hasFace = await _detectFace(tmpCanvas);
+          if (hasFace) {
+            uploadFaceOk = true;
+            if (msg) { msg.textContent = 'Face detected — ready to upload.'; msg.style.color = '#16a34a'; }
+          } else {
+            uploadFaceOk = false;
+            input.value = '';
+            if (msg) { msg.textContent = 'No face detected. Please choose a photo with your face clearly visible.'; msg.style.color = '#dc2626'; }
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitUploadForm() {
+      const input = document.getElementById('selfie-file-input');
+      const msg = document.getElementById('selfie-upload-msg');
+      if (!input.files || !input.files[0]) {
+        if (msg) { msg.textContent = 'Please select a photo first.'; msg.style.color = '#dc2626'; }
+        return;
+      }
+      if (!uploadFaceOk) {
+        if (msg) { msg.textContent = 'No face detected. Please choose a different photo.'; msg.style.color = '#dc2626'; }
+        return;
+      }
+      document.getElementById('selfie-upload-form').submit();
+    }
+
+    /* --- ID zoom helpers (for viewing existing ID) --- */
+    function idZoomStudent(dir) {
+      const img = document.getElementById('id-zoom-img-student');
+      if (!img) return;
+      let z = parseFloat(img.dataset.zoom || '1');
+      z = Math.min(5, Math.max(0.5, z + dir * 0.3));
+      img.dataset.zoom = z;
+      img.style.transform = 'scale(' + z + ')';
+    }
+    function idZoomStudentReset() {
+      const img = document.getElementById('id-zoom-img-student');
+      if (!img) return;
+      img.dataset.zoom = '1';
+      img.style.transform = 'scale(1)';
+    }
+    function idZoomWheelStudent(e) {
+      const img = document.getElementById('id-zoom-img-student');
+      if (!img) return;
+      let z = parseFloat(img.dataset.zoom || '1');
+      z = Math.min(5, Math.max(0.5, z + (e.deltaY < 0 ? 0.15 : -0.15)));
+      img.dataset.zoom = z;
+      img.style.transform = 'scale(' + z + ')';
+    }
+
+    /* --- ID crop + upload --- */
+    let idUploadFaceOk = false;
+    let idCropper = null;
+    let idCroppedBlob = null;
+    let idOriginalDataURL = null;
+
+    async function checkIdUpload(input) {
+      const msg = document.getElementById('id-upload-msg');
+      idUploadFaceOk = false;
+      idCroppedBlob = null;
+      idOriginalDataURL = null;
+      if (!input.files || !input.files[0]) {
+        if (msg) { msg.textContent = ''; }
+        return;
+      }
+      const file = input.files[0];
+      const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      if (!isPDF && !file.type.startsWith('image/')) {
+        if (msg) { msg.textContent = 'Please select an image or PDF file.'; msg.style.color = '#dc2626'; }
+        input.value = '';
+        return;
+      }
+
+      if (msg) { msg.textContent = 'Loading crop tool...'; msg.style.color = '#64748b'; }
+
+      if (isPDF) {
+        try {
+          const buf = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+          const page = await pdf.getPage(1);
+          const vp = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          canvas.width = vp.width;
+          canvas.height = vp.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+          idOriginalDataURL = canvas.toDataURL('image/jpeg', 0.92);
+          openIdCropModal();
+        } catch(e) {
+          if (msg) { msg.textContent = 'Could not read PDF. Please try a different file.'; msg.style.color = '#dc2626'; }
+          input.value = '';
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          idOriginalDataURL = e.target.result;
+          openIdCropModal();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function openIdCropModal() {
+      if (!idOriginalDataURL) return;
+      const cropImg = document.getElementById('id-crop-img');
+      cropImg.src = idOriginalDataURL;
+      document.getElementById('id-crop-modal').style.display = 'flex';
+      const msg = document.getElementById('id-upload-msg');
+      if (msg) { msg.textContent = ''; }
+
+      if (idCropper) { idCropper.destroy(); idCropper = null; }
+      cropImg.onload = function() {
+        idCropper = new Cropper(cropImg, {
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.9,
+          responsive: true,
+          background: false,
+          guides: true,
+          center: true,
+          highlight: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+    }
+
+    function closeIdCropModal() {
+      document.getElementById('id-crop-modal').style.display = 'none';
+      if (idCropper) { idCropper.destroy(); idCropper = null; }
+    }
+
+    function applyIdCrop() {
+      if (!idCropper) return;
+      const msg = document.getElementById('id-upload-msg');
+      const canvas = idCropper.getCroppedCanvas({
+        maxWidth: 2400,
+        maxHeight: 2400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      if (!canvas) return;
+
+      closeIdCropModal();
+      if (msg) { msg.textContent = 'Verifying cropped ID...'; msg.style.color = '#64748b'; }
+
+      canvas.toBlob(async function(blob) {
+        idCroppedBlob = blob;
+        const hasFace = await _detectFace(canvas);
+        if (hasFace) {
+          idUploadFaceOk = true;
+          if (msg) { msg.textContent = 'ID photo detected — ready to upload.'; msg.style.color = '#16a34a'; }
+        } else {
+          idUploadFaceOk = false;
+          idCroppedBlob = null;
+          if (msg) { msg.textContent = 'No photo detected on cropped image. Please try again with a clearer crop.'; msg.style.color = '#dc2626'; }
+        }
+      }, 'image/jpeg', 0.92);
+    }
+
+    function submitIdForm() {
+      const input = document.getElementById('id-file-input');
+      const msg = document.getElementById('id-upload-msg');
+      if (!input.files || !input.files[0]) {
+        if (msg) { msg.textContent = 'Please select an ID document first.'; msg.style.color = '#dc2626'; }
+        return;
+      }
+      if (!idUploadFaceOk || !idCroppedBlob) {
+        if (msg) { msg.textContent = 'No valid cropped ID. Please select and crop your ID document.'; msg.style.color = '#dc2626'; }
+        return;
+      }
+
+      const btn = document.getElementById('id-upload-btn');
+      btn.disabled = true;
+      btn.textContent = 'Uploading...';
+
+      const fd = new FormData();
+      const originalName = input.files[0] ? input.files[0].name : 'id_document.jpg';
+      const jpgName = originalName.replace(/\.[^.]+$/, '') + '.jpg';
+      fd.append('id_file', idCroppedBlob, jpgName);
+
+      fetch(document.getElementById('id-upload-form').action, {
+        method: 'POST',
+        body: fd,
+      }).then(function(resp) {
+        if (resp.redirected) {
+          window.location.href = resp.url;
+        } else {
+          window.location.reload();
+        }
+      }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'REPLACE ID';
+        if (msg) { msg.textContent = 'Upload failed. Please try again.'; msg.style.color = '#dc2626'; }
+      });
+    }
+
+  </script>
+  {% include 'partials/heartbeat.html' %}
+</body>
+
+</html>

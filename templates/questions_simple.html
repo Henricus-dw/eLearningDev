@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Q&A Editor (Simple)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --card-border: rgba(100,116,139,.25); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .card { background: rgba(255,255,255,.9); border: 1px solid var(--card-border); }
+    .dark .card { background: rgba(15,23,42,.75); border-color: rgba(100,116,139,.35); }
+    .row:hover { background: rgba(148,163,184,.08); }
+    .flash { border-radius: .5rem; padding: .75rem 1rem; }
+    .flash-ok { background: rgba(34,197,94,.12); color: #16a34a; }      /* soft green */
+    .flash-warn { background: rgba(234,179,8,.12); color: #a16207; }    /* soft amber */
+    .flash-err { background: rgba(239,68,68,.12); color: #b91c1c; }     /* soft red */
+    .btn { padding:.5rem .875rem; border:1px solid rgba(100,116,139,.35); border-radius:.5rem; background: rgba(241,245,249,.9); }
+    .btn:hover { background: rgba(226,232,240,1); }
+    .dark .btn { background: rgba(30,41,59,.8); border-color: rgba(100,116,139,.4); }
+    .dark .btn:hover { background: rgba(51,65,85,.9); }
+    .btn-primary { border-color: transparent; background: #334155; color: #f8fafc; } /* slate primary */
+    .btn-primary:hover { background:#475569; }
+    .link-muted { color:#475569; text-decoration: underline; }
+    .dark .link-muted { color:#cbd5e1; }
+    .field { border:1px solid rgba(100,116,139,.35); background:#fff; }
+    .dark .field { background:#0b1220; border-color: rgba(100,116,139,.45); }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Q&A Editor</h1>
+      <div class="text-xs opacity-70">Last saved: {{ last_saved }}</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for cat,msg in messages %}
+            <div class="flash {{ 'flash-ok' if cat=='success' else 'flash-err' if cat=='danger' else 'flash-warn' }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Sidebar -->
+      <aside class="card rounded-xl p-4 lg:col-span-3">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-medium">Files</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700">{{ files|length }}</span>
+        </div>
+        <div class="space-y-2 max-h-[70vh] overflow-auto">
+          {% for f in files %}
+            <a href="{{ url_for('questions_simple', filename=f) }}"
+               class="block px-3 py-2 rounded border border-slate-300/50 dark:border-slate-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 {{ 'ring-2 ring-slate-400' if f==selected }}">
+              {{ f }}
+            </a>
+          {% endfor %}
+        </div>
+        <div class="mt-4">
+          <a class="text-sm link-muted" href="{{ url_for('admin_dashboard') }}">⬅ Back to Admin</a>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="lg:col-span-9 space-y-6">
+        <!-- Live compact preview (so answers are clearly visible) -->
+        <section class="card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-medium">Preview</h2>
+            <span class="text-xs opacity-70">Read-only snapshot of the current form</span>
+          </div>
+          <div class="overflow-auto">
+            <table class="w-full text-sm">
+              <thead class="border-b border-slate-300/60 dark:border-slate-600/60">
+                <tr class="text-left">
+                  <th class="py-2 pr-3 w-8">#</th>
+                  <th class="py-2 pr-3">Question</th>
+                  <th class="py-2 pr-3 w-1/3">Answer</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Editor -->
+        <section class="card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-medium">Editing: <span class="mono text-slate-600 dark:text-slate-300">{{ selected }}</span></h2>
+            <div class="flex items-center gap-2">
+              <button id="addRow" type="button" class="btn">Add Row</button>
+            </div>
+          </div>
+
+          <form method="POST" id="qaForm" class="space-y-0">
+            <div class="grid grid-cols-12 text-xs font-medium px-2 py-2 border-b border-slate-300/60 dark:border-slate-600/60">
+              <div class="col-span-1">#</div>
+              <div class="col-span-7">Question</div>
+              <div class="col-span-3">Answer</div>
+              <div class="col-span-1"></div>
+            </div>
+
+            <div id="rows" class="divide-y divide-slate-300/50 dark:divide-slate-600/40">
+              {% for p in pairs %}
+              <div class="row grid grid-cols-12 items-start gap-2 px-2 py-3">
+                <div class="col-span-1 mono text-xs opacity-70">{{ loop.index }}</div>
+                <div class="col-span-7">
+                  <textarea name="q[]" rows="2" class="field w-full rounded bg-white dark:bg-slate-900 p-2">{{ p.q }}</textarea>
+                </div>
+                <div class="col-span-3">
+                  <input name="a[]" type="text" value="{{ p.a }}" class="field w-full rounded bg-white dark:bg-slate-900 p-2" />
+                </div>
+                <div class="col-span-1">
+                  <button type="button" class="btn deleteRow">Delete</button>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+              <button type="submit" class="btn-primary btn">Save</button>
+              <span class="text-xs opacity-70">Writes minimal JSON [{'question','answer'}] and makes a timestamped backup.</span>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const rows = document.getElementById('rows');
+    const previewBody = document.getElementById('previewBody');
+
+    function renderPreview() {
+      const qs = Array.from(document.querySelectorAll('textarea[name="q[]"]')).map(x => x.value.trim());
+      const as = Array.from(document.querySelectorAll('input[name="a[]"]')).map(x => x.value.trim());
+      let html = '';
+      for (let i = 0; i < Math.max(qs.length, as.length); i++) {
+        const q = (qs[i] || '').replace(/\n/g,' ');
+        const a = as[i] || '';
+        if (!q && !a) continue;
+        html += `<tr class="border-b border-slate-200/40 dark:border-slate-700/30">
+                   <td class="py-2 pr-3 text-xs mono opacity-70">${i+1}</td>
+                   <td class="py-2 pr-3">${escapeHtml(q)}</td>
+                   <td class="py-2 pr-3">${escapeHtml(a)}</td>
+                 </tr>`;
+      }
+      previewBody.innerHTML = html || `<tr><td colspan="3" class="py-3 text-slate-500 text-sm">No items yet</td></tr>`;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // Add row
+    document.getElementById('addRow').addEventListener('click', () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'row grid grid-cols-12 items-start gap-2 px-2 py-3';
+      wrapper.innerHTML = `
+        <div class="col-span-1 mono text-xs opacity-70">+</div>
+        <div class="col-span-7">
+          <textarea name="q[]" rows="2" class="field w-full rounded bg-white dark:bg-slate-900 p-2" placeholder="Type question"></textarea>
+        </div>
+        <div class="col-span-3">
+          <input name="a[]" type="text" class="field w-full rounded bg-white dark:bg-slate-900 p-2" placeholder="Answer" />
+        </div>
+        <div class="col-span-1">
+          <button type="button" class="btn deleteRow">Delete</button>
+        </div>`;
+      rows.appendChild(wrapper);
+      renderPreview();
+    });
+
+    // Delete row (event delegation)
+    rows.addEventListener('click', (e) => {
+      if (e.target.classList.contains('deleteRow')) {
+        e.target.closest('.row')?.remove();
+        renderPreview();
+      }
+    });
+
+    // Live preview updates
+    rows.addEventListener('input', renderPreview);
+    document.addEventListener('DOMContentLoaded', renderPreview);
+  </script>
+</body>
+</html>

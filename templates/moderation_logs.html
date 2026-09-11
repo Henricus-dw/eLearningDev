@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <title>🗂️ Moderation Logs</title>
+
+  <!-- Tailwind + dark mode -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --brand-blue:#17306B;
+      --brand-gold:#C7A434;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(23,48,107,.10), transparent 50%),
+        radial-gradient(circle at 80% -10%, rgba(199,164,52,.10), transparent 40%),
+        linear-gradient(to bottom, #f7f9fc, #eef2f9);
+      color:#0b1022;
+    }
+
+    .dark body { background: linear-gradient(to bottom, #0B1226, #050912); color:#E6EDF7; }
+
+    .section-title {
+      font-size:1.6rem; font-weight:900;
+      color:var(--brand-blue);
+      border-left:5px solid var(--brand-gold);
+      padding-left:.75rem; margin:0;
+    }
+    .dark .section-title { color:#F2F6FF; }
+
+    .cardx {
+      background:#fff; border:1px solid rgba(0,0,0,.08);
+      border-radius:1rem; box-shadow:0 10px 22px rgba(0,0,0,.08);
+      transition:.2s;
+    }
+    .cardx:hover { transform:translateY(-1px); }
+    .dark .cardx { background:#0C142B; border-color:rgba(255,255,255,.1); box-shadow:0 10px 24px rgba(0,0,0,.35); }
+
+    .inpx {
+      width:100%; border:1px solid rgba(0,0,0,.15); border-radius:.9rem; background:#fff;
+      padding:.65rem 1rem; outline:none; transition:.15s;
+    }
+    .inpx:focus { border-color:var(--brand-blue); box-shadow:0 0 0 3px rgba(23,48,107,.12); }
+    .dark .inpx { background:#0E1730; border-color:rgba(255,255,255,.15); color:#E6EDF7; }
+
+    .btnx { display:inline-flex; align-items:center; gap:.55rem; font-weight:800;
+            border-radius:.9rem; padding:.55rem 1rem; transition:.18s; }
+    .btn-blue { background:var(--brand-blue); color:#fff; }
+    .btn-blue:hover { filter:brightness(1.07); }
+    .btn-outline-blue { border:1px solid var(--brand-blue); color:var(--brand-blue); background:transparent; }
+    .btn-outline-blue:hover { background:rgba(23,48,107,.06); }
+    .btn-indigo { background:#4f46e5; color:#fff; }
+    .btn-indigo:hover { filter:brightness(1.06); }
+
+    .details-cell { padding:1rem; }
+    .clickable { cursor:pointer; }
+    .soft {
+      border:1px solid rgba(23,48,107,.20);
+      background:rgba(23,48,107,.06);
+      border-radius:1rem; padding:1rem;
+      color:var(--brand-blue);
+    }
+    .dark .soft { background:#1b2550; border-color:#2a3463; color:#e5eaf6; }
+  </style>
+
+  <script>
+    function filterTable() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      document.querySelectorAll(".data-row").forEach(row => {
+        const next = row.nextElementSibling;
+        const match = row.innerText.toLowerCase().includes(input);
+        row.style.display = match ? "" : "none";
+        if (next && next.classList.contains("details-row")) next.style.display = "none";
+      });
+    }
+
+    function filterByCourse() {
+      const selected = document.getElementById("courseFilter").value;
+      window.location.href = selected ? `/moderation_logs?course=${encodeURIComponent(selected)}` : '/moderation_logs';
+    }
+
+    function toggleDetails(id) {
+      const row = document.getElementById(`details-${id}`);
+      row.style.display = (row.style.display === "table-row") ? "none" : "table-row";
+    }
+
+    function toggleEscalationOnly() {
+      const checked = document.getElementById("escalationOnly").checked;
+      document.querySelectorAll(".data-row").forEach(row => {
+        const isEscalated = row.classList.contains("escalated-row");
+        row.style.display = (checked && !isEscalated) ? "none" : "";
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains("details-row")) next.style.display = "none";
+      });
+    }
+  </script>
+</head>
+
+<body class="min-h-screen font-sans text-gray-800 dark:text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-10">
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <h1 class="section-title flex items-center gap-2">
+        <i class="fas fa-folder-open"></i> Moderation Logs
+      </h1>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <a href="/admin_dashboard" class="btnx btn-outline-blue">
+          <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+        </a>
+
+        <a href="/export_moderations" class="btnx btn-indigo">
+          <i class="fas fa-file-export"></i> <span>Export to Excel</span>
+        </a>
+
+        <button id="themeToggle" class="btnx btn-outline-blue hidden sm:inline-flex" title="Toggle theme">
+          <i class="fas fa-moon hidden dark:inline"></i>
+          <i class="fas fa-sun inline dark:hidden"></i>
+          <span id="themeLabel" class="text-sm">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="cardx p-4 md:p-6 mb-6">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+        <input id="searchInput" onkeyup="filterTable()" class="inpx md:w-80" placeholder="🔍 Search logs..." />
+
+        <select id="courseFilter" onchange="filterByCourse()" class="inpx md:w-80">
+          <option value="">-- Filter by Course --</option>
+          {% for course in courses %}
+            <option value="{{ course }}" {% if request.args.get('course') == course %}selected{% endif %}>{{ course }}</option>
+          {% endfor %}
+        </select>
+
+        <label class="inline-flex items-center gap-2 text-sm text-[var(--brand-blue)] dark:text-slate-200">
+          <input id="escalationOnly" type="checkbox" onclick="toggleEscalationOnly()"
+                 class="h-4 w-4 rounded border-blue-200 text-blue-600 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-700">
+          Only Escalated
+        </label>
+      </div>
+    </div>
+
+    <div class="cardx overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-[var(--brand-blue)] text-white dark:bg-slate-800">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold">Student</th>
+              <th class="px-4 py-3 text-left font-semibold">Student ID</th>
+              <th class="px-4 py-3 text-left font-semibold">Course</th>
+              <th class="px-4 py-3 text-left font-semibold">Moderator</th>
+              <th class="px-4 py-3 text-left font-semibold">Completed</th>
+              <th class="px-4 py-3 text-left font-semibold">Moderated</th>
+              <th class="px-4 py-3 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+            {% for m in moderations %}
+              {% set is_escalated = m.feedback and '[Escalated Review]' in m.feedback %}
+              <tr class="clickable data-row transition hover:bg-gray-50 dark:hover:bg-slate-800/60 {% if is_escalated %}escalated-row{% endif %}"
+                  onclick="toggleDetails({{ m.id }})">
+                <td class="px-4 py-3">
+                  <span class="font-medium text-[var(--brand-blue)] dark:text-slate-100">{{ m.studentname }}</span>
+                  {% if is_escalated %}
+                    <span class="ml-2 inline-flex items-center rounded-full bg-red-600 text-white text-[11px] px-2 py-0.5">Escalated</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">{{ m.studentid }}</td>
+                <td class="px-4 py-3">{{ m.coursename }}</td>
+                <td class="px-4 py-3">{{ m.moderatorname }}</td>
+                <td class="px-4 py-3">{{ m.coursecompletiondate }}</td>
+                <td class="px-4 py-3">{{ m.moderationdate }}</td>
+                <td class="px-4 py-3 text-[var(--brand-blue)] dark:text-slate-200">▼ Click to view</td>
+              </tr>
+
+              <tr id="details-{{ m.id }}" class="details-row" style="display:none;">
+                <td colspan="7" class="details-cell">
+                  <div class="soft space-y-3">
+                    <div><p class="font-semibold">Q1:</p><p>{{ m.question1 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q2:</p><p>{{ m.question2 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q3:</p><p>{{ m.question3 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q4:</p><p>{{ m.question4 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q5:</p><p>{{ m.question5 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q6:</p><p>{{ m.question6 or '—' }}</p></div>
+                    <div><p class="font-semibold">Q7:</p><p>{{ m.question7 or '—' }}</p></div>
+
+                    <div class="rounded-xl bg-white dark:bg-slate-900 border border-yellow-300/60 dark:border-yellow-600 p-4">
+                      <p class="font-semibold text-yellow-700 dark:text-yellow-300">Moderator Comments</p>
+                      <p class="italic mt-1">{{ m.feedback or 'None' }}</p>
+                    </div>
+
+                    {# Video Evidence Handling #}
+                    {% set video_src =
+                        (m.video_url if (m.video_url is defined and m.video_url) else
+                        (('/uploads/' ~ m.studentid ~ '/' ~ m.video_filename)
+                          if ((m.studentid is defined and m.video_filename is defined and m.video_filename)) else none))
+                    %}
+                    {% if video_src %}
+                      <div class="rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-slate-700 p-4">
+                        <div class="flex items-center justify-between mb-2">
+                          <p class="font-semibold">Video Evidence</p>
+                          <a href="{{ video_src }}" target="_blank" rel="noopener"
+                             class="text-[var(--brand-blue)] underline dark:text-blue-300 text-sm">
+                            Open in new tab
+                          </a>
+                        </div>
+                        <video controls preload="metadata" class="w-full max-w-3xl rounded-lg shadow" src="{{ video_src }}">
+                          Your browser cannot play this video. <a href="{{ video_src }}" class="underline">Download</a>.
+                        </video>
+                      </div>
+                    {% else %}
+                      <div class="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-4">
+                        <p class="font-semibold">Video Evidence</p>
+                        <p class="opacity-80 text-sm mt-1">No video attached.</p>
+                      </div>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="fixed bottom-4 left-4 opacity-80">
+      <img src="{{ url_for('static', filename='images/asimopowerlight.png') }}" alt="Asimo Power" class="h-12 drop-shadow dark:opacity-60">
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
+    function updateLabel(isDark){ if(label) label.textContent = isDark ? 'Light' : 'Dark'; }
+    const root = document.documentElement;
+    updateLabel(root.classList.contains('dark'));
+    btn?.addEventListener('click', () => {
+      const nowDark = root.classList.toggle('dark');
+      localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      btn.querySelector('.fa-moon')?.classList.toggle('hidden', !nowDark);
+      btn.querySelector('.fa-sun')?.classList.toggle('hidden', nowDark);
+      updateLabel(nowDark);
+    });
+  </script>
+</body>
+</html>

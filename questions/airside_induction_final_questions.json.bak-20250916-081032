@@ -1,0 +1,472 @@
+[
+  {
+    "id": 1,
+    "type": "mcq",
+    "question": "Select the regulations established in the Airside Regulations that are governed by legislation and various safety standards established in terms of the following documentation:",
+    "options": {
+      "A": "International Civil Aviation Organisation (ICAO)",
+      "B": "The Aviation Legislation in South Africa",
+      "C": "National Road Traffic Act",
+      "D": "Airports Council International (ACI)"
+    },
+    "answer": "A" 
+  },
+  {
+    "id": 2,
+    "type": "mcq",
+    "question": "Which of the following are regulations that apply to airside at airports?",
+    "options": {
+      "A": "Operational Airfield Regulations",
+      "B": "Safety Airfield Regulations",
+      "C": "Security Airfield Regulations",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 3,
+    "type": "mcq",
+    "question": "Which of the following are Operational Airfield Regulations?",
+    "options": {
+      "A": "Aircraft Related",
+      "B": "Inspections",
+      "C": "Airside Operations",
+      "D": "All the Above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 4,
+    "type": "mcq",
+    "question": "Which of the following are Safety Airfield Regulations?",
+    "options": {
+      "A": "Foreign Object Damage and Prevention",
+      "B": "Airside Security",
+      "C": "Landside regulations",
+      "D": "Aircrew Regulations"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 5,
+    "type": "mcq",
+    "question": "Which of the following are Security Airfield Regulations?",
+    "options": {
+      "A": "Access control and search",
+      "B": "Security patrols",
+      "C": "Security permit inspections",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 6,
+    "type": "mcq",
+    "question": "The regulations established in the Airside Regulations are governed by legislation and safety standards established in terms of which documentation?",
+    "options": {
+      "A": "The Aviation Legislation in South Africa",
+      "B": "Landside Airside Regulations",
+      "C": "B above only",
+      "D": "A and B above only"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 7,
+    "type": "tf",
+    "question": "The aim of Airside Induction Training is to provide appropriate training for all personnel who are required to enter the airside, to safely perform their duties, and to ensure compliance with OHSA, applicable legislation, and the Airports Company Airfield Regulations.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 8,
+    "type": "mcq",
+    "question": "What is the main reason for the OHS Act?",
+    "options": {
+      "A": "To always ensure the safety of the employees",
+      "B": "To ensure we all end our shift on time",
+      "C": "To take care of our company’s resources",
+      "D": "To be always fit"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 9,
+    "type": "tf",
+    "question": "It is the duty of the employer to ensure a safe and health-risk-free environment.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 10,
+    "type": "mcq",
+    "question": "Every employee shall at their workplace…",
+    "options": {
+      "A": "Understand the risks associated with a particular job",
+      "B": "Take care for the health and safety of themselves and others",
+      "C": "Perform duties within health and safety rules to prevent incidents",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 11,
+    "type": "mcq",
+    "question": "Employees may be fined or imprisoned for offences such as making false statements, refusing to answer questions, or tampering with evidence. Which is correct?",
+    "options": {
+      "A": "Making false statements",
+      "B": "Refusing to answer questions",
+      "C": "Tampering with evidence",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 12,
+    "type": "mcq",
+    "question": "Under South African Civil Aviation Safety Regulations, the Airport Safety Officer is responsible for implementing safety measures, establishing a control center, and staffing it with trained personnel. Which option is correct?",
+    "options": {
+      "A": "Implement necessary safety measures and coordinate activities",
+      "B": "Establish a control center connected to points of importance",
+      "C": "Ensure the control center is manned by authorized trained personnel",
+      "D": "A, B and C"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 13,
+    "type": "mcq",
+    "question": "Scope of Authority: Inspectors may enter premises, question any person, remove reports, and both employer and employee may be fined for offences. Which is correct?",
+    "options": {
+      "A": "Inspectors may enter and question persons",
+      "B": "Inspectors may remove or copy documentation",
+      "C": "Both employer and employee may be fined",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 14,
+    "type": "tf",
+    "question": "No major incidents must be reported because you might lose your job.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 15,
+    "type": "tf",
+    "question": "Employees may be required by an inspector to make statements or give evidence regarding safety matters.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 16,
+    "type": "mcq",
+    "question": "The purpose of a permit system is to…",
+    "options": {
+      "A": "Identify individuals and facilitate access",
+      "B": "Give all airport staff access to restricted areas",
+      "C": "Count the number of staff at an airport",
+      "D": "Allow vehicular access via vehicle permits"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 17,
+    "type": "tf",
+    "question": "Airside areas of airports are regarded as restricted areas under South African legislation.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 18,
+    "type": "tf",
+    "question": "Access permits should be valid for specific areas and periods.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 19,
+    "type": "tf",
+    "question": "No person will be permitted to enter the airside if not in possession of a valid ACSA permit.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 20,
+    "type": "tf",
+    "question": "All vehicles and ground support equipment shall display a valid ACSA Airside Vehicle Permit when entering/leaving airside and for inspections.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 21,
+    "type": "tf",
+    "question": "Anyone operating a vehicle or motorized GSE on airside must hold a valid national driver’s license and an ACSA Airside Vehicle Operator Permit.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 22,
+    "type": "tf",
+    "question": "Every person, regardless of employer, is responsible for reporting incidents, unsafe acts or conditions to ACSA.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 23,
+    "type": "tf",
+    "question": "Driving on the airside is 0% more hazardous than city streets at peak hours.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 24,
+    "type": "tf",
+    "question": "Much of the aircraft ground support equipment used on airside is required to be fitted with fire extinguishers.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 25,
+    "type": "tf",
+    "question": "After a dangerous goods spillage, secure the area and do NOT attempt cleanup; immediately call the help desk.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 26,
+    "type": "mcq",
+    "question": "Select the correct statement(s) for emergencies and fueling fires:",
+    "options": {
+      "A": "Different alarms/procedures apply depending on the emergency",
+      "B": "Firearms, guns and weapons (irrelevant)",
+      "C": "Fuel Emergency Shut-off is available at parking stands and will shut fuel to the affected sector",
+      "D": "All the above"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 27,
+    "type": "mcq",
+    "question": "Who is responsible for the prevention of FOD?",
+    "options": {
+      "A": "ACSA",
+      "B": "Everyone",
+      "C": "Security",
+      "D": "Companies"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 28,
+    "type": "mcq",
+    "question": "Which PPE is needed for every person working airside?",
+    "options": {
+      "A": "High visibility clothing",
+      "B": "Foot protection",
+      "C": "Hearing protection",
+      "D": "1, 2 and 3"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 29,
+    "type": "mcq",
+    "question": "The movement area of an aerodrome is divided into:",
+    "options": {
+      "A": "Airside and Landside",
+      "B": "Maintenance and Baggage sorting",
+      "C": "The manoeuvring area (takeoff/landing) and the apron",
+      "D": "None of the above"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 30,
+    "type": "tf",
+    "question": "Stopping at pedestrian crossings is compulsory when passengers are approaching it.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 31,
+    "type": "mcq",
+    "question": "The apron is divided into:",
+    "options": {
+      "A": "Parking bays and roads",
+      "B": "The apron taxiway and aircraft parking areas",
+      "C": "Vehicle areas and aircraft areas",
+      "D": "None of the above"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 32,
+    "type": "mcq",
+    "question": "Engine hazards are categorized into which areas?",
+    "options": {
+      "A": "Jet intake",
+      "B": "Exhaust / thrust reverser",
+      "C": "Propellers and rotors",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 33,
+    "type": "tf",
+    "question": "Dangerous goods are substances that can pose significant risks to health and safety if not handled/transported/packaged correctly.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 34,
+    "type": "tf",
+    "question": "All personnel and equipment must be clear of the aircraft prior to pushback and engine start-up; failure to comply may result in serious or fatal injury.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 35,
+    "type": "tf",
+    "question": "The local authority in South Africa is ICAO (International Civil Aviation Organization).",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 36,
+    "type": "tf",
+    "question": "After dangerous goods spillage, personnel should attempt to clean up immediately to prevent damage to aircraft.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "False"
+  },
+  {
+    "id": 37,
+    "type": "mcq",
+    "question": "The Airport Authority safety enforcement system aims to:",
+    "options": {
+      "A": "Improve compliance with safety measures and relevant legislation",
+      "B": "Decrease incidents and accidents on airside",
+      "C": "Improve training and consistent observance of safety",
+      "D": "A, B and C"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 38,
+    "type": "tf",
+    "question": "To prevent FOD, drivers must ensure vehicles are kept free from items such as cans, newspapers, and food wrappings.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 39,
+    "type": "mcq",
+    "question": "Choose a method of access control used in cargo operations:",
+    "options": {
+      "A": "Access-controlled entrances",
+      "B": "Low fencing",
+      "C": "Surveillance",
+      "D": "No permits for staff members"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 40,
+    "type": "mcq",
+    "question": "Which methods are used to protect airports or cargo operations?",
+    "options": {
+      "A": "Effective boundary fencing",
+      "B": "Patrols",
+      "C": "Buildings protected by physical means (locks/bars/alarms)",
+      "D": "Nothing at all"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 41,
+    "type": "tf",
+    "question": "Security Culture is the set of values, beliefs, and assumptions shared by everyone that shape how people approach security.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 42,
+    "type": "mcq",
+    "question": "Benefits of an effective security culture include:",
+    "options": {
+      "A": "Workforce more engaged and taking responsibility for security",
+      "B": "Passengers in cargo",
+      "C": "Increased compliance with protective security measures",
+      "D": "None of the above"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 43,
+    "type": "mcq",
+    "question": "Essential components of a successful security culture include:",
+    "options": {
+      "A": "Risks understood at all organization levels",
+      "B": "Regular staff awareness training",
+      "C": "Understanding risks explains why security matters",
+      "D": "All the above"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 44,
+    "type": "tf",
+    "question": "Security culture begins at the top with the CEO or head of the company.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 45,
+    "type": "tf",
+    "question": "Reporting mechanisms are key to a strong security culture; peers should challenge when processes are ignored.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 46,
+    "type": "tf",
+    "question": "The human element is the most flexible and valuable part of aviation but also the most vulnerable to influences that can degrade performance.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 47,
+    "type": "tf",
+    "question": "“Human factors principles” seek a safe interface between humans and other system components through consideration of human performance.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 48,
+    "type": "tf",
+    "question": "‘Human error’ should be the starting point, not the stop-rule, in accident investigation and prevention.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 49,
+    "type": "tf",
+    "question": "If it has gone wrong once, it is likely to go wrong again—errors are constrained by factors beyond immediate control.",
+    "options": { "True": "True", "False": "False" },
+    "answer": "True"
+  },
+  {
+    "id": 50,
+    "type": "mcq",
+    "question": "The ‘Dirty Dozen’ (Human Factors) includes:",
+    "options": {
+      "A": "Fatigue",
+      "B": "Lack of communication",
+      "C": "Stress",
+      "D": "All the above"
+    },
+    "answer": "D"
+  }
+]

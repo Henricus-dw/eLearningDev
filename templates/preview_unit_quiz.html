@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview Unit Quiz — {{ course.title }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">Unit Quiz Preview — {{ course.title }}</h1>
+    {% for ch in plan %}
+      <section class="mb-6 bg-white border rounded-xl p-4">
+        <h2 class="text-lg font-semibold mb-3">Chapter: {{ ch.chapter_title }}</h2>
+        {% if ch.questions %}
+          <ol class="list-decimal pl-6 space-y-2">
+            {% for q in ch.questions %}
+              <li>
+                <div class="font-medium">{{ q.question }}</div>
+                {% if q.options %}
+                  <ul class="list-disc pl-6 text-sm text-slate-600">
+                    {% if q.options is mapping %}
+                      {% for k,v in q.options.items() %}
+                        <li><span class="font-mono">{{ k }}.</span> {{ v }}</li>
+                      {% endfor %}
+                    {% else %}
+                      {% for v in q.options %}
+                        <li>{{ v }}</li>
+                      {% endfor %}
+                    {% endif %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <div class="text-sm text-slate-500">No questions assigned to this chapter.</div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+[
+  {
+    "id": 1,
+    "type": "mcq",
+    "question": "The answer is C",
+    "points": 1,
+    "options": {
+      "A": "Yes",
+      "B": "No",
+      "C": "Maybe"
+    },
+    "correct": "C",
+    "position": 1
+  },
+  {
+    "id": 3,
+    "type": "short_answer",
+    "question": "Please type \"I like ice cream\"",
+    "points": 1,
+    "hint": "We all scream for...",
+    "accepted": [
+      "I like ice cream"
+    ],
+    "case_sensitive": false,
+    "position": 2
+  },
+  {
+    "id": 4,
+    "type": "table_fill",
+    "question": "Do maths",
+    "points": 1,
+    "columns": [
+      {
+        "id": "c1_puij",
+        "label": "Please input 10",
+        "kind": "text"
+      },
+      {
+        "id": "c2_gaaq",
+        "label": "Times it by 2",
+        "kind": "select",
+        "options": [
+          "21",
+          "20",
+          "23"
+        ]
+      },
+      {
+        "id": "c3_cw76",
+        "label": "When you deduct this by 7, is it 13?",
+        "kind": "yesno"
+      }
+    ],
+    "rows": [
+      {
+        "id": "r1_50jd",
+        "prompt": "Do maths",
+        "points_per_cell": 1,
+        "answers": {
+          "c1_puij": "10",
+          "c2_gaaq": "20",
+          "c3_cw76": "Yes"
+        }
+      }
+    ],
+    "position": 3
+  },
+  {
+    "id": 5,
+    "type": "drag_drop",
+    "question": "Outfit the cowboy for a gunfight",
+    "points": 1,
+    "background": "virtual_tester/5/ChatGPT_Image_May_28_2026_11_20_46_AM_1.png",
+    "zones": [
+      {
+        "id": "zmppxpp4ls3y",
+        "x": 36.8107302533532,
+        "y": 5.002791736460078,
+        "w": 15.201192250372586,
+        "h": 9.57677275265215,
+        "label": "Hat"
+      },
+      {
+        "id": "zmppxpqo794l",
+        "x": 49.03129657228018,
+        "y": 17.15242881072027,
+        "w": 19.374068554396416,
+        "h": 12.721384701284197,
+        "label": "Gun"
+      }
+    ],
+    "items": [
+      {
+        "id": "imppxpvzk1cs",
+        "label": "Hat",
+        "correct_zone": "zmppxpp4ls3y",
+        "image": "virtual_tester/5/ralphs_fotos-cowboy-hat-2801582_1.png"
+      },
+      {
+        "id": "imppxpxq56xo",
+        "label": "Sheep",
+        "correct_zone": null,
+        "image": "virtual_tester/5/2567670-lamb-3539619_640.png"
+      },
+      {
+        "id": "imppxpxtr1gr",
+        "label": "Gun",
+        "correct_zone": "zmppxpqo794l",
+        "image": "virtual_tester/5/raniramli-gun-2535417_640_1.png"
+      }
+    ],
+    "position": 4
+  },
+  {
+    "id": 6,
+    "type": "tf",
+    "question": "The answer is false",
+    "points": 1,
+    "options": {
+      "A": "True",
+      "B": "False"
+    },
+    "correct": "B",
+    "position": 5
+  }
+]

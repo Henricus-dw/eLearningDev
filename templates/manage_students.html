@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>👥 Manage Students</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+
+    /* Unified dashboard button style */
+    .btn {
+      @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-semibold shadow-md transition-all duration-200;
+    }
+    .btn:hover { transform: translateY(-1px); }
+
+    /* Button color variants */
+    .btn-blue   { @apply bg-blue-600 text-white hover:bg-blue-700; }
+    .btn-slate  { @apply bg-slate-700 text-white hover:bg-slate-800; }
+    .btn-green  { @apply bg-green-600 text-white hover:bg-green-700; }
+    .btn-red    { @apply bg-red-600 text-white hover:bg-red-700; }
+    .btn-red-soft { @apply bg-red-300 text-black hover:bg-red-400; }
+    .btn-yellow { @apply bg-yellow-400 text-black hover:bg-yellow-500; }
+
+    /* Status badges */
+    .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium; }
+    .badge-green { @apply bg-green-100 text-green-800; }
+    .badge-red   { @apply bg-red-100 text-red-700; }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans bg-blue-50 p-6" x-data="{ search: '' }">
+  <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <h2 class="text-3xl font-bold text-blue-900">👥 Manage Students</h2>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-slate">⬅ Back to Dashboard</a>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-6">
+      <input
+        type="text"
+        x-model="search"
+        placeholder="🔍 Search by name, student ID, or national ID..."
+        class="w-full px-4 py-3 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+      <table class="min-w-full bg-white">
+        <thead class="bg-blue-900 text-white">
+          <tr>
+            <th class="px-5 py-3 text-left text-sm font-semibold">👁 View</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Student ID</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">ID Document</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Full Name</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Status</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Email</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Attempts</th>
+            <th class="px-5 py-3 text-left text-sm font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-800">
+          {% for student in students %}
+          <tr class="hover:bg-slate-50 transition-colors"
+              x-show="'{{ student.name }} {{ student.surname }} {{ student.student_id }} {{ student.national_id }}'.toLowerCase().includes(search.toLowerCase())">
+            <!-- View -->
+            <td class="px-5 py-3">
+              <div x-data="{ open:false }">
+                <button @click="open = true" class="btn btn-blue w-full">👁 View</button>
+
+                <!-- Modal -->
+                <div x-show="open" x-cloak x-trap.noscroll="open" @keydown.escape.window="open=false"
+                     class="fixed inset-0 z-50 flex items-center justify-center">
+                  <div class="absolute inset-0 bg-black/50" @click="open=false"></div>
+                  <div class="relative bg-white w-full max-w-3xl mx-4 rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+                    <div class="flex items-start justify-between mb-4">
+                      <h3 class="text-xl font-semibold text-slate-900">
+                        📄 {{ student.name }} {{ student.surname }}
+                      </h3>
+                      <button @click="open=false" class="text-2xl text-slate-500 hover:text-slate-900">&times;</button>
+                    </div>
+
+                    <!-- Profile -->
+                    <div class="flex gap-4 mb-6">
+                      <img src="{{ url_for('uploaded_file', student_id=student.student_id, filename=student.selfie_filename) if student.selfie_filename else url_for('static', filename='default_profile.jpg') }}"
+                           class="w-24 h-24 rounded-full object-cover shadow" alt="Profile" />
+                      <div class="text-sm grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+                        <p><strong>Email:</strong> {{ student.email }}</p>
+                        <p><strong>Cell:</strong> {{ student.cell_number }}</p>
+                        <p><strong>National ID:</strong> {{ student.national_id }}</p>
+                        <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                        <p class="sm:col-span-2"><strong>Signup Date:</strong> {{ student.date_joined.strftime('%Y-%m-%d') if student.date_joined else 'N/A' }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Courses -->
+                    <div class="mb-6" x-data="{ showCourses:false }">
+                      <button class="btn btn-yellow" @click="showCourses = !showCourses">
+                        📚 Enrolled Courses <span x-text="showCourses ? '▾' : '▸'"></span>
+                      </button>
+                      <div x-show="showCourses" x-collapse class="mt-3 space-y-2">
+                        {% for enrollment in student.enrollments %}
+                          <div class="rounded-lg border border-slate-200 bg-blue-50 p-4 shadow-sm">
+                            <p class="font-medium text-blue-900">{{ enrollment.course.title }}</p>
+                            <p class="text-sm">📅 Enrolled: {{ progress_data[enrollment.id].date_enrolled if progress_data[enrollment.id] else 'N/A' }}</p>
+                            <p class="text-sm">📈 Progress: {{ progress_data[enrollment.id].progress if progress_data[enrollment.id] else 0 }}%</p>
+                            <div class="w-full h-3 bg-slate-200 rounded mt-1">
+                              <div class="h-3 rounded bg-green-500"
+                                   style="width: {{ progress_data[enrollment.id].progress if progress_data[enrollment.id] else 0 }}%;"></div>
+                            </div>
+                          </div>
+                        {% else %}
+                          <p class="text-slate-400 italic">No enrollments yet.</p>
+                        {% endfor %}
+                      </div>
+                    </div>
+
+                    <!-- Message Form -->
+                    <div class="pt-4 border-t border-slate-200">
+                      <h4 class="text-md font-semibold text-blue-700 mb-2">📨 Send Message</h4>
+                      <form method="POST" action="{{ url_for('send_message_to_student') }}" class="space-y-2">
+                        <input type="hidden" name="student_id" value="{{ student.id }}">
+                        <div>
+                          <label class="block text-sm font-medium mb-1">Subject</label>
+                          <input type="text" name="subject"
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium mb-1">Message</label>
+                          <textarea name="message" rows="3"
+                                    class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-blue">Send</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Student ID -->
+            <td class="px-5 py-3">{{ student.student_id }}</td>
+
+            <!-- ID Document -->
+            <td class="px-5 py-3">
+              {% set id_jpg = 'uploads/' ~ student.student_id ~ '/' ~ student.student_id ~ '_id.jpg' %}
+              {% set id_pdf = 'uploads/' ~ student.student_id ~ '/' ~ student.student_id ~ '_id.pdf' %}
+              {% if id_jpg|file_exists %}
+                <a href="{{ url_for('uploaded_file', student_id=student.student_id, filename=student.student_id ~ '_id.jpg') }}"
+                   class="text-green-700 hover:underline" target="_blank">✅ View ID</a>
+              {% elif id_pdf|file_exists %}
+                <a href="{{ url_for('uploaded_file', student_id=student.student_id, filename=student.student_id ~ '_id.pdf') }}"
+                   class="text-green-700 hover:underline" target="_blank">✅ View ID (PDF)</a>
+              {% else %}
+                <span class="text-red-600">❌ No ID</span>
+              {% endif %}
+            </td>
+
+            <!-- Name -->
+            <td class="px-5 py-3">{{ student.name }} {{ student.surname }}</td>
+
+            <!-- Status -->
+            <td class="px-5 py-3">
+              {% if student.is_suspended %}
+                <span class="badge badge-red">Suspended</span>
+              {% else %}
+                <span class="badge badge-green">Active</span>
+              {% endif %}
+            </td>
+
+            <!-- Email -->
+            <td class="px-5 py-3">{{ student.email }}</td>
+
+            <!-- Attempts summary -->
+            <td class="px-5 py-3">
+              {% set sid = student.student_id %}
+              {% set s = attempts_stats.get(sid) %}
+              {% if s %}
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge bg-gray-200 text-gray-800">Count: {{ s.count }}</span>
+                  {% if s.latest_score is not none %}
+                    <span class="badge {{ 'bg-green-100 text-green-800' if s.latest_passed else 'bg-red-100 text-red-700' }}">
+                      {{ 'PASS' if s.latest_passed else 'FAIL' }} • {{ '%.0f'|format(s.latest_score) }}%
+                    </span>
+                  {% endif %}
+                </div>
+              {% else %}
+                <span class="text-slate-400 italic">None</span>
+              {% endif %}
+              <a href="{{ url_for('admin_airside_attempts', student_id=sid) }}" class="btn btn-blue w-full">📊 Attempts</a>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-5 py-3 space-y-2">
+              <div x-data="{ editOpen: false }">
+                <button type="button" @click="editOpen = true" class="btn btn-slate w-full">✏️ Edit</button>
+
+                <!-- Edit modal: admin can update personal info and upload selfie / ID
+                     document on the student's behalf when the company can't. -->
+                <div x-show="editOpen" x-cloak x-trap.noscroll="editOpen" @keydown.escape.window="editOpen=false"
+                     class="fixed inset-0 z-50 flex items-center justify-center">
+                  <div class="absolute inset-0 bg-black/50" @click="editOpen=false"></div>
+                  <div class="relative bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl p-6 max-h-[92vh] overflow-y-auto">
+                    <div class="flex items-start justify-between mb-4">
+                      <h3 class="text-xl font-semibold text-slate-900">
+                        ✏️ Edit {{ student.name }} {{ student.surname }}
+                      </h3>
+                      <button type="button" @click="editOpen=false" class="text-2xl text-slate-500 hover:text-slate-900">&times;</button>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('update_student') }}" enctype="multipart/form-data" class="space-y-4">
+                      <input type="hidden" name="student_id" value="{{ student.id }}">
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">First name</label>
+                          <input type="text" name="name" value="{{ student.name or '' }}" required
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">Surname</label>
+                          <input type="text" name="surname" value="{{ student.surname or '' }}" required
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                          <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                          <input type="email" name="email" value="{{ student.email or '' }}" required
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">Cell number</label>
+                          <input type="text" name="cell_number" value="{{ student.cell_number or '' }}"
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">National ID</label>
+                          <input type="text" name="national_id" value="{{ student.national_id or '' }}"
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                          <label class="block text-sm font-medium text-slate-700 mb-1">Company <span class="text-slate-400 font-normal">(free text)</span></label>
+                          <input type="text" name="company" value="{{ student.company or '' }}"
+                                 class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                      </div>
+
+                      <div class="pt-4 border-t border-slate-200">
+                        <h4 class="text-sm font-semibold text-blue-700 mb-2">Upload on behalf of student</h4>
+                        <p class="text-xs text-slate-500 mb-3">Optional. Use these when the company or student can't upload the docs themselves. Existing files are replaced.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Selfie <span class="text-slate-400 font-normal">(JPG/PNG)</span></label>
+                            <input type="file" name="selfie_file" accept="image/jpeg,image/png"
+                                   class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            {% if student.selfie_filename %}
+                              <p class="text-xs text-slate-400 mt-1">Current: <code>{{ student.selfie_filename }}</code></p>
+                            {% endif %}
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ID document <span class="text-slate-400 font-normal">(JPG/PNG/PDF)</span></label>
+                            <input type="file" name="id_file" accept="image/jpeg,image/png,application/pdf"
+                                   class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            {% set id_jpg = 'uploads/' ~ student.student_id ~ '/' ~ student.student_id ~ '_id.jpg' %}
+                            {% set id_pdf = 'uploads/' ~ student.student_id ~ '/' ~ student.student_id ~ '_id.pdf' %}
+                            {% if id_jpg|file_exists %}
+                              <p class="text-xs text-slate-400 mt-1">Current: <code>{{ student.student_id }}_id.jpg</code></p>
+                            {% elif id_pdf|file_exists %}
+                              <p class="text-xs text-slate-400 mt-1">Current: <code>{{ student.student_id }}_id.pdf</code></p>
+                            {% else %}
+                              <p class="text-xs text-red-500 mt-1">No ID on file yet.</p>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                        <button type="button" @click="editOpen=false" class="btn btn-slate">Cancel</button>
+                        <button type="submit" class="btn btn-green">💾 Save Changes</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {% if student.is_suspended %}
+                <a href="{{ url_for('unsuspend_student', student_id=student.id) }}" class="btn btn-green w-full">✅ Unsuspend</a>
+              {% else %}
+                <form method="POST" action="{{ url_for('suspend_student') }}" onsubmit="return confirm('Suspend {{ student.name }} {{ student.surname }}?')">
+                  <input type="hidden" name="student_id" value="{{ student.id }}">
+                  <input type="hidden" name="reason" value="Violation of platform rules.">
+                  <button type="submit" class="btn btn-red w-full">🚫 Suspend</button>
+                </form>
+              {% endif %}
+
+              <a href="{{ url_for('reset_student_password', student_id=student.id) }}"
+                 onclick="return confirm('Reset password for {{ student.name }} {{ student.surname }}?')"
+                 class="btn btn-yellow w-full">🔑 Reset</a>
+
+              {% if admin_role_level >= 3 %}
+              <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" onsubmit="return confirm('Are you sure?')">
+                <button type="submit" class="btn btn-red-soft w-full">🗑️ Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

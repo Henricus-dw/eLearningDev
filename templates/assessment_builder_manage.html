@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme>
+<head>
+  <meta charset="UTF-8" />
+  <title>Builder – {{ course_code }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-950">
+  <div class="max-w-6xl mx-auto p-6">
+
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">Builder – {{ course_code }}</h1>
+      <div class="flex gap-3">
+        <a href="{{ url_for('run_final', course_code=course_code) }}?student_id=00000000"
+           class="px-3 py-2 rounded-xl border bg-white dark:bg-slate-800">Preview/Run</a>
+        <a href="{{ url_for('assessment_builder') }}" class="px-3 py-2 rounded-xl border bg-white dark:bg-slate-800">Back</a>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for c,m in messages %}
+          <div class="mb-3 rounded-xl px-4 py-3 {{ 'bg-green-50 border border-green-200 text-green-800' if c=='success' else 'bg-red-50 border border-red-200 text-red-800' }}">
+            {{ m }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Manual Add -->
+    <form method="POST" action="{{ url_for('assessment_builder_add', course_code=course_code) }}"
+          class="rounded-2xl bg-white dark:bg-slate-900 border dark:border-slate-700 p-6 shadow mb-6">
+      <h2 class="text-lg font-semibold">Add Question Manually</h2>
+      <div class="grid gap-4 mt-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Question</label>
+          <textarea name="question" rows="3"
+                    class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700" required></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Option A</label>
+          <input name="option_a" class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Option B</label>
+          <input name="option_b" class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Option C</label>
+          <input name="option_c" class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Option D</label>
+          <input name="option_d" class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700" required>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Correct Option</label>
+          <div class="flex flex-wrap gap-4">
+            {% for letter in ["A","B","C","D"] %}
+            <label class="inline-flex items-center gap-2">
+              <input type="radio" name="correct" value="{{ letter }}" required>
+              <span>{{ letter }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <button class="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white">Add Question</button>
+      </div>
+    </form>
+
+    <!-- Upload -->
+    <form method="POST" action="{{ url_for('assessment_builder_upload', course_code=course_code) }}" enctype="multipart/form-data"
+          class="rounded-2xl bg-white dark:bg-slate-900 border dark:border-slate-700 p-6 shadow mb-6">
+      <h2 class="text-lg font-semibold mb-2">Upload Excel/CSV</h2>
+      <input type="file" name="questions_file" accept=".xlsx,.xls,.csv" class="block w-full">
+      <label class="mt-2 inline-flex items-center gap-2">
+        <input type="checkbox" name="replace"> <span>Replace existing</span>
+      </label>
+      <p class="text-xs mt-2 text-slate-500">
+        MCQ: <code>Question, Option_A, Option_B, Option_C, Option_D, Correct_Option</code> (A/B/C/D) ·
+        Minimal: <code>Question_Text, Correct_Answer</code>
+      </p>
+      <div class="mt-3 flex gap-2">
+        <button class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">Import</button>
+        <a href="{{ url_for('assessment_builder_export', course_code=course_code) }}"
+           class="px-4 py-2 rounded-xl border bg-white dark:bg-slate-800">Export CSV</a>
+      </div>
+    </form>
+
+    <!-- Controls -->
+    <form method="GET" class="flex flex-wrap gap-3 items-center mb-3">
+      <input name="q" value="{{ q or '' }}" placeholder="Search question text…"
+             class="rounded-xl border p-2 dark:bg-slate-800 dark:border-slate-700">
+      <select name="per_page" class="rounded-xl border p-2 dark:bg-slate-800 dark:border-slate-700">
+        {% for n in [25,50,100] %}
+          <option value="{{n}}" {% if per_page==n %}selected{% endif %}>{{n}}/page</option>
+        {% endfor %}
+      </select>
+      <button class="px-3 py-2 rounded-xl bg-blue-600 text-white">Apply</button>
+    </form>
+
+    {% if pagination.pages > 1 %}
+    <div class="mb-3 flex gap-2">
+      {% if pagination.has_prev %}
+        <a class="px-3 py-1 rounded-lg border"
+           href="{{ url_for('assessment_builder_manage', course_code=course_code, page=pagination.prev_num, per_page=per_page, q=q) }}">Prev</a>
+      {% endif %}
+      <span class="px-3 py-1 rounded-lg border">Page {{ pagination.page }} / {{ pagination.pages }}</span>
+      {% if pagination.has_next %}
+        <a class="px-3 py-1 rounded-lg border"
+           href="{{ url_for('assessment_builder_manage', course_code=course_code, page=pagination.next_num, per_page=per_page, q=q) }}">Next</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Questions table -->
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border dark:border-slate-700 p-6 shadow">
+      <h2 class="text-lg font-semibold mb-3">Questions</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-600 dark:text-slate-300">
+              <th class="py-2 pr-3">#</th>
+              <th class="py-2 pr-3">Question</th>
+              <th class="py-2 pr-3">A</th>
+              <th class="py-2 pr-3">B</th>
+              <th class="py-2 pr-3">C</th>
+              <th class="py-2 pr-3">D</th>
+              <th class="py-2 pr-3">Correct</th>
+              <th class="py-2 pr-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for q in questions %}
+              <tr class="align-top">
+                <td class="py-2 pr-3">{{ loop.index + (pagination.page-1)*pagination.per_page }}</td>
+                <td class="py-2 pr-3 max-w-xl">{{ q.question }}</td>
+                <td class="py-2 pr-3">{{ q.option_a }}</td>
+                <td class="py-2 pr-3">{{ q.option_b }}</td>
+                <td class="py-2 pr-3">{{ q.option_c }}</td>
+                <td class="py-2 pr-3">{{ q.option_d }}</td>
+                <td class="py-2 pr-3 font-semibold uppercase">{{ q.correct }}</td>
+                <td class="py-2 pr-3">
+                  <form method="POST" action="{{ url_for('assessment_builder_delete', course_code=course_code, q_id=q.id) }}" onsubmit="return confirm('Delete this question?')">
+                    <button class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="8" class="py-4 text-slate-500">No questions yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if pagination.pages > 1 %}
+      <div class="mt-4 flex gap-2">
+        {% if pagination.has_prev %}
+          <a class="px-3 py-1 rounded-lg border"
+             href="{{ url_for('assessment_builder_manage', course_code=course_code, page=pagination.prev_num, per_page=per_page, q=q) }}">Prev</a>
+        {% endif %}
+        <span class="px-3 py-1 rounded-lg border">Page {{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+          <a class="px-3 py-1 rounded-lg border"
+             href="{{ url_for('assessment_builder_manage', course_code=course_code, page=pagination.next_num, per_page=per_page, q=q) }}">Next</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

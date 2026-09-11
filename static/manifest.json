@@ -1,0 +1,24 @@
+{
+  "name": "Professional Training",
+  "short_name": "ProTraining",
+  "description": "Aviation & Safety Training Platform",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#17306B",
+  "theme_color": "#17306B",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/images/PAS_Training_Logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/images/PAS_Training_Logo_no_opactity.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

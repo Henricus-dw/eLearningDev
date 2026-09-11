@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Training | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' }, violet: { DEFAULT: '#7c3aed' } } } }
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [x-cloak] { display: none !important; }
+    .card-violet { border-top: 4px solid #8b5cf6; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col">
+
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl w-full mx-auto px-4 py-8 flex-1">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between gap-3 mb-6 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#8b5cf6;">
+          <i class="fab fa-microsoft text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold" style="color:#6d28d9;">Virtual Training</h1>
+          <p class="text-sm text-slate-500">Create virtual courses, unlock their final assessments, and enrol students — all in one place.</p>
+        </div>
+      </div>
+      <a href="{{ url_for('admin_create_virtual_course') }}"
+         class="inline-flex items-center gap-2 px-4 py-2.5 text-white font-semibold rounded-lg text-sm transition shadow-sm"
+         style="background:#7c3aed;">
+        <i class="fas fa-plus"></i>
+        New Virtual Course
+      </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm
+                      {% if category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+                      {% elif category == 'warning' %}bg-amber-50 text-amber-700 border border-amber-200
+                      {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Shared student list + enrolled map for every per-course picker -->
+    <script>
+      window.__students = [
+        {% for s in students -%}
+        { id: {{ s.id }}, name: {{ (s.name ~ ' ' ~ s.surname)|tojson }}, email: {{ (s.email or '')|tojson }}, sid: {{ (s.student_id or '')|tojson }}, nid: {{ (s.national_id or '')|tojson }} }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ];
+      window.__enrolledMap = {
+        {% for sid, cids in enrolled_map.items() -%}
+        "{{ sid }}": {{ cids|tojson }}{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      };
+    </script>
+
+    {% if not course_rows %}
+      <div class="bg-white rounded-xl shadow-sm card-violet p-12 text-center">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#ede9fe;">
+          <i class="fab fa-microsoft text-3xl" style="color:#7c3aed;"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">No Virtual Courses Yet</h3>
+        <p class="text-slate-500 text-sm mb-4">Create your first virtual course to start running live Microsoft Teams classes.</p>
+        <a href="{{ url_for('admin_create_virtual_course') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 text-white font-semibold rounded-lg text-sm transition"
+           style="background:#7c3aed;">
+          <i class="fas fa-plus"></i>
+          New Virtual Course
+        </a>
+      </div>
+    {% else %}
+
+      <div class="space-y-5">
+        {% for row in course_rows %}
+          {% set c = row.course %}
+          <div class="bg-white rounded-xl shadow-sm card-violet overflow-hidden"
+               x-data="virtualCoursePicker({{ c.id }})">
+
+            <!-- Course header row -->
+            <div class="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-100">
+              <div class="flex items-start gap-4 flex-1">
+                {% if c.cover_image %}
+                  <img src="{{ url_for('static', filename='uploads/courses/' ~ c.cover_image) }}" alt="{{ c.title }}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+                {% else %}
+                  <div class="w-20 h-20 rounded-lg flex-shrink-0 flex items-center justify-center" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i class="fab fa-microsoft text-white text-2xl"></i>
+                  </div>
+                {% endif %}
+                <div class="flex-1">
+                  <h3 class="text-lg font-bold mb-1" style="color:#6d28d9;">{{ c.title }}</h3>
+                  <p class="text-sm text-slate-600 mb-2 line-clamp-2">{{ c.description }}</p>
+                  <div class="flex items-center gap-2 flex-wrap text-xs">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded font-semibold">
+                      <i class="fas fa-users"></i>
+                      {{ row.enrolled_count }} enrolled
+                    </span>
+                    {% if row.assessment_key %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-mono">
+                        <i class="fas fa-file-alt"></i>
+                        {{ row.assessment_key }}
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded font-semibold">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        No assessment linked
+                      </span>
+                    {% endif %}
+                    {% if c.virtual_unlocked %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 border border-green-300 rounded font-semibold">
+                        <i class="fas fa-unlock"></i>
+                        Unlocked
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-300 rounded font-semibold">
+                        <i class="fas fa-lock"></i>
+                        Locked
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <form method="POST" action="{{ url_for('admin_toggle_virtual_unlock', course_id=c.id) }}">
+                  {% if c.virtual_unlocked %}
+                    <button type="submit"
+                            onclick="return confirm('Lock the final assessment for all {{ row.enrolled_count }} enrolled student(s)?');"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg text-sm transition">
+                      <i class="fas fa-lock"></i>
+                      Lock Assessment
+                    </button>
+                  {% else %}
+                    <button type="submit"
+                            onclick="return confirm('Unlock the final assessment for all {{ row.enrolled_count }} enrolled student(s)?');"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg text-sm transition">
+                      <i class="fas fa-unlock"></i>
+                      Unlock Assessment
+                    </button>
+                  {% endif %}
+                </form>
+                <div class="relative" x-data="{ menu: false, modal: false, typed: '' }" @click.outside="menu = false">
+                  <button type="button" @click="menu = !menu"
+                          class="inline-flex items-center justify-center w-10 h-10 text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-300 rounded-lg transition"
+                          aria-label="More actions">
+                    <i class="fas fa-ellipsis-vertical"></i>
+                  </button>
+                  <div x-show="menu" x-cloak x-transition.opacity
+                       class="absolute right-0 mt-1 w-52 bg-white border border-slate-200 rounded-lg shadow-lg z-30 overflow-hidden">
+                    <button type="button"
+                            @click="menu = false; modal = true; typed = ''"
+                            class="w-full flex items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50 transition">
+                      <i class="fas fa-trash"></i>
+                      Delete Course
+                    </button>
+                  </div>
+
+                  <!-- Type-to-confirm delete modal -->
+                  <div x-show="modal" x-cloak x-transition.opacity
+                       style="display:none;"
+                       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                       @click.self="modal = false"
+                       @keydown.escape.window="modal = false">
+                    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+                      <div class="px-6 py-4 border-b border-slate-100">
+                        <h3 class="text-lg font-bold text-rose-600">
+                          <i class="fa-solid fa-triangle-exclamation mr-2"></i>Delete Virtual Course
+                        </h3>
+                      </div>
+                      <form method="POST" action="{{ url_for('admin_virtual_training_delete_course', course_id=c.id) }}">
+                        <div class="px-6 py-5">
+                          <p class="text-sm text-slate-700 mb-1">This action is <strong>permanent</strong> and cannot be undone. It will delete:</p>
+                          <ul class="text-sm text-slate-600 list-disc list-inside mb-4 space-y-0.5">
+                            <li>The virtual course <strong>{{ c.title }}</strong></li>
+                            <li>All {{ row.enrolled_count }} enrolment(s) for this course</li>
+                            <li>Any certificate queue rows pinned to this course id</li>
+                            <li>The course cover image on disk</li>
+                          </ul>
+                          <p class="text-sm text-slate-500 mb-3">The linked final assessment itself (<code class="bg-slate-100 px-1 rounded">{{ c.final_assessment_key or '—' }}</code>) is <strong>not</strong> deleted. Student accounts are <strong>not</strong> deleted.</p>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Type <span class="font-bold text-rose-600">{{ c.title }}</span> to confirm:
+                          </label>
+                          <input type="text" name="confirm_name" autocomplete="off" required
+                                 x-model="typed"
+                                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
+                                 placeholder="Course name...">
+                        </div>
+                        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+                          <button type="button" @click="modal = false"
+                                  class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">
+                            Cancel
+                          </button>
+                          <button type="submit"
+                                  :disabled="typed !== {{ c.title|tojson }}"
+                                  class="rounded-lg bg-rose-600 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Permanently Delete
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pre-final quizzes -->
+            <div class="px-5 py-4 border-b border-slate-100" x-data="{ addQuiz: false, editingId: null, deletingId: null, deleteTyped: '' }">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  Pre-Final Quizzes
+                  <span class="ml-1 text-xs text-slate-400 normal-case">({{ row.quizzes|length }})</span>
+                </h4>
+                <button type="button" @click="addQuiz = !addQuiz"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 text-white font-semibold rounded-lg text-xs transition"
+                        style="background:#7c3aed;">
+                  <i class="fas fa-plus"></i>
+                  Add Quiz
+                </button>
+              </div>
+
+              {% if row.quizzes %}
+                <ol class="space-y-2 mb-3">
+                  {% for quiz in row.quizzes %}
+                    <li class="p-3 bg-violet-50/60 border border-violet-100 rounded-lg">
+                      {# Row content: quiz info + action buttons. Wrapped in its own
+                         flex container so the edit panel below isn't a sibling of
+                         the info/buttons (which used to squash them when the panel
+                         expanded inside the same flex row). #}
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <div class="flex items-start gap-2 flex-1 min-w-0">
+                          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-violet-200 text-violet-800 text-xs font-bold flex-shrink-0">{{ loop.index }}</span>
+                          <div class="min-w-0">
+                            <div class="font-semibold text-slate-800 truncate">{{ quiz.title }}</div>
+                            <div class="flex items-center gap-1.5 flex-wrap text-[11px] mt-0.5">
+                              <span class="px-1.5 py-0.5 bg-white border border-slate-200 text-slate-600 rounded font-mono">{{ quiz.question_key }}</span>
+                              <span class="px-1.5 py-0.5 bg-white border border-slate-200 text-slate-600 rounded font-semibold">{{ quiz.pass_mark }}% pass</span>
+                              {% if quiz.required %}
+                                <span class="px-1.5 py-0.5 bg-amber-100 border border-amber-200 text-amber-800 rounded font-semibold">Required</span>
+                              {% else %}
+                                <span class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-500 rounded">Optional</span>
+                              {% endif %}
+                              {% if quiz.unlocked %}
+                                <span class="px-1.5 py-0.5 bg-green-100 border border-green-200 text-green-700 rounded font-semibold"><i class="fas fa-unlock"></i> Unlocked</span>
+                              {% else %}
+                                <span class="px-1.5 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 rounded font-semibold"><i class="fas fa-lock"></i> Locked</span>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0 flex-wrap">
+                          <a href="{{ url_for('admin_question_builder', key=quiz.question_key, return_to=url_for('admin_virtual_training')) }}"
+                             class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded text-xs transition"
+                             title="Open the Question Builder for this quiz">
+                            <i class="fas fa-list-check"></i>
+                            Edit Questions
+                          </a>
+                          <form method="POST" action="{{ url_for('admin_virtual_quiz_toggle_unlock', quiz_id=quiz.id) }}" class="inline">
+                            {% if quiz.unlocked %}
+                              <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-xs transition" title="Lock this quiz">
+                                <i class="fas fa-lock"></i>
+                              </button>
+                            {% else %}
+                              <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded text-xs transition" title="Unlock this quiz">
+                                <i class="fas fa-unlock"></i>
+                              </button>
+                            {% endif %}
+                          </form>
+                          <button type="button" @click="editingId = (editingId === {{ quiz.id }} ? null : {{ quiz.id }})"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded text-xs transition" title="Edit metadata">
+                            <i class="fas fa-pen"></i>
+                          </button>
+                          <button type="button" @click="deletingId = {{ quiz.id }}; deleteTyped = ''"
+                                  class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded text-xs transition" title="Delete quiz">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Edit metadata inline panel: sibling of the row content above,
+                           so it expands as a full-width block below the row instead of
+                           competing with the info/buttons for flex space. -->
+                      <div x-show="editingId === {{ quiz.id }}" x-cloak x-transition class="mt-3 border-t border-violet-200 pt-3">
+                        <form method="POST" action="{{ url_for('admin_virtual_quiz_update', quiz_id=quiz.id) }}" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Title</label>
+                            <input type="text" name="title" value="{{ quiz.title }}" required
+                                   class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Pass mark (%)</label>
+                            <input type="number" name="pass_mark" value="{{ quiz.pass_mark }}" min="0" max="100"
+                                   class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">
+                          </div>
+                          <div class="flex items-end gap-2">
+                            <label class="flex items-center gap-2 text-sm text-slate-700 flex-1">
+                              <input type="checkbox" name="required" value="1" {% if quiz.required %}checked{% endif %} class="w-4 h-4 accent-violet-600">
+                              Required
+                            </label>
+                            <button type="submit" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded text-xs transition">Save</button>
+                            <button type="button" @click="editingId = null" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded text-xs transition">Cancel</button>
+                          </div>
+                        </form>
+                      </div>
+
+                      <!-- Type-to-confirm delete modal -->
+                      <div x-show="deletingId === {{ quiz.id }}" x-cloak x-transition.opacity
+                           style="display:none;"
+                           class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                           @click.self="deletingId = null"
+                           @keydown.escape.window="deletingId = null">
+                        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+                          <div class="px-6 py-4 border-b border-slate-100">
+                            <h3 class="text-lg font-bold text-rose-600">
+                              <i class="fa-solid fa-triangle-exclamation mr-2"></i>Delete Quiz
+                            </h3>
+                          </div>
+                          <form method="POST" action="{{ url_for('admin_virtual_quiz_delete', quiz_id=quiz.id) }}">
+                            <div class="px-6 py-5">
+                              <p class="text-sm text-slate-700 mb-1">This action is <strong>permanent</strong>. It will delete:</p>
+                              <ul class="text-sm text-slate-600 list-disc list-inside mb-4 space-y-0.5">
+                                <li>The quiz <strong>{{ quiz.title }}</strong></li>
+                                <li>All saved attempts for this quiz</li>
+                                <li>The question file for <code class="bg-slate-100 px-1 rounded">{{ quiz.question_key }}</code></li>
+                                <li>The per-question asset folder under <code class="bg-slate-100 px-1 rounded">static/uploads/questions/{{ quiz.question_key }}/</code></li>
+                              </ul>
+                              <label class="block text-sm font-medium text-slate-700 mb-1">
+                                Type <span class="font-bold text-rose-600">{{ quiz.title }}</span> to confirm:
+                              </label>
+                              <input type="text" name="confirm_name" autocomplete="off" required
+                                     x-model="deleteTyped"
+                                     class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
+                                     placeholder="Quiz title...">
+                            </div>
+                            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+                              <button type="button" @click="deletingId = null"
+                                      class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">
+                                Cancel
+                              </button>
+                              <button type="submit"
+                                      :disabled="deleteTyped !== {{ quiz.title|tojson }}"
+                                      class="rounded-lg bg-rose-600 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Permanently Delete
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ol>
+              {% else %}
+                <p class="text-xs text-slate-400 italic py-2 mb-2">No pre-final quizzes yet. Add one to give learners formative practice before they attempt the final.</p>
+              {% endif %}
+
+              <!-- Add quiz inline form -->
+              <div x-show="addQuiz" x-cloak x-transition class="border-t border-slate-100 pt-3 mt-2">
+                <form method="POST" action="{{ url_for('admin_virtual_quiz_create', course_id=c.id) }}" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Quiz title</label>
+                    <input type="text" name="title" required placeholder="e.g. Section 1 — Definitions"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Pass mark (%)</label>
+                    <input type="number" name="pass_mark" value="80" min="0" max="100"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">
+                  </div>
+                  <div class="sm:col-span-3 flex items-center justify-between gap-3 flex-wrap">
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                      <input type="checkbox" name="required" value="1" checked class="w-4 h-4 accent-violet-600">
+                      Required (student must pass before the final unlocks)
+                    </label>
+                    <div class="flex items-center gap-2">
+                      <button type="button" @click="addQuiz = false"
+                              class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">Cancel</button>
+                      <button type="submit" class="px-4 py-2 text-white font-semibold rounded-lg text-sm transition" style="background:#7c3aed;">
+                        <i class="fas fa-plus mr-1"></i>Create Quiz
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Handbook -->
+            <div class="px-5 py-4 border-b border-slate-100">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  Handbook
+                  {% if row.handbook %}
+                    <span class="ml-1 text-xs text-slate-400 normal-case">(1)</span>
+                  {% else %}
+                    <span class="ml-1 text-xs text-slate-400 normal-case">(none)</span>
+                  {% endif %}
+                </h4>
+              </div>
+
+              {% if row.handbook %}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-violet-50/60 border border-violet-100 rounded-lg">
+                  <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-violet-200 text-violet-800 flex-shrink-0">
+                      <i class="fas fa-book"></i>
+                    </span>
+                    <div class="min-w-0">
+                      <div class="font-semibold text-slate-800 truncate">{{ row.handbook.title }}</div>
+                      <div class="text-xs text-slate-500 truncate">
+                        <span class="font-mono">{{ row.handbook.pdf_filename }}</span>
+                        {% if row.handbook.published_at %}
+                          &middot; uploaded {{ row.handbook.published_at.strftime('%d %b %Y') }}
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <a href="{{ url_for('static', filename='manuals/' ~ row.handbook.pdf_filename) }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded text-xs transition">
+                      <i class="fas fa-eye"></i> Preview
+                    </a>
+                    <form method="POST" action="{{ url_for('admin_virtual_training_handbook_delete', course_id=c.id) }}" class="inline"
+                          onsubmit="return confirm('Remove the handbook from {{ c.title }}?');">
+                      <button type="submit"
+                              class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded text-xs transition">
+                        <i class="fas fa-trash"></i> Remove
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% else %}
+                <p class="text-xs text-slate-400 italic mb-3">No handbook uploaded yet. Add a PDF that students can read during their Teams session.</p>
+              {% endif %}
+
+              <form method="POST" action="{{ url_for('admin_virtual_training_handbook_upload', course_id=c.id) }}"
+                    enctype="multipart/form-data" class="mt-3 flex flex-col sm:flex-row gap-2 sm:items-center">
+                <input type="file" name="handbook" accept="application/pdf" required
+                       class="flex-1 block w-full text-sm text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 file:text-xs file:font-semibold hover:file:bg-slate-300">
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white font-semibold rounded-lg text-sm transition"
+                        style="background:#7c3aed;">
+                  <i class="fas fa-upload"></i>
+                  {% if row.handbook %}Replace Handbook{% else %}Upload Handbook{% endif %}
+                </button>
+              </form>
+            </div>
+
+            <!-- Enrolled students table -->
+            <div class="px-5 py-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Enrolled Students</h4>
+                <button type="button" @click="open = !open"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 text-white font-semibold rounded-lg text-xs transition"
+                        style="background:#7c3aed;">
+                  <i class="fas fa-user-plus"></i>
+                  Add Student
+                </button>
+              </div>
+
+              {% if row.enrollments %}
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-xs text-slate-500 uppercase tracking-wide">
+                      <tr class="border-b border-slate-100">
+                        <th class="text-left py-2 pr-3 font-semibold">Student</th>
+                        <th class="text-left py-2 px-3 font-semibold">Session Date</th>
+                        <th class="text-left py-2 px-3 font-semibold">Teams Link</th>
+                        <th class="text-left py-2 px-3 font-semibold">Per-student Unlock</th>
+                        <th class="text-right py-2 pl-3 font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for enrollment, student in row.enrollments %}
+                        <tr class="border-b border-slate-50 last:border-b-0 hover:bg-slate-50">
+                          <td class="py-3 pr-3">
+                            <div class="font-semibold text-slate-800">{{ student.name }} {{ student.surname }}</div>
+                            <div class="text-xs text-slate-500">{{ student.email }}</div>
+                          </td>
+                          <td class="py-3 px-3 text-slate-600 text-xs">
+                            {% if enrollment.virtual_session_date %}
+                              {{ enrollment.virtual_session_date.strftime('%d %b %Y &middot; %H:%M')|safe }}
+                            {% else %}
+                              <span class="italic text-slate-400">Not set</span>
+                            {% endif %}
+                          </td>
+                          <td class="py-3 px-3 text-xs">
+                            {% if enrollment.teams_meeting_link %}
+                              <a href="{{ enrollment.teams_meeting_link }}" target="_blank" rel="noopener" class="text-violet-700 hover:underline truncate inline-block max-w-[200px]">
+                                <i class="fab fa-microsoft mr-1"></i>Link
+                              </a>
+                            {% else %}
+                              <span class="italic text-slate-400">None</span>
+                            {% endif %}
+                          </td>
+                          <td class="py-3 px-3 text-xs">
+                            {% if enrollment.assessment_unlocked %}
+                              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded font-semibold">
+                                <i class="fas fa-unlock"></i> Override
+                              </span>
+                            {% else %}
+                              <span class="text-slate-400">—</span>
+                            {% endif %}
+                          </td>
+                          <td class="py-3 pl-3 text-right">
+                            <form method="POST" action="{{ url_for('admin_virtual_training_unenroll', enrollment_id=enrollment.id) }}" class="inline">
+                              <button type="submit"
+                                      onclick="return confirm('Remove {{ student.name }} {{ student.surname }} from {{ c.title }}?');"
+                                      class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded text-xs transition">
+                                <i class="fas fa-user-slash"></i>
+                                Remove
+                              </button>
+                            </form>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <p class="text-sm text-slate-400 italic py-3">No students enrolled yet. Click <strong>Add Student</strong> to enrol someone.</p>
+              {% endif %}
+            </div>
+
+            <!-- Add-student inline panel -->
+            <div x-show="open" x-cloak x-transition class="border-t border-slate-100 bg-slate-50 px-5 py-5">
+              <form method="POST" action="{{ url_for('admin_virtual_training_enroll', course_id=c.id) }}" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Student</label>
+                  <div class="relative" @click.outside="dropdown = false">
+                    <div class="relative">
+                      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                      <input type="text"
+                             x-ref="searchInput"
+                             x-model="query"
+                             @focus="dropdown = true"
+                             @input="dropdown = true; studentId = ''"
+                             placeholder="Search by name, email, student ID, or national ID..."
+                             autocomplete="off"
+                             class="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-500 bg-white">
+                      <button type="button" x-show="studentId" @click="clearPick()"
+                              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                        <i class="fas fa-times-circle"></i>
+                      </button>
+                    </div>
+                    <input type="hidden" name="student_id" :value="studentId" required>
+                    <div x-show="dropdown && filtered.length > 0" x-cloak x-transition.opacity
+                         class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-72 overflow-y-auto z-20">
+                      <template x-for="s in filtered" :key="s.id">
+                        <button type="button" @click="pick(s)"
+                                class="w-full text-left px-3 py-2 hover:bg-violet-50 border-b border-slate-100 last:border-b-0 transition">
+                          <div class="text-sm font-semibold text-slate-800" x-text="s.name"></div>
+                          <div class="text-xs text-slate-500" x-text="s.email + (s.sid ? ' · ' + s.sid : '')"></div>
+                        </button>
+                      </template>
+                    </div>
+                    <div x-show="dropdown && query.trim() !== '' && filtered.length === 0" x-cloak
+                         class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-3 text-sm text-slate-500 z-20">
+                      No students match "<span x-text="query"></span>".
+                    </div>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1">Students already enrolled in this course are hidden.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Teams Meeting Link</label>
+                    <input type="url" name="teams_meeting_link" placeholder="https://teams.microsoft.com/..."
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-500 bg-white">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Session Date &amp; Time</label>
+                    <input type="datetime-local" name="virtual_session_date"
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-500 bg-white">
+                  </div>
+                </div>
+
+                <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer">
+                  <input type="checkbox" name="assessment_unlocked" value="1" class="w-5 h-5 accent-violet-600">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-800">Unlock Final Assessment for this student</div>
+                    <div class="text-xs text-slate-500">Overrides the course-level lock. Usually leave unchecked and use the course-level Unlock Assessment button once the class is done.</div>
+                  </div>
+                </label>
+
+                <div class="flex items-center justify-end gap-2">
+                  <button type="button" @click="open = false"
+                          class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">
+                    Cancel
+                  </button>
+                  <button type="submit"
+                          class="px-5 py-2 text-white font-semibold rounded-lg text-sm transition"
+                          style="background:#7c3aed;">
+                    <i class="fas fa-user-plus mr-1"></i>Enrol Student
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% endif %}
+  </main>
+
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-auto">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <script>
+    function virtualCoursePicker(courseId) {
+      return {
+        courseId: courseId,
+        open: false,
+        query: '',
+        dropdown: false,
+        studentId: '',
+        studentLabel: '',
+        get filtered() {
+          const q = this.query.trim().toLowerCase();
+          const taken = new Set();
+          // Hide students already enrolled in this specific course
+          for (const [sid, cids] of Object.entries(window.__enrolledMap || {})) {
+            if ((cids || []).indexOf(this.courseId) !== -1) {
+              taken.add(parseInt(sid, 10));
+            }
+          }
+          const pool = (window.__students || []).filter(s => !taken.has(s.id));
+          if (!q) return pool.slice(0, 30);
+          return pool.filter(function (s) {
+            return s.name.toLowerCase().includes(q)
+              || (s.email || '').toLowerCase().includes(q)
+              || (s.sid || '').toLowerCase().includes(q)
+              || (s.nid || '').toLowerCase().includes(q);
+          }).slice(0, 30);
+        },
+        pick(s) {
+          this.studentId = s.id;
+          this.studentLabel = s.name + ' \u2014 ' + s.email;
+          this.query = this.studentLabel;
+          this.dropdown = false;
+        },
+        clearPick() {
+          this.studentId = '';
+          this.studentLabel = '';
+          this.query = '';
+          this.dropdown = true;
+          this.$nextTick(() => { this.$refs.searchInput.focus(); });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

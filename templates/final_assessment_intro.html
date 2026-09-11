@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Final Assessment Intro - {{ course.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-context" data-page="Final Assessment Intro" data-course="{{ course.title }}" data-chapter="" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    .warning-box {
+      background-color: #fff3cd;
+      border-left: 6px solid #ffca2c;
+      padding: 15px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body class="container mt-5">
+
+  <h2>🎓 Final Assessment: {{ course.title }}</h2>
+
+  <p>You're about to start the final assessment. Before continuing, please take note of the following:</p>
+
+  <div class="warning-box">
+    <ul>
+      <li>📷 Your <strong>camera and microphone must be on</strong>.</li>
+      <li>🎥 You will be recorded for the duration of the assessment.</li>
+      <li>🚫 Do not close or refresh the browser until submission.</li>
+      <li>🕒 Make sure you're in a quiet environment and have enough time.</li>
+    </ul>
+  </div>
+
+  <form action="{{ url_for('final_assessment', course_id=course.id) }}" method="GET" class="mt-4">
+    <button type="submit" class="btn btn-primary btn-lg">✅ Start Final Assessment</button>
+  </form>
+
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-3">⬅ Back to Dashboard</a>
+  {% include 'partials/heartbeat.html' %}
+</body>
+</html>

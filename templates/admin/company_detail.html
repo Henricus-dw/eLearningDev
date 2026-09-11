@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ company.name }} — Company</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+          boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .progress-bar { transition: width 0.6s ease; }
+  </style>
+</head>
+<body class="min-h-screen" style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
+
+  <!-- Header bar -->
+  <header class="bg-brand-blue w-full">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_companies') }}"
+         class="flex items-center gap-2 border-2 border-white text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-white hover:text-brand-blue transition">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Companies</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-6 space-y-2">
+        {% for c,m in messages %}<div class="text-sm px-4 py-3 rounded-xl ring-1 {{ 'bg-emerald-50 text-emerald-700 ring-emerald-200' if c=='success' else ('bg-rose-50 text-rose-700 ring-rose-200' if c in ['danger','error'] else 'bg-amber-50 text-amber-900 ring-amber-200') }}">{{ m }}</div>{% endfor %}
+      </div>
+    {% endif %}{% endwith %}
+
+    <!-- Company name + stats -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-brand-blue">{{ company.name }}</h1>
+        {% if admin_role_level >= 3 %}
+        <button onclick="document.getElementById('edit-dialog').classList.remove('hidden')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition">
+          <i class="fa-solid fa-pen-to-square"></i> Edit
+        </button>
+        {% endif %}
+      </div>
+      <div class="text-right text-sm text-slate-600">
+        <div><span class="font-semibold">{{ company_students|length if company_students else 0 }}</span> students</div>
+        <div class="text-slate-500">Created: {{ company.created_at.strftime('%Y-%m-%d') if company.created_at else '—' }}</div>
+      </div>
+    </div>
+
+    <!-- Delete confirmation dialog -->
+    <div id="delete-dialog" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h3 class="text-lg font-bold text-rose-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Delete Company</h3>
+        </div>
+        <form method="post" action="{{ url_for('admin_delete_company', company_id=company.id) }}">
+          <div class="px-6 py-5">
+            <p class="text-sm text-slate-700 mb-1">This action is <strong>permanent</strong> and cannot be undone. It will delete:</p>
+            <ul class="text-sm text-slate-600 list-disc list-inside mb-4 space-y-0.5">
+              <li>The company profile and all its data</li>
+              <li>All company users and their POPIA consents</li>
+              <li>All company employees</li>
+              <li>All company orders</li>
+            </ul>
+            <p class="text-sm text-slate-500 mb-3">Students created by this company will <strong>not</strong> be deleted, but their company link will be removed.</p>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+              Type <span class="font-bold text-rose-600">{{ company.name }}</span> to confirm:
+            </label>
+            <input type="text" name="confirm_name" autocomplete="off" required
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400"
+                   placeholder="Company name..."
+                   oninput="document.getElementById('delete-btn').disabled = (this.value !== '{{ company.name|e }}')">
+          </div>
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+            <button type="button" onclick="document.getElementById('delete-dialog').classList.add('hidden')"
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">
+              Cancel
+            </button>
+            <button type="submit" id="delete-btn" disabled
+                    class="rounded-lg bg-rose-600 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-trash-can mr-1"></i> Permanently Delete
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if admin_role_level >= 3 %}
+    <!-- Edit company dialog -->
+    <div id="edit-dialog" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
+      <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full mx-4 my-8 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h3 class="text-lg font-bold text-brand-blue"><i class="fa-solid fa-pen-to-square mr-2 text-brand-gold"></i>Edit Company</h3>
+        </div>
+        <form method="post" action="{{ url_for('admin_edit_company', company_id=company.id) }}">
+          <div class="px-6 py-5 space-y-6 max-h-[70vh] overflow-y-auto">
+
+            <!-- Company name (full width, required) -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Company Name <span class="text-rose-500">*</span></label>
+              <input type="text" name="company_name" value="{{ company.name }}" required
+                     class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+            </div>
+
+            <!-- Status & Registration block -->
+            <fieldset>
+              <legend class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Status &amp; Registration</legend>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Registration Number</label>
+                  <input type="text" name="reg_no" value="{{ company.reg_no or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Industry</label>
+                  <input type="text" name="industry" value="{{ company.industry or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">VAT Number</label>
+                  <input type="text" name="vat_number" value="{{ company.vat_number or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Entity Responsible</label>
+                  <input type="text" name="entity_responsible" value="{{ company.entity_responsible or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Purchase Order Number</label>
+                  <input type="text" name="purchase_order_number" value="{{ company.purchase_order_number or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Address block -->
+            <fieldset>
+              <legend class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Address</legend>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Postal Address</label>
+                  <input type="text" name="postal_address" value="{{ company.postal_address or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Postal Code</label>
+                  <input type="text" name="postal_code" value="{{ company.postal_code or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Street Address</label>
+                  <input type="text" name="street_address" value="{{ company.street_address or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Street Postal Code</label>
+                  <input type="text" name="street_postal_code" value="{{ company.street_postal_code or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div class="md:col-span-3">
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Legacy Address <span class="text-slate-400 font-normal">(if used)</span></label>
+                  <input type="text" name="address" value="{{ company.address or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Contact block -->
+            <fieldset>
+              <legend class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Contact</legend>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Contact Person</label>
+                  <input type="text" name="contact_name" value="{{ company.contact_name or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Contact Email</label>
+                  <input type="email" name="contact_email" value="{{ company.contact_email or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Telephone</label>
+                  <input type="text" name="contact_phone" value="{{ company.contact_phone or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Cellphone</label>
+                  <input type="text" name="cellphone" value="{{ company.cellphone or '' }}"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+                </div>
+              </div>
+            </fieldset>
+
+          </div>
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+            <button type="button" onclick="document.getElementById('edit-dialog').classList.add('hidden')"
+                    class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">
+              Cancel
+            </button>
+            <button type="submit"
+                    class="rounded-lg bg-brand-blue text-white px-4 py-2 text-sm font-semibold hover:brightness-110 transition">
+              <i class="fa-solid fa-check mr-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Company profile — full width at top -->
+    <section class="bg-white rounded-xl ring-1 ring-slate-200 p-5 shadow-soft mb-6">
+      <h2 class="text-sm font-semibold text-slate-600 mb-3">Company Profile</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+        <div>
+          <div class="text-xs text-slate-400 font-medium mb-1">Status & Registration</div>
+          <div class="space-y-1 text-slate-700">
+            <div>
+              <span class="text-slate-500">Status:</span>
+              {% if company.approved %}
+                <span class="inline-flex items-center gap-1 text-emerald-600"><i class="fa-solid fa-circle-check"></i> Approved</span>
+              {% elif company.rejected %}
+                <span class="inline-flex items-center gap-1 text-rose-600"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 text-amber-600"><i class="fa-solid fa-clock"></i> Pending</span>
+              {% endif %}
+            </div>
+            {% if company.vat_number %}<div><span class="text-slate-500">VAT:</span> {{ company.vat_number }}</div>{% endif %}
+            {% if company.entity_responsible %}<div><span class="text-slate-500">Entity:</span> {{ company.entity_responsible }}</div>{% endif %}
+            {% if company.purchase_order_number %}<div><span class="text-slate-500">PO:</span> {{ company.purchase_order_number }}</div>{% endif %}
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400 font-medium mb-1">Address</div>
+          <div class="space-y-1 text-slate-700">
+            {% if company.postal_address %}<div><span class="text-slate-500">Postal:</span> {{ company.postal_address }}{% if company.postal_code %}, {{ company.postal_code }}{% endif %}</div>{% endif %}
+            {% if company.street_address %}<div><span class="text-slate-500">Street:</span> {{ company.street_address }}{% if company.street_postal_code %}, {{ company.street_postal_code }}{% endif %}</div>{% endif %}
+            {% if company.address %}<div><span class="text-slate-500">Address:</span> {{ company.address }}</div>{% endif %}
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400 font-medium mb-1">Contact</div>
+          <div class="space-y-1 text-slate-700">
+            <div><span class="text-slate-500">Name:</span> {{ company.contact_name or '—' }}</div>
+            <div><span class="text-slate-500">Email:</span> {{ company.contact_email or '—' }}</div>
+            <div><span class="text-slate-500">Tel:</span> {{ company.contact_phone or '—' }}</div>
+            {% if company.cellphone %}<div><span class="text-slate-500">Cell:</span> {{ company.cellphone }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Students — full width, expandable cards -->
+    <section class="bg-white rounded-xl ring-1 ring-slate-200 p-5 shadow-soft">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-slate-600">
+          Students
+          <span class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 ring-1 ring-blue-200">{{ company_students|length if company_students else 0 }}</span>
+        </h2>
+      </div>
+
+      {% if company_students %}
+        <div class="space-y-3">
+          {% for s in company_students %}
+          <div class="rounded-xl ring-1 ring-slate-200 overflow-hidden">
+            <!-- Student header row -->
+            <div class="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-slate-50/70 transition"
+                 onclick="toggleStudent('stu-{{ s.id }}')">
+              <div class="flex-shrink-0 w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-semibold text-sm">
+                {{ s.name[0] }}{{ s.surname[0] if s.surname else '' }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-slate-900 text-sm">{{ s.name }} {{ s.surname }}</div>
+                <div class="text-xs text-slate-500">{{ s.email }} &bull; ID: {{ s.student_id }}{% if s.national_id %} &bull; NID: {{ s.national_id }}{% endif %}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                {% if s.password_setup_token %}
+                  <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">Invite sent</span>
+                {% elif s.is_suspended %}
+                  <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">Suspended</span>
+                {% else %}
+                  <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">Active</span>
+                {% endif %}
+                <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-slate-50 text-slate-600 ring-1 ring-slate-200">
+                  {{ s.enrollments|length }} course{{ 's' if s.enrollments|length != 1 }}
+                </span>
+                <span class="text-xs text-slate-400">Joined: {{ s.date_joined.strftime('%d %b %Y') if s.date_joined else '—' }}</span>
+                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" id="chev-stu-{{ s.id }}"></i>
+              </div>
+            </div>
+
+            <!-- Enrollment details (hidden by default) -->
+            <div class="hidden border-t border-slate-100 bg-slate-50/50" id="stu-{{ s.id }}">
+              {% if s.enrollments %}
+                <div class="divide-y divide-slate-100">
+                  {% for enr in s.enrollments %}
+                    {% set prog = progress_map.get(enr.id, {"completed": 0, "total": 0, "percent": 0, "passed": false, "expired": false}) %}
+                    <div class="px-4 py-3">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="font-medium text-sm text-slate-900">
+                          <i class="fa-solid fa-book text-brand-gold mr-1"></i>
+                          {{ enr.course.title if enr.course else 'Course #' ~ enr.course_id }}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          {% if prog.passed and not prog.expired %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                              <i class="fa-solid fa-circle-check mr-0.5"></i> Passed{% if prog.last_score %} ({{ prog.last_score }}%){% endif %}
+                            </span>
+                          {% elif prog.passed and prog.expired %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Expired
+                            </span>
+                          {% elif prog.failed and prog.attempts_left == 0 %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                              <i class="fa-solid fa-circle-xmark mr-0.5"></i> Failed ({{ prog.last_score }}%)
+                            </span>
+                          {% elif prog.failed %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-rotate-right mr-0.5"></i> Failed ({{ prog.last_score }}%) — {{ prog.attempts_left }} left
+                            </span>
+                          {% elif enr.approved %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-blue-50 text-blue-700 ring-1 ring-blue-200">
+                              <i class="fa-solid fa-spinner mr-0.5"></i> In Progress
+                            </span>
+                          {% else %}
+                            <span class="inline-flex items-center rounded-full text-xs px-2 py-0.5 bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                              <i class="fa-solid fa-clock mr-0.5"></i> Pending Approval
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <!-- Progress bar -->
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div class="progress-bar h-full rounded-full {{ 'bg-emerald-500' if prog.passed else ('bg-rose-500' if prog.failed and prog.attempts_left == 0 else ('bg-amber-400' if prog.failed else ('bg-brand-blue' if prog.percent > 0 else 'bg-slate-300'))) }}"
+                               style="width: {{ prog.percent }}%"></div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-600 w-10 text-right">{{ prog.percent }}%</span>
+                      </div>
+
+                      <!-- Detail chips -->
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <div><i class="fa-regular fa-calendar mr-1"></i> Enrolled: {{ enr.enrolled_at.strftime('%d %b %Y') if enr.enrolled_at else '—' }}</div>
+                        <div><i class="fa-regular fa-clock mr-1"></i> Last accessed: {{ enr.last_accessed.strftime('%d %b %Y') if enr.last_accessed else 'Never' }}</div>
+                        <div><i class="fa-solid fa-list-check mr-1"></i> {{ prog.completed }}/{{ prog.total }} chapters</div>
+                        {% if prog.attempts_used is defined and prog.attempts_used > 0 %}
+                          <div><i class="fa-solid fa-pen-to-square mr-1"></i> Attempts: {{ prog.attempts_used }} used, {{ prog.attempts_left }} remaining</div>
+                        {% endif %}
+                        {% if prog.passed and prog.passed_date %}
+                          <div><i class="fa-solid fa-award text-emerald-600 mr-1"></i> Passed: {{ prog.passed_date.strftime('%d %b %Y') }}</div>
+                        {% endif %}
+                        {% if prog.cert_expiry %}
+                          {% if prog.expired %}
+                            <div class="text-rose-600 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Renewal overdue (expired {{ prog.cert_expiry.strftime('%d %b %Y') }})</div>
+                          {% else %}
+                            <div><i class="fa-solid fa-rotate mr-1"></i> Renewal: {{ prog.cert_expiry.strftime('%d %b %Y') }} <span class="text-emerald-600 font-medium">({{ prog.time_remaining }} left)</span></div>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="px-4 py-4 text-sm text-slate-400 text-center">
+                  No course enrollments yet.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-12 text-slate-400">
+          <i class="fa-solid fa-users text-3xl mb-2"></i>
+          <p class="text-sm">No students registered by this company yet.</p>
+        </div>
+      {% endif %}
+    </section>
+
+    {% if admin_role_level >= 3 %}
+    <!-- Danger zone — bottom right -->
+    <div class="flex justify-end mt-8">
+      <button onclick="document.getElementById('delete-dialog').classList.remove('hidden')"
+              class="flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-600 transition">
+        <i class="fa-solid fa-trash-can"></i> Delete Company
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <script>
+    // Auto-open edit dialog if ?edit=1 in URL
+    if (new URLSearchParams(window.location.search).get('edit') === '1') {
+      const editDialog = document.getElementById('edit-dialog');
+      if (editDialog) editDialog.classList.remove('hidden');
+    }
+
+    function toggleStudent(id) {
+      const el = document.getElementById(id);
+      const chev = document.getElementById('chev-' + id);
+      if (!el) return;
+      el.classList.toggle('hidden');
+      if (chev) chev.classList.toggle('rotate-180');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Final Assessment Monitor | Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    .pulse-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <header class="bg-brand-blue text-white">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-eye text-brand-gold text-xl"></i>
+        <h1 class="text-xl font-semibold">Final Assessment Monitor</h1>
+      </div>
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="text-sm border border-white/40 hover:bg-white/10 rounded-lg px-3 py-1.5">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Back to Admin
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Live status banner -->
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-sm text-slate-500">
+        Updates every 15 seconds. Heartbeats arrive every 30 seconds from each student.
+      </p>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="inline-flex items-center gap-1.5 text-emerald-600">
+          <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-emerald-500"></span> Live
+        </span>
+      </div>
+    </div>
+
+    <!-- ACTIVE sittings -->
+    <section class="bg-white rounded-2xl ring-1 ring-slate-200 shadow-sm mb-8">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-700">
+          <i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i>
+          Currently in Assessment
+          <span id="activeCount" class="ml-2 inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 text-xs px-2 py-0.5">
+            {{ active_rows|length }}
+          </span>
+        </h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" id="activeTable">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr>
+              <th class="text-left px-4 py-3">Student</th>
+              <th class="text-left px-4 py-3">Course</th>
+              <th class="text-left px-4 py-3">Started</th>
+              <th class="text-left px-4 py-3">Last Heartbeat</th>
+              <th class="text-left px-4 py-3">Elapsed</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for r in active_rows %}
+            <tr>
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-800">{{ r.student_name }}</div>
+                <div class="text-xs text-slate-400">{{ r.student_number }}</div>
+              </td>
+              <td class="px-4 py-3 text-slate-700"><code class="text-xs">{{ r.course_key }}</code></td>
+              <td class="px-4 py-3 text-slate-600">{{ r.started_at.strftime('%H:%M:%S') }}</td>
+              <td class="px-4 py-3 text-slate-600">{{ r.last_heartbeat_at.strftime('%H:%M:%S') }}</td>
+              <td class="px-4 py-3 text-slate-700 font-mono text-xs">
+                {{ '%02d:%02d' | format(r.elapsed_seconds // 60, r.elapsed_seconds % 60) }}
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not active_rows %}
+            <tr>
+              <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-400 italic">
+                No-one is currently in a Final Assessment.
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RECENTLY FINISHED -->
+    <section class="bg-white rounded-2xl ring-1 ring-slate-200 shadow-sm">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-700">
+          <i class="fa-solid fa-flag-checkered text-slate-500 mr-1"></i>
+          Finished in Last 24 Hours
+          <span id="finishedCount" class="ml-2 inline-flex items-center rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200 text-xs px-2 py-0.5">
+            {{ finished_rows|length }}
+          </span>
+        </h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" id="finishedTable">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr>
+              <th class="text-left px-4 py-3">Student</th>
+              <th class="text-left px-4 py-3">Course</th>
+              <th class="text-left px-4 py-3">Started</th>
+              <th class="text-left px-4 py-3">Finished</th>
+              <th class="text-left px-4 py-3">Duration</th>
+              <th class="text-left px-4 py-3">Reason</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for r in finished_rows %}
+            <tr>
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-800">{{ r.student_name }}</div>
+                <div class="text-xs text-slate-400">{{ r.student_number }}</div>
+              </td>
+              <td class="px-4 py-3 text-slate-700"><code class="text-xs">{{ r.course_key }}</code></td>
+              <td class="px-4 py-3 text-slate-600">{{ r.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td class="px-4 py-3 text-slate-600">{{ r.finished_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td class="px-4 py-3 text-slate-700 font-mono text-xs">
+                {{ '%02d:%02d' | format(r.elapsed_seconds // 60, r.elapsed_seconds % 60) }}
+              </td>
+              <td class="px-4 py-3">
+                {% if r.finish_reason == 'submitted' %}
+                  <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 text-xs px-2 py-0.5">
+                    <i class="fa-solid fa-paper-plane mr-1 text-[10px]"></i> Submitted
+                  </span>
+                {% elif r.finish_reason == 'stale' %}
+                  <span class="inline-flex items-center rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200 text-xs px-2 py-0.5">
+                    <i class="fa-solid fa-clock mr-1 text-[10px]"></i> Stale / abandoned
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center rounded-full bg-slate-50 text-slate-600 ring-1 ring-slate-200 text-xs px-2 py-0.5">
+                    {{ r.finish_reason or '—' }}
+                  </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not finished_rows %}
+            <tr>
+              <td colspan="6" class="px-4 py-8 text-center text-sm text-slate-400 italic">
+                No assessments finished in the last 24 hours.
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Lightweight auto-refresh. Re-fetches JSON every 15s, replaces the badges
+    // and re-renders both tables in place. Server cleans up stale sessions on
+    // every call so the active list does not get sticky.
+    const REFRESH_MS = 15000;
+
+    function fmtTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toTimeString().slice(0, 8);
+    }
+    function fmtDateTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day} ${d.toTimeString().slice(0, 5)}`;
+    }
+    function fmtDuration(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+    function reasonChip(reason) {
+      if (reason === 'submitted')
+        return '<span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 text-xs px-2 py-0.5"><i class="fa-solid fa-paper-plane mr-1 text-[10px]"></i> Submitted</span>';
+      if (reason === 'stale')
+        return '<span class="inline-flex items-center rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200 text-xs px-2 py-0.5"><i class="fa-solid fa-clock mr-1 text-[10px]"></i> Stale / abandoned</span>';
+      return '<span class="inline-flex items-center rounded-full bg-slate-50 text-slate-600 ring-1 ring-slate-200 text-xs px-2 py-0.5">' + (reason || '—') + '</span>';
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch('/api/assessment-monitor', { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('activeCount').textContent = data.active.length;
+        document.getElementById('finishedCount').textContent = data.finished.length;
+
+        // Active rows
+        const aBody = document.querySelector('#activeTable tbody');
+        if (!data.active.length) {
+          aBody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-sm text-slate-400 italic">No-one is currently in a Final Assessment.</td></tr>';
+        } else {
+          aBody.innerHTML = data.active.map(r =>
+            `<tr>
+              <td class="px-4 py-3"><div class="font-medium text-slate-800">${r.student_name}</div><div class="text-xs text-slate-400">${r.student_number}</div></td>
+              <td class="px-4 py-3 text-slate-700"><code class="text-xs">${r.course_key}</code></td>
+              <td class="px-4 py-3 text-slate-600">${fmtTime(r.started_at)}</td>
+              <td class="px-4 py-3 text-slate-600">${fmtTime(r.last_heartbeat_at)}</td>
+              <td class="px-4 py-3 text-slate-700 font-mono text-xs">${fmtDuration(r.elapsed_seconds)}</td>
+            </tr>`
+          ).join('');
+        }
+
+        // Finished rows
+        const fBody = document.querySelector('#finishedTable tbody');
+        if (!data.finished.length) {
+          fBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-400 italic">No assessments finished in the last 24 hours.</td></tr>';
+        } else {
+          fBody.innerHTML = data.finished.map(r =>
+            `<tr>
+              <td class="px-4 py-3"><div class="font-medium text-slate-800">${r.student_name}</div><div class="text-xs text-slate-400">${r.student_number}</div></td>
+              <td class="px-4 py-3 text-slate-700"><code class="text-xs">${r.course_key}</code></td>
+              <td class="px-4 py-3 text-slate-600">${fmtDateTime(r.started_at)}</td>
+              <td class="px-4 py-3 text-slate-600">${fmtDateTime(r.finished_at)}</td>
+              <td class="px-4 py-3 text-slate-700 font-mono text-xs">${fmtDuration(r.elapsed_seconds)}</td>
+              <td class="px-4 py-3">${reasonChip(r.finish_reason)}</td>
+            </tr>`
+          ).join('');
+        }
+      } catch (_e) {
+        // Network blip — leave previous render in place; next tick will retry.
+      }
+    }
+    setInterval(refresh, REFRESH_MS);
+  </script>
+</body>
+</html>

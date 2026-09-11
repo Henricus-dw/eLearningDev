@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Assessment Submitted{{ " - " ~ course.title if course is defined and course and course.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  {# ---------- Safe fallbacks / derived values ---------- #}
+  {% set _score = score if score is defined and score is not none else 0 %}
+  {% set _total = total if total is defined and total is not none else 0 %}
+  {% set _pct = percentage if percentage is defined and percentage is not none else (_score * 100 // _total if _total
+  else 0) %}
+  {% set pass_mark = pass_mark if pass_mark is defined and pass_mark is not none else 80 %}
+  {% set passed_bool = passed if passed is defined else (_pct >= pass_mark) %}
+
+  {# Attempts: support (attempts_used/attempts_allowed) OR (attempt_no/attempts_left) #}
+  {% set used = attempts_used if attempts_used is defined and attempts_used is not none
+  else (attempt_no if attempt_no is defined and attempt_no is not none else None) %}
+  {% set allowed = attempts_allowed if attempts_allowed is defined and attempts_allowed is not none
+  else ((used + attempts_left) if (used is not none and attempts_left is defined and attempts_left is not none) else
+  None) %}
+  {% set left = attempts_left if attempts_left is defined and attempts_left is not none
+  else ((allowed - used) if (allowed is not none and used is not none) else None) %}
+
+  {# ✅ Retake allowed ONLY if below pass mark AND attempts left #}
+  {% set can_retake_bool = (left is not none and left > 0 and _pct < pass_mark) %} <main
+    class="max-w-3xl mx-auto px-4 py-10">
+    <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-8 text-center">
+      <!-- Header -->
+      <div class="mb-6">
+        <div class="text-5xl" aria-hidden="true">
+          {% if passed_bool %}✔️{% else %}❌{% endif %}
+        </div>
+        <h1 class="mt-3 text-2xl font-bold">
+          Assessment Submitted —
+          <span class="{{ 'text-emerald-600' if passed_bool else 'text-rose-600' }}">
+            {{ 'Passed' if passed_bool else 'Failed' }}
+          </span>
+        </h1>
+        {% if course is defined and course and course.title %}
+        <p class="mt-1 text-slate-500">
+          Course:
+          <span class="font-semibold text-slate-700">{{ course.title }}</span>
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- Score row -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+        <span
+          class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold
+                     {{ 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' if passed_bool else 'bg-rose-50 text-rose-700 ring-1 ring-rose-200' }}">
+          {{ _pct }}%
+        </span>
+        <span
+          class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200">
+          Score: {{ _score }}/{{ _total }}
+        </span>
+        <span
+          class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200">
+          Pass Mark: {{ pass_mark }}%
+        </span>
+      </div>
+
+      <!-- Attempts / status -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left">
+          <div class="text-xs uppercase tracking-wide text-slate-500">Attempt</div>
+          <div class="mt-1 text-lg font-semibold">
+            {% if used is not none and allowed is not none %}
+            {{ used }} <span class="text-slate-400">/ {{ allowed }}</span>
+            {% elif used is not none %}
+            {{ used }}
+            {% else %}
+            —
+            {% endif %}
+          </div>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left">
+          <div class="text-xs uppercase tracking-wide text-slate-500">Attempts Left</div>
+          <div class="mt-1 text-lg font-semibold">
+            {{ left if left is not none else '—' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Retake CTA / success note -->
+      {% if not passed_bool %}
+      {% if can_retake_bool %}
+      <p class="text-rose-700 font-medium">
+        You can rewrite this assessment.
+      </p>
+
+      {# Prefer a secure POST to create a fresh attempt #}
+      <form method="POST" action="{{ url_for('retake_final_assessment', course_id=course.id) }}" class="mt-2">
+        {% if attempt_id is defined and attempt_id %}
+        <input type="hidden" name="prev_attempt_id" value="{{ attempt_id }}">
+        {% endif %}
+        <button type="submit"
+          class="inline-flex items-center justify-center rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2 transition">
+          🔁 Re-attempt Final Assessment
+        </button>
+      </form>
+
+      {# If you already have a GET retake link in the context, keep it as a fallback link #}
+      {% if retake_url %}
+      <div class="mt-2">
+        <a href="{{ retake_url }}"
+          class="inline-flex items-center justify-center rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-700 font-semibold px-5 py-2 transition">
+          Or use existing retake link
+        </a>
+      </div>
+      {% endif %}
+      {% else %}
+      <p class="text-rose-700 font-medium">
+        You have no retakes left for this assessment.
+      </p>
+      {% endif %}
+      {% else %}
+      <p class="text-emerald-700 font-semibold">
+        🎉 No further attempts required.
+      </p>
+      {% endif %}
+
+      <!-- Moderation note -->
+      <p class="mt-6 text-cyan-700 text-sm">
+        ⏳ Your submission (including the proctoring video) has been saved for moderation.
+      </p>
+
+      <!-- Optional video preview -->
+      {% if video_url is defined and video_url %}
+      <div class="mt-6">
+        <video controls class="w-full max-w-2xl mx-auto rounded-xl ring-1 ring-slate-200">
+          <source src="{{ video_url }}" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      {% endif %}
+
+      <!-- Actions -->
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="{{ url_for('dashboard') }}"
+          class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 transition">
+          Back to Dashboard
+        </a>
+        {% if result_pdf_url is defined and result_pdf_url %}
+        <a href="{{ result_pdf_url }}"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-5 py-2 transition">
+          Download PDF
+        </a>
+        {% endif %}
+      </div>
+    </section>
+    </main>
+</body>
+
+</html>

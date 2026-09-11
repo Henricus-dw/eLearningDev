@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Support Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body class="bg-gray-100 h-screen flex">
+
+  <!-- Sidebar with Active Chats -->
+  <aside class="w-72 bg-blue-900 text-white p-4 flex flex-col">
+    <h2 class="text-xl font-bold mb-4 flex items-center justify-between">
+      Active Chats 
+      <span id="chatBadge" class="bg-red-600 text-white text-sm font-bold rounded-full px-3 py-1">0</span>
+    </h2>
+    <ul id="chatList" class="space-y-2 flex-1 overflow-y-auto"></ul>
+  </aside>
+
+  <!-- Chat Window -->
+  <main class="flex-1 flex flex-col">
+    <div id="chatHeader" class="bg-gray-200 dark:bg-gray-700 p-4 text-lg font-bold text-gray-800 dark:text-gray-200">
+      Select a chat to start
+    </div>
+    <div id="chatWindow" class="flex-1 p-6 overflow-y-auto bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+      <p class="italic text-gray-500 dark:text-gray-400">No chat selected</p>
+    </div>
+    <div class="p-4 border-t flex bg-gray-50 dark:bg-gray-700">
+      <input id="adminInput" type="text" placeholder="Type a reply..."
+             class="flex-1 p-2 border rounded-l dark:bg-gray-600 dark:text-white">
+      <button id="adminSend" class="bg-green-600 text-white px-4 rounded-r">Send</button>
+    </div>
+  </main>
+
+<script>
+  const socket = io();
+  let currentChat = null;
+
+  // Join support room
+  socket.emit("join_support");
+
+  const chatList = document.getElementById("chatList");
+  const chatWindow = document.getElementById("chatWindow");
+  const chatHeader = document.getElementById("chatHeader");
+  const chatBadge = document.getElementById("chatBadge");
+  const adminInput = document.getElementById("adminInput");
+  const adminSend = document.getElementById("adminSend");
+
+  // Update waiting queue
+  socket.on("update_queue", chats => {
+    chatList.innerHTML = "";
+    let count = 0;
+
+    chats.forEach(c => {
+      if (c.startsWith("admin-")) return; // skip support itself
+      count++;
+      chatList.innerHTML += `
+        <li>
+          <button onclick="selectChat('${c}')" 
+                  class="w-full text-left bg-blue-800 hover:bg-blue-700 p-3 rounded">
+            ${c}
+          </button>
+        </li>`;
+    });
+
+    // Update badge
+    chatBadge.textContent = count;
+    chatBadge.style.display = count > 0 ? "inline-block" : "none";
+  });
+
+  // Select a chat
+  function selectChat(id) {
+    currentChat = id;
+    chatHeader.textContent = `Chat with ${id}`;
+    chatWindow.innerHTML = `<p class="italic text-gray-500">Connected to ${id}</p>`;
+  }
+
+  // Send a reply
+  adminSend.onclick = () => {
+    if (!currentChat) return;
+    const msg = adminInput.value.trim();
+    if (!msg) return;
+
+    chatWindow.innerHTML += `<div class="mb-2"><b>You:</b> ${msg}</div>`;
+    socket.emit("send_message", { chat_id: currentChat, message: "🛠 Support: " + msg });
+    adminInput.value = "";
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  };
+
+  // Receive updates
+  socket.on("admin_update", data => {
+    if (data.chat_id === currentChat) {
+      chatWindow.innerHTML += `<div class="mb-2 text-blue-600"><b>${data.chat_id}:</b> ${data.message}</div>`;
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+  });
+</script>
+</body>
+</html>

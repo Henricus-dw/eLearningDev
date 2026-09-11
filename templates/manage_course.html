@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Course - {{ course.title }}</title>
+
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-blue { background: var(--brand-blue); color: #fff; }
+    .btn-blue:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-gold { background: var(--brand-gold); color: #1a1a1a; }
+    .btn-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+    .btn-red { background: #dc2626; color: #fff; }
+    .btn-red:hover { background: #b91c1c; }
+
+    .btn-indigo { background: #4f46e5; color: #fff; }
+    .btn-indigo:hover { background: #4338ca; }
+
+    .btn-emerald { background: #059669; color: #fff; }
+    .btn-emerald:hover { background: #047857; }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #f8fafc;
+    }
+
+    .chip-success { background: #dcfce7; border-color: #86efac; color: #166534; }
+    .chip-warning { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+
+    .dropzone {
+      border: 2px dashed rgba(199,164,52,.7);
+      background: #FFF9E6;
+      border-radius: 14px;
+      transition: .15s;
+    }
+
+    .dropzone:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    .dropzone.drag {
+      background: #fff2c7;
+      border-color: var(--brand-gold);
+    }
+
+    /* Chapter grid blocks */
+    .chapter-block {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      cursor: grab;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      min-height: 110px;
+    }
+
+    .chapter-block:hover {
+      box-shadow: 0 4px 16px rgba(23, 48, 107, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .chapter-block.sortable-ghost {
+      opacity: 0.4;
+    }
+
+    .chapter-block.quiz-chapter {
+      background: #FFFBEB;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .chapter-action {
+      color: #b0b8c4;
+      font-size: 0.7rem;
+      padding: 2px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.15s;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .chapter-action:hover {
+      color: #475569;
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('manage_courses') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to All Courses</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Page Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-1">Manage Course</div>
+        <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-graduation-cap text-[var(--brand-gold)]"></i> {{ course.title }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="chip">
+          <i class="fas fa-hashtag text-[var(--brand-gold)]"></i>
+          {{ course.code }}
+        </span>
+        <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-gold shadow text-sm">
+          <i class="fas fa-pen-to-square"></i> Edit Details
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-3">
+          {% for category, message in messages %}
+            <div class="px-4 py-3 rounded-lg text-sm font-medium shadow-sm
+                        {% if category in ['success','ok'] %}
+                          bg-green-100 border border-green-300 text-green-800
+                        {% elif category in ['danger','error'] %}
+                          bg-red-100 border border-red-300 text-red-800
+                        {% elif category in ['warning','warn'] %}
+                          bg-yellow-100 border border-yellow-300 text-yellow-800
+                        {% else %}
+                          bg-blue-100 border border-blue-300 text-blue-800
+                        {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Course Summary -->
+    <div class="card p-5">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <p class="text-slate-600 mt-1">{{ course.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cover Uploader -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-image text-[var(--brand-gold)] mr-1"></i> Course Cover
+        </h3>
+        {% if course.cover_image %}
+          <span class="chip chip-success"><i class="fas fa-circle-check"></i> Set</span>
+        {% else %}
+          <span class="chip chip-warning"><i class="fas fa-triangle-exclamation"></i> Not set</span>
+        {% endif %}
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <img id="coverPreview"
+               src="{% if course.cover_image %}{{ url_for('static', filename='uploads/courses/' ~ course.cover_image) }}{% else %}{{ url_for('static', filename='images/coursepreview.jpg') }}{% endif %}"
+               alt="Course cover preview"
+               class="w-full rounded-xl border shadow-md"
+               style="border-color: rgba(23,48,107,.15); aspect-ratio:16/9; object-fit:cover; background:#f3f4f6;">
+          <p class="mt-2 text-xs text-slate-500">Recommended 1200x675 (16:9). PNG/JPG/WEBP, max 5 MB.</p>
+        </div>
+
+        <div>
+          <form method="POST" action="{{ url_for('upload_course_cover', course_id=course.id) }}"
+                enctype="multipart/form-data" id="coverForm" class="space-y-3">
+            {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+            <div id="coverDrop" class="dropzone p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="font-semibold" style="color:var(--brand-blue)">Drag &amp; drop</div>
+                  <div class="text-xs text-slate-600">or click to choose a file. You'll see a preview.</div>
+                </div>
+                <label class="btn btn-blue cursor-pointer text-sm">
+                  Browse...
+                  <input type="file" class="hidden" name="cover" id="coverInput" accept="image/png,image/jpeg,image/webp">
+                </label>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button class="btn btn-gold shadow disabled:opacity-50" type="submit" id="uploadBtn" disabled>
+                <i class="fas fa-upload"></i> Upload Cover
+              </button>
+              {% if course.cover_image %}
+                <button form="deleteCoverForm" class="btn btn-red shadow" type="submit">
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {% if course.cover_image %}
+      <form id="deleteCoverForm" method="POST" action="{{ url_for('delete_course_cover', course_id=course.id) }}">
+        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+      </form>
+    {% endif %}
+
+    <!-- Handbook Uploader -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-book text-[var(--brand-gold)] mr-1"></i> Course Handbook
+        </h3>
+        {% if handbook %}
+          <span class="chip chip-success"><i class="fas fa-circle-check"></i> Uploaded</span>
+        {% else %}
+          <span class="chip chip-warning"><i class="fas fa-triangle-exclamation"></i> Not set</span>
+        {% endif %}
+      </div>
+
+      {% if handbook %}
+        <div class="rounded-lg bg-slate-50 p-4 border border-slate-200 mb-4">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-file-pdf text-2xl text-rose-600"></i>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-slate-800 truncate">{{ handbook.title }}</p>
+              <p class="text-xs text-slate-500">
+                {{ handbook.pdf_filename }}
+                {% if handbook.published_at %}
+                  &middot; Uploaded {{ handbook.published_at.strftime('%d %b %Y, %H:%M') }}
+                {% endif %}
+              </p>
+            </div>
+            <a href="{{ url_for('static', filename='manuals/' ~ handbook.pdf_filename) }}"
+               target="_blank" class="btn btn-blue text-sm">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </div>
+        </div>
+      {% endif %}
+
+      <div>
+        <form method="POST" action="{{ url_for('upload_course_handbook', course_id=course.id) }}"
+              enctype="multipart/form-data" id="handbookForm" class="space-y-3">
+          {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+          <div id="handbookDrop" class="dropzone p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="font-semibold" style="color:var(--brand-blue)">Drag &amp; drop PDF</div>
+                <div class="text-xs text-slate-600">or click to choose a file. PDF only, max 100 MB.</div>
+              </div>
+              <label class="btn btn-blue cursor-pointer text-sm">
+                Browse...
+                <input type="file" class="hidden" name="handbook" id="handbookInput" accept="application/pdf,.pdf">
+              </label>
+            </div>
+          </div>
+          <p id="handbookFileName" class="text-sm text-slate-600 hidden">
+            <i class="fas fa-file-pdf text-rose-500 mr-1"></i>
+            <span id="handbookFileNameText"></span>
+          </p>
+
+          <!-- Upload progress bar -->
+          <div id="handbookProgress" class="hidden">
+            <div class="flex items-center justify-between text-sm text-slate-600 mb-1">
+              <span id="handbookProgressLabel">Uploading...</span>
+              <span id="handbookProgressPct">0%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+              <div id="handbookProgressBar" class="h-full bg-[var(--brand-gold)] rounded-full transition-all duration-200" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button class="btn btn-gold shadow disabled:opacity-50" type="submit" id="handbookUploadBtn" disabled>
+              <i class="fas fa-upload"></i> Upload Handbook
+            </button>
+            {% if handbook %}
+              <button form="deleteHandbookForm" class="btn btn-red shadow" type="submit"
+                      onclick="return confirm('Remove this handbook? The PDF file will be deleted.')">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if handbook %}
+      <form id="deleteHandbookForm" method="POST" action="{{ url_for('delete_course_handbook', course_id=course.id) }}">
+        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+      </form>
+    {% endif %}
+
+    <!-- Chapters -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-lg font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-list text-[var(--brand-gold)] mr-1"></i> Chapters
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <a href="{{ url_for('add_chapter', course_id=course.id) }}" class="btn btn-blue shadow">
+            <i class="fas fa-plus"></i> Add Chapter
+          </a>
+          <a href="{{ url_for('add_chapter', course_id=course.id) }}" class="btn btn-gold shadow">
+            <i class="fas fa-puzzle-piece"></i> Add Quiz
+          </a>
+          {% if course.code %}
+            <a href="{{ url_for('admin_attempts_for_course', course_key=(course.code ~ '_unit')) }}" class="btn btn-indigo shadow">
+              <i class="fas fa-chart-bar"></i> Unit Attempts
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mb-4"><i class="fas fa-grip-vertical mr-1"></i> Drag blocks to reorder. Order reads left to right, top to bottom.</p>
+
+      {% if chapters %}
+        <style>
+          .chapter-action.has-mascot { color:#C7A434; }
+          .chapter-action.has-mascot:hover { color:#a8862a; }
+        </style>
+        <div id="chapter-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {% for ch in chapters %}
+            <div class="chapter-block {% if 'quiz' in ch.title|lower %}quiz-chapter{% endif %}"
+                 data-id="{{ ch.id }}">
+              <!-- Title -->
+              <div class="flex-1">
+                {% if 'quiz' in ch.title|lower %}
+                  <i class="fas fa-puzzle-piece text-amber-500 mr-1 text-xs"></i>
+                {% endif %}
+                <span class="text-sm font-medium text-slate-700 line-clamp-3">{{ ch.title }}</span>
+              </div>
+
+              <!-- Tiny icon actions — bottom right -->
+              <div class="flex gap-2 mt-auto pt-1.5 justify-end items-center">
+                <a href="{{ url_for('edit_chapter', chapter_id=ch.id) }}"
+                   class="chapter-action" title="Edit">
+                  <i class="fas fa-pen-to-square"></i>
+                </a>
+                {# Mascot narration (v1.2). Gold when this slide already has a
+                   voiceline, so you can see at a glance which slides are done. #}
+                <a href="{{ url_for('admin_chapter_mascot', chapter_id=ch.id) }}"
+                   class="chapter-action{% if ch.mascot and ch.mascot.audio_path %} has-mascot{% endif %}"
+                   title="{% if ch.mascot and ch.mascot.audio_path %}Mascot narration set{% if not ch.mascot.is_enabled %} (hidden){% endif %} - edit timeline{% else %}Add mascot narration{% endif %}">
+                  <i class="fas fa-comment-dots"></i>
+                </a>
+                <form method="POST" action="{{ url_for('delete_chapter', chapter_id=ch.id) }}"
+                      onsubmit="return confirm('Delete this chapter?');" style="display:flex;align-items:center;">
+                  {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+                  <button type="submit" class="chapter-action" title="Delete">
+                    <i class="fas fa-trash-can"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <form id="orderForm" method="POST" action="{{ url_for('reorder_chapters', course_id=course.id) }}" class="text-right mt-4">
+          {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+          <input type="hidden" name="order" id="chapterOrder">
+          <button type="submit" class="btn btn-indigo shadow">
+            <i class="fas fa-save"></i> Save Chapter Order
+          </button>
+        </form>
+      {% else %}
+        <div class="text-center py-8">
+          <i class="fas fa-book-open text-4xl text-slate-300 mb-3"></i>
+          <p class="text-slate-500">No chapters added yet.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Final Assessment -->
+    {% set fa_key = course.final_assessment_key or (course.code|lower|replace(' ','_')) or ('course_' ~ course.id) %}
+    <div class="card p-5">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <h3 class="text-lg font-bold" style="color: var(--brand-blue);">
+          <i class="fas fa-clipboard-check text-[var(--brand-gold)] mr-1"></i> Final Assessment
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <a href="{{ url_for('questions_mcq', filename=fa_key ~ '_final_questions.json') }}" class="btn btn-gold shadow">
+            <i class="fas fa-pen-to-square"></i> Create / Edit F/A
+          </a>
+          {% if course.code %}
+            <a href="{{ url_for('run_final', code=course.code) }}" class="btn btn-blue shadow">
+              <i class="fas fa-play-circle"></i> Run / Preview Final
+            </a>
+          {% else %}
+            <button class="btn" style="background:#94a3b8;color:#fff;cursor:not-allowed;" disabled title="No course code set">
+              <i class="fas fa-ban"></i> Run / Preview Final
+            </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <p class="mt-3 text-slate-600">{{ question_count }} final question{{ 's' if question_count != 1 else '' }} added.</p>
+
+      <div class="mt-4 rounded-lg border border-slate-200 p-4 bg-slate-50">
+        <form method="POST" action="{{ url_for('edit_course', course_id=course.id) }}" class="grid gap-3 sm:grid-cols-[1fr_auto] items-end">
+          {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+          <div>
+            <label class="block font-semibold mb-1" style="color:var(--brand-blue)">Map Final Assessment to this Course</label>
+            <select name="final_assessment_key"
+                    class="w-full rounded-lg border border-slate-300 px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-blue)] bg-white text-slate-900">
+              <option value="">-- None / Not set --</option>
+              {% if assessments_catalog %}
+                {% for a in assessments_catalog %}
+                  <option value="{{ a.key }}" {% if course.final_assessment_key == a.key %}selected{% endif %}>{{ a.title }}</option>
+                {% endfor %}
+              {% else %}
+                <option value="" disabled>(No assessments registered)</option>
+              {% endif %}
+            </select>
+            <p class="mt-1 text-xs text-slate-500">Learner completion flows and "Run / Preview Final" will open the selected Final Assessment.</p>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="btn btn-emerald shadow">
+              <i class="fas fa-save"></i> Save Mapping
+            </button>
+          </div>
+        </form>
+
+        {% if course.final_assessment_key %}
+          <div class="mt-3">
+            <span class="chip chip-success">
+              <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+              Mapped to: <strong>{{ course.final_assessment_key }}</strong>
+            </span>
+          </div>
+        {% else %}
+          <div class="mt-3">
+            <span class="chip chip-warning">
+              <i class="fas fa-exclamation-triangle"></i> No Final Assessment mapped yet.
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="flex justify-end pt-8">
+      <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}"
+            onsubmit="return confirm('Permanently delete this course and all its chapters? This cannot be undone.');">
+        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <button type="submit" class="text-xs text-slate-400 hover:text-red-600 transition-colors">
+          <i class="fas fa-trash-can mr-1"></i> Delete this course
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Course Management</span>
+    </div>
+  </footer>
+
+  <script>
+    // Sortable chapters (works with grid layout)
+    const list = document.getElementById("chapter-list");
+    const input = document.getElementById("chapterOrder");
+    const orderForm = document.getElementById("orderForm");
+    function writeOrder(){ if(!list || !input) return; input.value = Array.from(list.children).map(el => el.getAttribute('data-id')).join(','); }
+    if (list && input) { Sortable.create(list, { animation:150, onEnd:writeOrder }); writeOrder(); }
+    orderForm?.addEventListener('submit', writeOrder);
+
+    // Cover upload DnD + preview
+    (function(){
+      const input = document.getElementById('coverInput');
+      const drop  = document.getElementById('coverDrop');
+      const img   = document.getElementById('coverPreview');
+      const btn   = document.getElementById('uploadBtn');
+      const form  = document.getElementById('coverForm');
+      if(!input || !drop || !img || !btn || !form) return;
+
+      const accept = ['image/png','image/jpeg','image/webp'];
+      const maxMB = 5;
+
+      function setFile(file){
+        if(!file) return;
+        if(!accept.includes(file.type)) { alert('Use PNG, JPG, or WEBP.'); return; }
+        if(file.size > maxMB*1024*1024){ alert('Image too large (max 5 MB).'); return; }
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        img.onload = () => URL.revokeObjectURL(url);
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        btn.disabled = false;
+      }
+      input.addEventListener('change', e => setFile(e.target.files?.[0]));
+      ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+      ['dragleave','dragend','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+      drop.addEventListener('drop', e => setFile(e.dataTransfer.files?.[0]));
+      form.addEventListener('submit', e => { if (!input.files || !input.files[0]) { e.preventDefault(); alert('Choose an image first.'); } });
+    })();
+
+    // Handbook upload DnD + file name display + progress bar
+    (function(){
+      const input = document.getElementById('handbookInput');
+      const drop  = document.getElementById('handbookDrop');
+      const btn   = document.getElementById('handbookUploadBtn');
+      const form  = document.getElementById('handbookForm');
+      const nameEl = document.getElementById('handbookFileName');
+      const nameText = document.getElementById('handbookFileNameText');
+      const progressWrap = document.getElementById('handbookProgress');
+      const progressBar  = document.getElementById('handbookProgressBar');
+      const progressPct  = document.getElementById('handbookProgressPct');
+      const progressLabel = document.getElementById('handbookProgressLabel');
+      if(!input || !drop || !btn || !form) return;
+
+      const maxMB = 100;
+
+      function setFile(file){
+        if(!file) return;
+        if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
+          alert('Only PDF files are accepted.'); return;
+        }
+        if(file.size > maxMB*1024*1024){ alert('File too large (max 100 MB).'); return; }
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        if(nameEl && nameText){
+          nameText.textContent = file.name + ' (' + (file.size/(1024*1024)).toFixed(1) + ' MB)';
+          nameEl.classList.remove('hidden');
+        }
+        btn.disabled = false;
+      }
+      input.addEventListener('change', e => setFile(e.target.files?.[0]));
+      ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+      ['dragleave','dragend','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+      drop.addEventListener('drop', e => setFile(e.dataTransfer.files?.[0]));
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(!input.files || !input.files[0]){ alert('Choose a PDF first.'); return; }
+
+        const formData = new FormData(form);
+        const xhr = new XMLHttpRequest();
+
+        // Show progress, disable controls
+        progressWrap.classList.remove('hidden');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        input.disabled = true;
+
+        xhr.upload.addEventListener('progress', function(ev){
+          if(ev.lengthComputable){
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            progressBar.style.width = pct + '%';
+            progressPct.textContent = pct + '%';
+            if(pct >= 100){
+              progressLabel.textContent = 'Processing...';
+            }
+          }
+        });
+
+        xhr.addEventListener('load', function(){
+          progressBar.style.width = '100%';
+          progressPct.textContent = '100%';
+          progressLabel.textContent = 'Complete!';
+          progressBar.classList.remove('bg-[var(--brand-gold)]');
+          progressBar.classList.add('bg-emerald-500');
+          // Reload page to show updated handbook
+          setTimeout(function(){ window.location.reload(); }, 600);
+        });
+
+        xhr.addEventListener('error', function(){
+          progressLabel.textContent = 'Upload failed.';
+          progressBar.classList.remove('bg-[var(--brand-gold)]');
+          progressBar.classList.add('bg-rose-500');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-upload"></i> Upload Handbook';
+          input.disabled = false;
+        });
+
+        xhr.open('POST', form.action);
+        xhr.send(formData);
+      });
+    })();
+  </script>
+</body>
+</html>

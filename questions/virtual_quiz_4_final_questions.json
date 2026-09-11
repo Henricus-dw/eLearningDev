@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "type": "table_fill",
+    "question": "Dangerous Goods definitions are located in 3 different sections in the DGR.",
+    "points": 1,
+    "columns": [
+      {
+        "id": "c1_w5mu",
+        "label": "No",
+        "kind": "yesno"
+      }
+    ],
+    "rows": [
+      {
+        "id": "r1_1zt7",
+        "prompt": "DGR Reference(s) ",
+        "points_per_cell": 1,
+        "answers": {
+          "c1_w5mu": "1.0 and Appendix A"
+        }
+      }
+    ],
+    "position": 1
+  }
+]

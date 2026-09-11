@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mascot Gestures - Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --brand-blue:#17306B; --brand-gold:#C7A434; }
+    body { background:linear-gradient(135deg,#f5f7fa 0%,#e4e8f0 100%); min-height:100vh; }
+    .header-bar { background:var(--brand-blue); padding:1rem 0; }
+    .header-content { max-width:80rem; margin:0 auto; padding:0 1rem;
+      display:flex; justify-content:space-between; align-items:center; }
+    .back-btn { border:2px solid #fff; color:#fff; padding:.5rem 1.25rem;
+      border-radius:8px; font-weight:600; font-size:.875rem; text-decoration:none; }
+    .back-btn:hover { background:#fff; color:var(--brand-blue); }
+    .section-title { font-size:1.5rem; font-weight:700; color:var(--brand-blue);
+      border-left:4px solid var(--brand-gold); padding-left:.75rem; }
+    .card { background:#fff; border-radius:12px; padding:1.25rem;
+      box-shadow:0 2px 12px rgba(23,48,107,.08); }
+    .gesture { background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+      padding:.6rem; text-align:center; }
+    .gesture img { width:100%; aspect-ratio:1/2; object-fit:contain;
+      background:#f8fafc; border-radius:8px; }
+    .gesture.inactive { opacity:.45; }
+    .btn { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem;
+      border-radius:6px; font-size:.8rem; font-weight:600; border:none; cursor:pointer; }
+    .btn-primary { background:var(--brand-blue); color:#fff; }
+    .btn-danger { background:#dc2626; color:#fff; }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+  <header class="header-bar">
+    <div class="header-content">
+      <span class="text-white font-semibold">Mascot Gesture Library</span>
+      <div class="flex gap-2">
+        {% if back_chapter %}
+          <a href="{{ url_for('admin_chapter_mascot', chapter_id=back_chapter.id) }}"
+             class="back-btn"><i class="fas fa-sliders"></i> Back to timeline</a>
+        {% endif %}
+        <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="section-title mb-2"><i class="fas fa-masks-theater"></i> Mascot Gestures</h1>
+    {% if back_chapter %}
+      <div class="mb-4 text-sm">
+        <span class="text-slate-600">Configuring for</span>
+        <a class="font-semibold text-blue-700 hover:underline"
+           href="{{ url_for('admin_chapter_mascot', chapter_id=back_chapter.id) }}">
+          {{ back_chapter.course.title }} / {{ back_chapter.title }}</a>
+        <a class="text-blue-700 hover:underline"
+           href="{{ url_for('admin_chapter_mascot', chapter_id=back_chapter.id) }}">
+          return to its timeline</a>
+      </div>
+    {% else %}
+      <p class="mb-4 text-sm text-slate-600">
+        Shared across every course. Open a slide's mascot timeline to place these
+        on a voiceline.
+      </p>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            {% set styles = {
+              'success':'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+              'danger':'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
+              'warning':'bg-amber-50 text-amber-800 ring-1 ring-amber-200' } %}
+            <div class="px-3 py-2 rounded-lg text-sm {{ styles.get(category,'bg-blue-50 text-blue-700 ring-1 ring-blue-200') }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card mb-6">
+      <h2 class="font-semibold text-slate-800 mb-1">Upload gestures</h2>
+      <p class="text-sm text-slate-600 mb-3">
+        WebP is recommended. Pick several files at once and each becomes a gesture
+        named after its filename. These are shared by every course, so upload each
+        pose once.
+      </p>
+      <form method="POST" action="{{ url_for('admin_mascot_gesture_upload') }}"
+            enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+        {% if back_chapter %}<input type="hidden" name="return_to" value="{{ back_chapter.id }}">{% endif %}
+        <div>
+          <label class="block text-xs font-medium text-slate-700 mb-1">Images</label>
+          <input type="file" name="images" accept=".webp,.png,.gif,.jpg,.jpeg" multiple required
+                 class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-700 mb-1">Name (single upload only)</label>
+          <input type="text" name="name" placeholder="e.g. wave"
+                 class="text-sm border border-slate-300 rounded-lg px-3 py-2">
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="font-semibold text-slate-800 mb-3">
+        Library <span class="text-sm font-normal text-slate-500">({{ gestures|length }})</span>
+      </h2>
+      {% if gestures %}
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          {% for g in gestures %}
+            <div class="gesture {{ '' if g.is_active else 'inactive' }}">
+              <img src="{{ media_url(g.image_path) }}" alt="{{ g.name }}" loading="lazy">
+              <div class="text-xs font-semibold mt-2 truncate" title="{{ g.name }}">{{ g.name }}</div>
+              {% if not g.is_active %}<div class="text-[10px] text-amber-700">hidden</div>{% endif %}
+              <form method="POST" action="{{ url_for('admin_mascot_gesture_delete', gesture_id=g.id) }}"
+                    onsubmit="return confirm('Remove gesture {{ g.name }}?');" class="mt-2">
+                {% if back_chapter %}<input type="hidden" name="return_to" value="{{ back_chapter.id }}">{% endif %}
+                <button type="submit" class="btn btn-danger w-full justify-center">
+                  <i class="fas fa-trash"></i> Remove</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-sm text-slate-500">No gestures yet. Upload the meerkat poses above.</p>
+      {% endif %}
+    </div>
+
+    {% if back_chapter %}
+      <div class="mt-6 flex justify-end">
+        <a href="{{ url_for('admin_chapter_mascot', chapter_id=back_chapter.id) }}"
+           class="btn btn-primary">
+          <i class="fas fa-arrow-left"></i> Done, back to the timeline</a>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

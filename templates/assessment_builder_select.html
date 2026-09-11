@@ -1,0 +1,17 @@
+<form method="POST" class="rounded-2xl bg-white dark:bg-slate-900 border dark:border-slate-700 p-6 shadow w-full max-w-xl">
+  <h2 class="text-xl font-semibold mb-3">🔧 Setup & Builder</h2>
+
+  <label class="block text-sm font-medium mb-2">Select Course</label>
+  <select name="course_id" required
+          class="w-full rounded-xl border p-3 dark:bg-slate-800 dark:border-slate-700">
+    {% for c in courses %}
+      <option value="{{ c.id }}">
+        {{ c.title }} {% if c.code or c.course_code or c.slug %} ({{ c.code or c.course_code or c.slug }}){% endif %}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button class="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
+    Open Builder
+  </button>
+</form>

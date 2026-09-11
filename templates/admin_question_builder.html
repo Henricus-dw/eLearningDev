@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Question Builder | {{ title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } } }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [x-cloak] { display: none !important; }
+    .card { border-top: 4px solid #C7A434; }
+    body { background: #f4f6fb; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+      <a href="{{ return_to }}"
+         class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl w-full mx-auto px-4 py-8 flex-1">
+
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+        <i class="fas fa-list-check text-brand-gold text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-brand-blue">Question Builder</h1>
+        <p class="text-sm text-slate-500">{{ title }} &middot; <code class="bg-slate-100 px-1 rounded">{{ key }}</code> &middot; {{ questions|length }} question(s)</p>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm
+                      {% if category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+                      {% elif category == 'warning' %}bg-amber-50 text-amber-700 border border-amber-200
+                      {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+  <div x-data="builderForm()" x-init="init()">
+
+    <div class="flex justify-end mb-4">
+      <button type="button" @click="openNew()"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition shadow-sm">
+        <i class="fas fa-plus"></i> Add Question
+      </button>
+    </div>
+
+    <!-- Existing questions -->
+    <div class="space-y-3 mb-8">
+      {% if not questions %}
+        <div class="bg-white rounded-xl shadow-sm card p-8 text-center text-slate-500 text-sm">
+          No questions yet. Click <strong>Add Question</strong> to create the first one.
+        </div>
+      {% else %}
+        {% for q in questions %}
+        <div class="bg-white rounded-xl shadow-sm card p-4 flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="text-xs font-bold text-slate-400">Q{{ loop.index }}</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                {% if q.type == 'mcq' %}bg-blue-100 text-blue-700
+                {% elif q.type == 'tf' %}bg-sky-100 text-sky-700
+                {% elif q.type == 'short_answer' %}bg-emerald-100 text-emerald-700
+                {% elif q.type == 'table_fill' %}bg-indigo-100 text-indigo-700
+                {% elif q.type == 'drag_drop' %}bg-purple-100 text-purple-700
+                {% else %}bg-slate-100 text-slate-600{% endif %}">{{ q.type }}</span>
+              <span class="text-xs text-slate-400">{{ q.points or 1 }} mark{{ '' if (q.points or 1) == 1 else 's' }}</span>
+            </div>
+            <p class="text-sm text-slate-800 font-medium truncate">{{ q.question }}</p>
+            {% if q.type == 'mcq' and q.options %}
+              {# q.options may be a dict ({A: ..., B: ...}) for v1.1.0 questions,
+                 or a list ([...]) for legacy questions authored before v1.1.0. #}
+              {% set _option_values = q.options.values()|list if q.options is mapping else q.options|list %}
+              <p class="text-xs text-slate-500 mt-1">Correct: <strong>{{ q.correct or q.correct_index }}</strong> &middot; {{ _option_values|join(' / ') }}</p>
+            {% elif q.type == 'short_answer' %}
+              <p class="text-xs text-slate-500 mt-1">Accepted: {{ (q.accepted or [])|join(' | ') }}</p>
+            {% elif q.type == 'table_fill' %}
+              <p class="text-xs text-slate-500 mt-1">{{ (q.columns or [])|length }} cols &times; {{ (q.rows or [])|length }} rows</p>
+            {% elif q.type == 'drag_drop' %}
+              {# q.get('items') invokes the dict method correctly; q.items / q['items']
+                 both fall back to the dict.items method object on a key miss. #}
+              {% set _items = q.get('items') or [] %}
+              {% set _decoy_count = _items|selectattr('correct_zone', 'none')|list|length %}
+              <p class="text-xs text-slate-500 mt-1">{{ (q.zones or [])|length }} zones &middot; {{ _items|length }} items{% if _decoy_count %} ({{ _decoy_count }} decoy{{ '' if _decoy_count == 1 else 's' }}){% endif %}</p>
+            {% elif q.type == 'tf' %}
+              <p class="text-xs text-slate-500 mt-1">Answer: {{ 'True' if q.correct == 'A' else 'False' }}</p>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button type="button"
+              onclick='loadForEdit({{ q | tojson }})'
+              class="px-3 py-1.5 text-xs font-semibold bg-brand-blue text-white rounded hover:bg-blue-900 transition">
+              <i class="fas fa-pen mr-1"></i>Edit
+            </button>
+            <form method="POST" action="{{ url_for('admin_question_builder_delete', key=key, qid=q.id) }}"
+                  onsubmit="return confirm('Delete this question?');">
+              <button type="submit" class="px-3 py-1.5 text-xs font-semibold bg-red-500 text-white rounded hover:bg-red-600 transition">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- Add / edit modal -->
+    <div x-show="open" x-cloak x-transition.opacity
+         class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
+         @click.self="close()" @keydown.escape.window="close()">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl my-8 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-brand-blue" x-text="qid ? 'Edit Question #' + qid : 'Add New Question'"></h2>
+          <button type="button" @click="close()" class="text-slate-400 hover:text-slate-700">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+      <form method="POST" :action="formAction" enctype="multipart/form-data" class="p-6 space-y-5 max-h-[72vh] overflow-y-auto">
+        <input type="hidden" name="qid" :value="qid || ''">
+        <input type="hidden" name="return_to" value="{{ return_to }}">
+        <input type="hidden" name="payload_json" :value="getPayloadJson()">
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Question Type</label>
+            <select name="type" x-model="type"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+              <option value="mcq">Multiple Choice</option>
+              <option value="tf">True / False</option>
+              <option value="short_answer">Short Answer (typed)</option>
+              <option value="table_fill">Table Fill (grid)</option>
+              <option value="drag_drop">Drag &amp; Drop (image with target zones)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Points</label>
+            <input type="number" name="points" x-model="points" min="1"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Question / Prompt</label>
+          <textarea name="question" x-model="question" rows="2" required
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"></textarea>
+        </div>
+
+        <!-- MCQ -->
+        <div x-show="type === 'mcq'" x-cloak class="space-y-3">
+          <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Options (leave blank to skip C/D/E)</p>
+          <template x-for="L in ['a','b','c','d','e']" :key="L">
+            <div class="flex items-center gap-2">
+              <span class="w-6 text-sm font-bold text-slate-500" x-text="L.toUpperCase() + ')'"></span>
+              <input type="text" :name="'opt_' + L" x-model="opts[L]"
+                     class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+            </div>
+          </template>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Correct Option</label>
+            <select name="correct" x-model="correct"
+                    class="w-40 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+              <option value="A">A</option><option value="B">B</option>
+              <option value="C">C</option><option value="D">D</option>
+              <option value="E">E</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- True/False -->
+        <div x-show="type === 'tf'" x-cloak>
+          <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Correct Answer</label>
+          {# Field is named 'tf_correct' (not 'correct') because the MCQ block also
+             has a `name="correct"` select. Alpine's x-show only hides via CSS, so
+             both blocks submit to the form. form.get('correct') would return the
+             MCQ one first and silently override the admin's TF choice. #}
+          <select name="tf_correct" x-model="tfCorrect"
+                  class="w-40 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30">
+            <option value="A">True</option>
+            <option value="B">False</option>
+          </select>
+        </div>
+
+        <!-- Short answer -->
+        <div x-show="type === 'short_answer'" x-cloak class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Accepted Answers (one per line)</label>
+            <textarea name="accepted" x-model="accepted" rows="3"
+                      placeholder="becquerel&#10;becquerels"
+                      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"></textarea>
+            <p class="text-xs text-slate-400 mt-1">Any of these counts as correct. Whitespace and case ignored unless you tick below.</p>
+          </div>
+          <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="case_sensitive" x-model="caseSensitive" class="w-4 h-4 accent-brand-blue">
+            Case-sensitive matching
+          </label>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Hint (optional)</label>
+            <input type="text" name="hint" x-model="hint"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
+          </div>
+        </div>
+
+        <!-- Table fill -->
+        <div x-show="type === 'table_fill'" x-cloak class="space-y-4">
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Columns</p>
+              <button type="button" @click="addColumn()" class="text-xs font-semibold text-brand-blue hover:underline"><i class="fas fa-plus"></i> Add column</button>
+            </div>
+            <template x-for="(col, ci) in columns" :key="ci">
+              <div class="flex items-center gap-2 mb-2">
+                <input type="text" x-model="col.label" placeholder="Column label"
+                       class="flex-1 px-2 py-1.5 border border-slate-300 rounded text-sm">
+                <select x-model="col.kind" class="px-2 py-1.5 border border-slate-300 rounded text-sm">
+                  <option value="text">Text</option>
+                  <option value="select">Dropdown</option>
+                  <option value="yesno">Yes / No</option>
+                </select>
+                <input type="text" x-show="col.kind === 'select'" x-model="col.optionsStr"
+                       placeholder="I, II, III" class="w-40 px-2 py-1.5 border border-slate-300 rounded text-sm">
+                <button type="button" @click="removeColumn(ci)" class="text-red-500 hover:text-red-700 px-1"><i class="fas fa-times"></i></button>
+              </div>
+            </template>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Rows (with correct answers)</p>
+              <button type="button" @click="addRow()" class="text-xs font-semibold text-brand-blue hover:underline"><i class="fas fa-plus"></i> Add row</button>
+            </div>
+            <template x-for="(row, ri) in rows" :key="ri">
+              <div class="mb-3 p-3 bg-white rounded border border-slate-200">
+                <div class="flex items-center gap-2 mb-2">
+                  <input type="text" x-model="row.prompt" placeholder="Row label / prompt"
+                         class="flex-1 px-2 py-1.5 border border-slate-300 rounded text-sm">
+                  <input type="number" x-model.number="row.points_per_cell" min="1" title="Points per correct cell"
+                         class="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm">
+                  <button type="button" @click="removeRow(ri)" class="text-red-500 hover:text-red-700 px-1"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="grid gap-2" :style="'grid-template-columns: repeat(' + Math.max(columns.length,1) + ', minmax(0, 1fr))'">
+                  <template x-for="(col, ci) in columns" :key="ci">
+                    <div>
+                      <label class="block text-[10px] uppercase text-slate-400 mb-0.5" x-text="col.label || ('Col ' + (ci+1))"></label>
+                      <input type="text" x-model="row.answers[col.id]" placeholder="correct value"
+                             class="w-full px-2 py-1 border border-slate-300 rounded text-sm">
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+            <p class="text-xs text-slate-400">Each filled-in cell is graded independently against the value you type here. Leave a cell blank to make it ungraded (decorative).</p>
+          </div>
+
+          {# ===== Student preview ====================================== #}
+          {# Mirrors how the student-side table_fill player renders the
+             grid. Reads the same `columns` and `rows` Alpine state so the
+             preview updates live as the admin types. Inputs are `disabled`
+             so it's obvious this is illustrative, not interactive. #}
+          <div class="border border-slate-200 rounded-lg p-4 bg-white">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                <i class="fas fa-eye text-brand-gold mr-1"></i> Student Preview
+              </p>
+              <span class="text-xs text-slate-400">live preview, updates as you type</span>
+            </div>
+
+            <template x-if="!columns.length || !rows.length">
+              <p class="text-xs text-slate-400 italic px-1 py-2">
+                Add at least one column and one row above to see the preview.
+              </p>
+            </template>
+
+            <div x-show="columns.length && rows.length" class="overflow-x-auto">
+              <table class="w-full text-sm border border-slate-200 rounded-lg">
+                <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
+                  <tr>
+                    <th class="text-left px-3 py-2 font-semibold border-b border-slate-200">&nbsp;</th>
+                    <template x-for="(col, ci) in columns" :key="ci">
+                      <th class="text-left px-3 py-2 font-semibold border-b border-slate-200"
+                          x-text="col.label || ('Column ' + (ci + 1))"></th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(row, ri) in rows" :key="ri">
+                    <tr class="border-b border-slate-100 last:border-b-0">
+                      <td class="px-3 py-2 font-semibold text-slate-700 bg-slate-50/50"
+                          x-text="row.prompt || ('Row ' + (ri + 1))"></td>
+                      <template x-for="(col, ci) in columns" :key="ci">
+                        <td class="px-2 py-2">
+                          {# Cell type follows the column's "kind" setting,
+                             matching templates/partials/players/table_fill.html
+                             exactly so the admin sees the real layout.
+                             Inputs are intentionally NOT disabled so the admin
+                             can open dropdowns to verify options and try
+                             selecting Yes/No to see the active state. Nothing
+                             is graded here. #}
+                          <template x-if="col.kind === 'select'">
+                            <select class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                              <option value="">--</option>
+                              <template x-for="opt in ((col.optionsStr || '').split(',').map(s => s.trim()).filter(Boolean))" :key="opt">
+                                <option x-text="opt"></option>
+                              </template>
+                            </select>
+                          </template>
+                          <template x-if="col.kind === 'yesno'">
+                            <select class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                              <option value="">--</option>
+                              <option>Yes</option>
+                              <option>No</option>
+                            </select>
+                          </template>
+                          <template x-if="!col.kind || col.kind === 'text'">
+                            <input type="text" placeholder="student types here..."
+                                   class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                          </template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+              <p class="text-xs text-slate-400 mt-2">
+                Try the cells: open the dropdowns to verify your options, or pick Yes / No to see the selected state. Anything you type or pick here is just for preview and is not saved.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drag & Drop -->
+        <div x-show="type === 'drag_drop'" x-cloak class="space-y-4">
+
+          <!-- Step 1: background image -->
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">1. Background image (the target)</p>
+            <input type="file" name="background_file" accept="image/*"
+                   @change="onBackgroundFileChange($event)"
+                   class="block w-full text-sm text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-brand-blue file:text-white file:text-xs file:font-semibold hover:file:bg-blue-900">
+            <p class="text-xs text-slate-400 mt-1" x-show="background_existing && !background_file">
+              Current: <code class="bg-slate-100 px-1 rounded" x-text="background_existing"></code>. Upload a new file to replace it.
+            </p>
+            <p class="text-xs text-slate-400 mt-1" x-show="!background_existing && !background_file">
+              PNG/JPG/WebP. Recommended: 800-1600 px wide, anything taller than wide is fine too.
+            </p>
+          </div>
+
+          <!-- Step 2: zone editor (only shown once we have a background) -->
+          <div x-show="background_url" class="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">2. Draw target zones</p>
+              <span class="text-xs text-slate-500" x-text="zones.length + ' zone' + (zones.length === 1 ? '' : 's')"></span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Click and drag on the image to draw a rectangle for each spot where an item should go. Hover a zone and click <span class="text-red-500">&times;</span> to remove it.</p>
+
+            <div class="relative inline-block w-full max-w-2xl select-none rounded border border-slate-300 overflow-hidden bg-white"
+                 style="touch-action: none;"
+                 @pointerdown="onCanvasPointerDown($event)"
+                 @pointermove="onCanvasPointerMove($event)"
+                 @pointerup="onCanvasPointerUp($event)"
+                 @pointerleave="drawing && onCanvasPointerUp($event)">
+              <img :src="background_url" class="w-full h-auto pointer-events-none block" draggable="false" alt="Background">
+
+              <!-- Draw-in-progress preview -->
+              <div x-show="drawing" x-cloak
+                   class="absolute border-2 border-dashed border-blue-500 bg-blue-200/30 pointer-events-none"
+                   :style="getDrawStyle()"></div>
+
+              <!-- Committed zones -->
+              <template x-for="(zone, zi) in zones" :key="zone.id">
+                <div class="absolute border-2 border-emerald-500 bg-emerald-100/15 rounded group"
+                     :style="`left:${zone.x}%; top:${zone.y}%; width:${zone.w}%; height:${zone.h}%;`">
+                  <span class="absolute -top-5 left-0 text-[10px] font-semibold bg-emerald-700 text-white px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none"
+                        x-text="zone.label || ('Zone ' + (zi + 1))"></span>
+                  <button type="button"
+                          @pointerdown.stop @click.stop="removeZone(zi)"
+                          class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove zone">&times;</button>
+                </div>
+              </template>
+            </div>
+
+            <!-- Zone labels list -->
+            <div x-show="zones.length" class="mt-3 space-y-1">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Zone labels</p>
+              <template x-for="(zone, zi) in zones" :key="zone.id">
+                <div class="flex items-center gap-2">
+                  <span class="w-12 text-xs text-slate-500" x-text="'Z' + (zi + 1)"></span>
+                  <input type="text" x-model="zone.label" :placeholder="'Zone ' + (zi + 1) + ' label'"
+                         class="flex-1 px-2 py-1 border border-slate-300 rounded text-sm">
+                  <button type="button" @click="removeZone(zi)" class="text-red-500 hover:text-red-700 px-1" title="Remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Step 3: items -->
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">3. Items (draggables)</p>
+              <button type="button" @click="addItem()" class="text-xs font-semibold text-brand-blue hover:underline"><i class="fas fa-plus"></i> Add item</button>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">
+              Each item is either placed in a zone OR left unplaced as a decoy. Items can have an image, a text label, or both. Decoys are intentional distractors that test whether the learner can recognise things that don't belong.
+            </p>
+
+            <template x-if="!items.length">
+              <p class="text-xs text-slate-400 italic">No items yet. Add a few items the learner should drag, and optionally a decoy or two.</p>
+            </template>
+
+            <template x-for="(item, ii) in items" :key="item.id">
+              <div class="mb-3 p-3 bg-white rounded border border-slate-200">
+                <div class="flex items-start gap-3">
+                  <div class="w-16 flex-shrink-0 text-center">
+                    <div x-show="item.image_url" class="w-16 h-16 flex items-center justify-center rounded border border-slate-200 bg-slate-50 overflow-hidden">
+                      <img :src="item.image_url" class="max-w-full max-h-full object-contain">
+                    </div>
+                    <div x-show="!item.image_url" class="w-16 h-16 flex items-center justify-center rounded border border-dashed border-slate-300 bg-slate-50 text-slate-300">
+                      <i class="fas fa-image"></i>
+                    </div>
+                  </div>
+                  <div class="flex-1 space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input type="file" :name="'item_image_' + ii" accept="image/*"
+                             @change="onItemImageChange(item, $event)"
+                             class="block w-full text-xs text-slate-700 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 file:text-xs hover:file:bg-slate-300">
+                      <input type="text" x-model="item.label" placeholder="Label (e.g. Class 6 — Toxic)"
+                             class="w-full px-2 py-1.5 border border-slate-300 rounded text-sm">
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                      <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" :checked="!item.correct_zone"
+                               @change="item.correct_zone = $event.target.checked ? null : (zones[0] && zones[0].id) || null"
+                               class="w-4 h-4 accent-brand-blue">
+                        Decoy (no correct zone)
+                      </label>
+                      <div class="flex items-center gap-2" x-show="item.correct_zone">
+                        <label class="text-xs text-slate-500">Correct zone:</label>
+                        {# Avoid x-model on this select: Alpine's two-way x-model
+                           races against the x-for option rendering when items
+                           are hydrated, and silently rewrites the bound value to
+                           the first option's value when no match is found yet.
+                           :selected per option + an explicit @change handler is
+                           order-independent. #}
+                        <select @change="item.correct_zone = $event.target.value"
+                                class="px-2 py-1 border border-slate-300 rounded text-sm">
+                          <template x-for="(z, zi) in zones" :key="z.id">
+                            <option :value="z.id"
+                                    :selected="item.correct_zone === z.id"
+                                    x-text="z.label || ('Zone ' + (zi + 1))"></option>
+                          </template>
+                        </select>
+                      </div>
+                      <button type="button" @click="removeItem(ii)" class="ml-auto text-red-500 hover:text-red-700 text-xs">
+                        <i class="fas fa-trash"></i> Remove item
+                      </button>
+                    </div>
+                    <p x-show="item.image_existing && !item.image_file" class="text-[11px] text-slate-400">
+                      Current: <code class="bg-slate-100 px-1 rounded" x-text="item.image_existing"></code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" @click="close()"
+                  class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-sm transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+            <i class="fas fa-save mr-1"></i><span x-text="qid ? 'Update Question' : 'Add Question'"></span>
+          </button>
+        </div>
+      </form>
+      </div>
+    </div>
+
+  </div>
+  </main>
+
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-auto">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+
+  <script>
+    let _builder;
+    function builderForm() {
+      _builder = {
+        open: false,
+        qid: null,
+        type: 'mcq',
+        question: '',
+        points: 1,
+        hint: '',
+        opts: { a:'', b:'', c:'', d:'', e:'' },
+        correct: 'A',
+        tfCorrect: 'A',
+        accepted: '',
+        caseSensitive: false,
+        columns: [],
+        rows: [],
+
+        // Drag-and-drop state
+        background_file: null,       // File object pending upload
+        background_url: '',          // data URL preview OR url_for'd existing path
+        background_existing: '',     // existing filename (preserved on edit if no new upload)
+        zones: [],                   // [{id, x, y, w, h, label}] x/y/w/h as percentages
+        items: [],                   // [{id, image_file, image_url, image_existing, label, correct_zone}]
+        drawing: false,
+        drawStart: { x: 0, y: 0 },
+        drawCurrent: { x: 0, y: 0 },
+
+        get formAction() {
+          return "{{ url_for('admin_question_builder_save', key=key) }}";
+        },
+        // Repoint the global at THIS reactive Alpine proxy so loadForEdit()
+        // mutations trigger re-render (the raw object returned below is not
+        // the proxy Alpine actually renders from).
+        init() { _builder = this; },
+
+        // ----- table_fill helpers -----
+        addColumn() {
+          const id = 'c' + (this.columns.length + 1) + '_' + Math.random().toString(36).slice(2,6);
+          this.columns.push({ id: id, label: '', kind: 'text', optionsStr: '' });
+        },
+        removeColumn(i) { this.columns.splice(i, 1); },
+        addRow() {
+          const id = 'r' + (this.rows.length + 1) + '_' + Math.random().toString(36).slice(2,6);
+          this.rows.push({ id: id, prompt: '', points_per_cell: 1, answers: {} });
+        },
+        removeRow(i) { this.rows.splice(i, 1); },
+
+        // ----- drag_drop helpers -----
+        onBackgroundFileChange(event) {
+          const f = event.target.files && event.target.files[0];
+          if (!f) return;
+          this.background_file = f;
+          const reader = new FileReader();
+          reader.onload = (e) => { this.background_url = e.target.result; };
+          reader.readAsDataURL(f);
+        },
+
+        onCanvasPointerDown(event) {
+          if (!this.background_url) return;
+          // Capture the pointer so we keep getting pointermove even if it
+          // briefly leaves the canvas.
+          event.currentTarget.setPointerCapture(event.pointerId);
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = ((event.clientX - rect.left) / rect.width) * 100;
+          const y = ((event.clientY - rect.top) / rect.height) * 100;
+          this.drawing = true;
+          this.drawStart = { x, y };
+          this.drawCurrent = { x, y };
+        },
+        onCanvasPointerMove(event) {
+          if (!this.drawing) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          this.drawCurrent = {
+            x: Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100)),
+            y: Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100))
+          };
+        },
+        onCanvasPointerUp(event) {
+          if (!this.drawing) return;
+          this.drawing = false;
+          const x = Math.min(this.drawStart.x, this.drawCurrent.x);
+          const y = Math.min(this.drawStart.y, this.drawCurrent.y);
+          const w = Math.abs(this.drawCurrent.x - this.drawStart.x);
+          const h = Math.abs(this.drawCurrent.y - this.drawStart.y);
+          // Ignore tiny accidental drags (less than 2% of either dimension).
+          if (w < 2 || h < 2) return;
+          const id = 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+          this.zones.push({ id, x, y, w, h, label: 'Zone ' + (this.zones.length + 1) });
+        },
+        getDrawStyle() {
+          const x = Math.min(this.drawStart.x, this.drawCurrent.x);
+          const y = Math.min(this.drawStart.y, this.drawCurrent.y);
+          const w = Math.abs(this.drawCurrent.x - this.drawStart.x);
+          const h = Math.abs(this.drawCurrent.y - this.drawStart.y);
+          return `left:${x}%; top:${y}%; width:${w}%; height:${h}%;`;
+        },
+        removeZone(i) {
+          const removedId = this.zones[i] && this.zones[i].id;
+          this.zones.splice(i, 1);
+          // Any item that referenced this zone becomes a decoy.
+          if (removedId) {
+            this.items.forEach(it => {
+              if (it.correct_zone === removedId) it.correct_zone = null;
+            });
+          }
+        },
+
+        addItem() {
+          const id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+          this.items.push({
+            id: id,
+            image_file: null,
+            image_url: '',
+            image_existing: '',
+            label: '',
+            correct_zone: (this.zones[0] && this.zones[0].id) || null
+          });
+        },
+        removeItem(i) { this.items.splice(i, 1); },
+        onItemImageChange(item, event) {
+          const f = event.target.files && event.target.files[0];
+          if (!f) return;
+          item.image_file = f;
+          const reader = new FileReader();
+          reader.onload = (e) => { item.image_url = e.target.result; };
+          reader.readAsDataURL(f);
+        },
+
+        // ----- payload serialiser, called from the hidden form field on every render -----
+        getPayloadJson() {
+          if (this.type === 'table_fill') {
+            return JSON.stringify({ columns: this.columns, rows: this.rows });
+          }
+          if (this.type === 'drag_drop') {
+            return JSON.stringify({
+              background_field: this.background_file ? 'background_file' : null,
+              background_existing: this.background_existing || null,
+              zones: this.zones.map(z => ({
+                id: z.id, x: z.x, y: z.y, w: z.w, h: z.h, label: z.label || ''
+              })),
+              items: this.items.map((it, idx) => ({
+                id: it.id,
+                label: it.label || '',
+                correct_zone: it.correct_zone || null,
+                image_field: it.image_file ? ('item_image_' + idx) : null,
+                image_existing: it.image_existing || null
+              }))
+            });
+          }
+          return '';
+        },
+
+        reset() {
+          this.qid = null; this.type = 'mcq'; this.question = ''; this.points = 1;
+          this.hint = ''; this.opts = { a:'', b:'', c:'', d:'', e:'' };
+          this.correct = 'A'; this.tfCorrect = 'A'; this.accepted = '';
+          this.caseSensitive = false; this.columns = []; this.rows = [];
+          this.background_file = null; this.background_url = '';
+          this.background_existing = '';
+          this.zones = []; this.items = [];
+          this.drawing = false;
+          this.drawStart = { x: 0, y: 0 }; this.drawCurrent = { x: 0, y: 0 };
+        },
+        openNew() { this.reset(); this.open = true; },
+        close() { this.open = false; },
+      };
+      return _builder;
+    }
+
+    // Called from each question's Edit button. Hydrates the Alpine form.
+    function loadForEdit(q) {
+      const b = _builder;
+      b.reset();
+      b.qid = q.id;
+      b.type = q.type || 'mcq';
+      b.question = q.question || '';
+      b.points = q.points || 1;
+      b.hint = q.hint || '';
+      if (b.type === 'mcq') {
+        const o = q.options || {};
+        b.opts = { a:o.A||'', b:o.B||'', c:o.C||'', d:o.D||'', e:o.E||'' };
+        b.correct = (q.correct || 'A').toUpperCase();
+      } else if (b.type === 'tf') {
+        b.tfCorrect = (q.correct === 'B') ? 'B' : 'A';
+      } else if (b.type === 'short_answer') {
+        b.accepted = (q.accepted || []).join('\n');
+        b.caseSensitive = !!q.case_sensitive;
+      } else if (b.type === 'table_fill') {
+        b.columns = (q.columns || []).map(c => ({
+          id: c.id, label: c.label || '', kind: c.kind || 'text',
+          optionsStr: (c.options || []).join(', ')
+        }));
+        b.rows = (q.rows || []).map(r => ({
+          id: r.id, prompt: r.prompt || '',
+          points_per_cell: r.points_per_cell || 1,
+          answers: Object.assign({}, r.answers || {})
+        }));
+      } else if (b.type === 'drag_drop') {
+        // Hydrate background: the existing filename is preserved so a save
+        // without a new upload re-uses it; the preview URL points at the
+        // currently-saved asset.
+        b.background_existing = q.background || '';
+        b.background_file = null;
+        b.background_url = q.background
+          ? ("{{ url_for('static', filename='uploads/questions/') }}" + q.background)
+          : '';
+        b.zones = (q.zones || []).map(z => ({
+          id: z.id,
+          x: Number(z.x) || 0,
+          y: Number(z.y) || 0,
+          w: Number(z.w) || 0,
+          h: Number(z.h) || 0,
+          label: z.label || ''
+        }));
+        b.items = (q.items || []).map(it => ({
+          id: it.id,
+          image_file: null,
+          image_existing: it.image || '',
+          image_url: it.image
+            ? ("{{ url_for('static', filename='uploads/questions/') }}" + it.image)
+            : '',
+          label: it.label || '',
+          correct_zone: it.correct_zone || null
+        }));
+      }
+      b.open = true;
+    }
+
+    // Normalize the table_fill payload right before submit so the JSON we POST
+    // matches the schema grade_question() expects (options as array, no helper keys).
+    document.addEventListener('submit', function (e) {
+      if (!e.target.matches('form[action*="question-builder"]')) return;
+      const b = _builder;
+      if (b.type === 'table_fill') {
+        b.columns.forEach(c => {
+          if (c.kind === 'select') {
+            c.options = (c.optionsStr || '').split(',').map(s => s.trim()).filter(Boolean);
+          } else {
+            delete c.options;
+          }
+          delete c.optionsStr;
+        });
+      }
+    }, true);
+  </script>
+</body>
+</html>

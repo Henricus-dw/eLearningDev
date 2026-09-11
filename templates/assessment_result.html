@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title or (course.title ~ ' — Result') if course is defined and course and course.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/3.0.9/umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.3/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.0/polyfills.umd.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    .score-display {
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .card-gradient {
+      background: linear-gradient(180deg, #fff 0%, #fafbfc 100%)
+    }
+   a {
+	cursor: pointer;}
+
+    /* PDF Modal Viewer Styles */
+    .pdf-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .pdf-modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .pdf-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.95);
+      transition: all 0.3s ease;
+    }
+
+    .pdf-modal.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+
+    .pdf-modal-header {
+      background: var(--brand-blue);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .pdf-modal-title {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .pdf-modal-title i {
+      color: var(--brand-gold);
+    }
+
+    .pdf-modal-close {
+      background: white;
+      color: var(--brand-blue);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .pdf-modal-close:hover {
+      background: var(--brand-gold);
+      transform: scale(1.05);
+    }
+
+    .pdf-modal-nav {
+      background: #1a1a2e;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .pdf-modal-nav button {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .pdf-modal-nav button:hover:not(:disabled) {
+      background: var(--brand-gold);
+      color: var(--brand-blue);
+      border-color: var(--brand-gold);
+    }
+
+    .pdf-modal-nav button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pdf-page-indicator {
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 500;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .pdf-zoom-indicator {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      margin-left: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .pdf-modal-container {
+      flex: 1;
+      overflow: auto;
+      background: #2a2a3e;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem;
+    }
+
+    .pdf-modal-canvas {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      background: white;
+      flex-shrink: 0;
+    }
+
+    .pdf-modal-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      gap: 1rem;
+    }
+
+    .pdf-modal-loading .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: var(--brand-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Disable text selection and right-click on modal */
+    .pdf-modal * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* View Remediation Button Style */
+    .view-remediation-btn {
+      background: var(--brand-blue);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+      border: none;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.3);
+      white-space: nowrap;
+    }
+
+    .view-remediation-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(23, 48, 107, 0.5);
+      background: #1a3a7a;
+    }
+  </style>
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer>
+    // PDF Viewer State
+    let pdfDoc = null;
+    let currentPage = 1;
+    let totalPages = 0;
+    let isRendering = false;
+    let currentZoom = 1.5;
+    const zoomLevels = [0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+
+    // Set PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    function generatePDF() {
+      const attemptID = "{{attempt_id}}";
+      const { jsPDF } = window.jspdf;
+      var doc = new jsPDF({
+          orientation: 'portrait',
+          format: 'a4',
+          unit: 'mm'
+      });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
+      let yPos = margin;
+
+      // Helper function to add text with word wrap and page breaks
+      function addText(text, x, fontSize, isBold, color) {
+        doc.setFontSize(fontSize);
+        doc.setFont("Helvetica", isBold ? "bold" : "normal");
+        if (color) doc.setTextColor(color[0], color[1], color[2]);
+        else doc.setTextColor(0, 0, 0);
+
+        const lines = doc.splitTextToSize(text, contentWidth - (x - margin));
+        const lineHeight = fontSize * 0.4;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (yPos > pageHeight - margin) {
+            doc.addPage();
+            yPos = margin;
+          }
+          doc.text(lines[i], x, yPos);
+          yPos += lineHeight;
+        }
+        return lineHeight * lines.length;
+      }
+
+      // Helper to add spacing
+      function addSpace(mm) {
+        yPos += mm;
+        if (yPos > pageHeight - margin) {
+          doc.addPage();
+          yPos = margin;
+        }
+      }
+
+      // Show loading state
+      openPdfModal();
+
+      // Quiz results use /getquizresultsjson; finals use /getfinalresultsjson.
+      // Both endpoints return the same { results: [...], questions: [...] } shape.
+      const resultsJsonUrl = "{{ results_json_url or '/getfinalresultsjson' }}";
+      fetch(`${resultsJsonUrl}?attemptid=${attemptID}`, {
+        method: "GET"
+      }).then((resp) => resp.json()).then((resu) => {
+        const result = resu.results[0];
+        const questions = resu.questions || [];
+        const answers = JSON.parse(result.answers_json || '[]');
+
+        // Helper function to get full answer text from options
+        function getAnswerText(question, letterOrText) {
+          if (letterOrText === null || letterOrText === undefined || letterOrText === '') return 'No answer recorded';
+          if (!question || !question.options) return String(letterOrText);
+
+          const opts = question.options;
+          let input = letterOrText;
+
+          // Handle numeric index (0, 1, 2, 3) - convert to letter (A, B, C, D)
+          if (typeof input === 'number' || /^[0-3]$/.test(String(input))) {
+            const idx = parseInt(input, 10);
+            if (idx >= 0 && idx <= 3) {
+              input = String.fromCharCode(65 + idx); // 0->A, 1->B, 2->C, 3->D
+            }
+          }
+
+          const letter = String(input).trim();
+          const upperLetter = letter.toUpperCase();
+          const lowerLetter = letter.toLowerCase();
+
+          // If options is an array, find by index (a=0, b=1, c=2, d=3)
+          if (Array.isArray(opts)) {
+            const idx = lowerLetter.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
+            if (idx >= 0 && idx < opts.length) {
+              const opt = opts[idx];
+              const text = typeof opt === 'string' ? opt : (opt.text || opt.option || opt);
+              return `${upperLetter}) ${text}`;
+            }
+          }
+
+          // If options is an object - check UPPERCASE keys first (normalized format from load_questions)
+          if (typeof opts === 'object') {
+            if (opts[upperLetter]) {
+              return `${upperLetter}) ${opts[upperLetter]}`;
+            }
+            // Fallback to lowercase keys
+            if (opts[lowerLetter]) {
+              return `${upperLetter}) ${opts[lowerLetter]}`;
+            }
+          }
+
+          // Fallback: return as-is if it's already full text
+          return String(letterOrText);
+        }
+
+        // Helper to get correct answer text
+        function getCorrectAnswerText(question) {
+          if (!question) return 'See course material';
+          let correctValue = question.correct_index;
+          if (correctValue === undefined || correctValue === null) {
+            correctValue = question.correct;
+          }
+          if (correctValue === undefined || correctValue === null) {
+            correctValue = question.answer;
+          }
+          if (correctValue === undefined || correctValue === null) return 'See course material';
+          return getAnswerText(question, correctValue);
+        }
+
+        // === HEADER ===
+        addText("ASSESSMENT REMEDIATION REPORT", margin, 16, true, [23, 48, 107]);
+        addSpace(4);
+
+        // Draw header line
+        doc.setDrawColor(199, 164, 52);
+        doc.setLineWidth(1);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        addSpace(8);
+
+        // === STUDENT INFO ===
+        addText("{{title}}", margin, 14, true);
+        addSpace(2);
+        addText("Student: {{full_name}}", margin, 11, false);
+        const learnerId = result.national_id || result.student_id || 'N/A';
+        addText(`ID Number: ${learnerId}`, margin, 11, false);
+        addText(`Course: ${result.course_key}`, margin, 11, false);
+        addSpace(6);
+
+        // === SCORE SUMMARY ===
+        const totalQuestions = questions.length || answers.length;
+        const correctCount = answers.filter(a => a.is_right === true || a.is_right === 'true').length;
+        const wrongCount = totalQuestions - correctCount;
+        const percentage = totalQuestions > 0 ? ((correctCount / totalQuestions) * 100).toFixed(1) : 0;
+
+        doc.setFillColor(240, 245, 250);
+        doc.rect(margin, yPos - 2, contentWidth, 20, 'F');
+        addText(`Score: ${correctCount}/${totalQuestions} (${percentage}%)`, margin + 5, 12, true);
+        addText(`Correct: ${correctCount}  |  Incorrect: ${wrongCount}`, margin + 5, 10, false, [100, 100, 100]);
+        addSpace(10);
+
+        // === QUESTIONS REVIEW ===
+        addText("QUESTION REVIEW", margin, 14, true, [23, 48, 107]);
+        addSpace(2);
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        addSpace(6);
+
+        // Loop through each question
+        for (let i = 0; i < answers.length; i++) {
+          const answer = answers[i];
+          let question = questions.find(q => String(q.id) === String(answer.id)) || questions[i] || {};
+          const isCorrect = answer.is_right === true || answer.is_right === 'true' || answer.is_correct === true;
+
+          const statusText = isCorrect ? "CORRECT" : "INCORRECT";
+          const statusColor = isCorrect ? [34, 139, 34] : [220, 53, 69];
+
+          if (!isCorrect) {
+            doc.setFillColor(255, 245, 245);
+            doc.rect(margin, yPos - 2, contentWidth, 8, 'F');
+          }
+
+          addText(`Q${i + 1}. ${statusText}`, margin, 10, true, statusColor);
+          addSpace(1);
+
+          const questionText = question.question || answer.question || `Question ${i + 1}`;
+          addText(questionText, margin + 5, 10, false);
+          addSpace(2);
+
+          // Prefer the type-aware human-readable strings the server now writes
+          // into the audit list (selected_display / correct_display). They handle
+          // mcq, tf, short_answer, table_fill, and drag_drop uniformly. Fall back
+          // to the legacy MCQ-only extraction for attempts saved before this
+          // field existed.
+          let studentAnswerText = answer.selected_display;
+          if (!studentAnswerText) {
+            const studentAnswerLetter = answer.selected || answer.answer;
+            studentAnswerText = getAnswerText(question, studentAnswerLetter);
+          }
+          addText(`Your answer:`, margin + 5, 9, false, [100, 100, 100]);
+          // Indent multi-line answers (table_fill / drag_drop emit \n-separated lines).
+          for (const line of String(studentAnswerText).split('\n')) {
+            addText(line, margin + 10, 9, false, [100, 100, 100]);
+          }
+
+          if (!isCorrect) {
+            let correctAnswerText = answer.correct_display;
+            if (!correctAnswerText) {
+              correctAnswerText = getCorrectAnswerText(question);
+              if (correctAnswerText === 'See course material' && answer.correct !== undefined) {
+                correctAnswerText = getAnswerText(question, answer.correct);
+              }
+            }
+            addText(`Correct answer:`, margin + 5, 9, true, [34, 139, 34]);
+            for (const line of String(correctAnswerText || 'See course material').split('\n')) {
+              addText(line, margin + 10, 9, true, [34, 139, 34]);
+            }
+          }
+
+          addSpace(6);
+          doc.setDrawColor(230, 230, 230);
+          doc.line(margin, yPos - 2, pageWidth - margin, yPos - 2);
+          addSpace(4);
+        }
+
+        // === FOOTER ===
+        addSpace(10);
+        doc.setDrawColor(199, 164, 52);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        addSpace(4);
+        addText("This report is for study purposes only. Review incorrect answers and revisit the course material.", margin, 8, false, [128, 128, 128]);
+        addText(`Generated: ${new Date().toLocaleString()}`, margin, 8, false, [128, 128, 128]);
+
+        // Instead of saving, create blob and display in viewer
+        const pdfBlob = doc.output('blob');
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        loadPdfIntoViewer(blobUrl);
+
+      }).catch((err) => {
+        console.error('Error generating PDF:', err);
+        closePdfModal();
+        alert('Error generating PDF. Please try again.');
+      });
+    }
+
+    function openPdfModal() {
+      document.getElementById('pdfModalBackdrop').classList.add('active');
+      document.getElementById('pdfModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePdfModal() {
+      document.getElementById('pdfModalBackdrop').classList.remove('active');
+      document.getElementById('pdfModal').classList.remove('active');
+      document.body.style.overflow = '';
+      pdfDoc = null;
+      currentPage = 1;
+      totalPages = 0;
+    }
+
+    function loadPdfIntoViewer(pdfUrl) {
+      const loading = document.getElementById('pdfModalLoading');
+      const canvas = document.getElementById('pdfModalCanvas');
+
+      loading.style.display = 'flex';
+      canvas.style.display = 'none';
+
+      pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+        pdfDoc = pdf;
+        totalPages = pdf.numPages;
+        currentPage = 1;
+        renderPage(currentPage);
+      }).catch(function(error) {
+        console.error('Error loading PDF:', error);
+        closePdfModal();
+        alert('Error loading PDF. Please try again.');
+      });
+    }
+
+    function renderPage(pageNum) {
+      if (isRendering || !pdfDoc) return;
+      isRendering = true;
+
+      const canvas = document.getElementById('pdfModalCanvas');
+      const loading = document.getElementById('pdfModalLoading');
+      const ctx = canvas.getContext('2d');
+
+      pdfDoc.getPage(pageNum).then(function(page) {
+        const viewport = page.getViewport({ scale: currentZoom });
+
+        // Set canvas internal dimensions
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        // Also set CSS dimensions to ensure proper display
+        canvas.style.width = viewport.width + 'px';
+        canvas.style.height = viewport.height + 'px';
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+
+        page.render(renderContext).promise.then(function() {
+          isRendering = false;
+          loading.style.display = 'none';
+          canvas.style.display = 'block';
+          updateNavButtons();
+        });
+      });
+    }
+
+    function pdfPrevPage() {
+      if (currentPage <= 1) return;
+      currentPage--;
+      renderPage(currentPage);
+    }
+
+    function pdfNextPage() {
+      if (currentPage >= totalPages) return;
+      currentPage++;
+      renderPage(currentPage);
+    }
+
+    function updateNavButtons() {
+      document.getElementById('pdfPageIndicator').textContent = currentPage + ' / ' + totalPages;
+      document.getElementById('pdfPrevBtn').disabled = (currentPage <= 1);
+      document.getElementById('pdfNextBtn').disabled = (currentPage >= totalPages);
+
+      const zoomIdx = zoomLevels.indexOf(currentZoom);
+      document.getElementById('pdfZoomIndicator').textContent = Math.round(currentZoom * 100) + '%';
+      document.getElementById('pdfZoomOutBtn').disabled = (zoomIdx <= 0);
+      document.getElementById('pdfZoomInBtn').disabled = (zoomIdx >= zoomLevels.length - 1);
+    }
+
+    function pdfZoomIn() {
+      const idx = zoomLevels.indexOf(currentZoom);
+      if (idx < zoomLevels.length - 1) {
+        currentZoom = zoomLevels[idx + 1];
+        renderPage(currentPage);
+      }
+    }
+
+    function pdfZoomOut() {
+      const idx = zoomLevels.indexOf(currentZoom);
+      if (idx > 0) {
+        currentZoom = zoomLevels[idx - 1];
+        renderPage(currentPage);
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      const modal = document.getElementById('pdfModal');
+      if (!modal.classList.contains('active')) return;
+
+      if (e.key === 'Escape') {
+        closePdfModal();
+      } else if (e.key === 'ArrowLeft') {
+        pdfPrevPage();
+      } else if (e.key === 'ArrowRight') {
+        pdfNextPage();
+      } else if (e.key === '+' || e.key === '=') {
+        pdfZoomIn();
+      } else if (e.key === '-') {
+        pdfZoomOut();
+      }
+      // Block copy/print shortcuts
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'p' || e.key === 's')) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</head>
+
+<body class="mx-auto py-8 px-4">
+  
+  {# ---------- Derived values ---------- #}
+  {# Prefer pct (what your route sends), fall back to percentage/score if needed #}
+  {% set raw_pct = (pct if (pct is defined and pct is not none)
+  else (percentage if (percentage is defined and percentage is not none)
+  else (score if (score is defined and score is not none) else 0))) %}
+
+  {% set percent = raw_pct|float %}
+
+  {# Pass mark comes from the route. The previous "🔒 Hard-lock pass mark to
+     80%" override was a stale guard from before quizzes existed and silently
+     overrode any non-80 pass mark — quizzes set theirs (often 99 for tight
+     section checkpoints) and finals occasionally too. We now read the
+     route's value and only fall back to 80 if it's genuinely absent. #}
+  {% set passpct = (pass_mark|float) if (pass_mark is defined and pass_mark is not none) else 80.0 %}
+  {% set passed_flag = (percent >= passpct) %}
+
+  {# Quiz/final distinguisher. Routes that render this template for a
+     VirtualQuizAttempt pass is_quiz=True so we can hide the final-only
+     UI (feedback CTA, feedback form, contact-admin block). Default False
+     keeps every existing final attempt rendering exactly as before. #}
+  {% set is_quiz = (is_quiz if is_quiz is defined else false) %}
+
+  {# Attempts tracking #}
+  {% set attempts_allowed = (attempts_allowed if attempts_allowed is defined and attempts_allowed is not none else 2) %}
+  {% set attempts_left = (attempts_left if attempts_left is defined and attempts_left is not none else none) %}
+  {% set attempts_used = ((attempts_allowed - attempts_left) if (attempts_allowed is not none and attempts_left is not none) else 1) %}
+  {% set current_attempt = (current_attempt if current_attempt is defined and current_attempt is not none else attempts_used) %}
+
+  {# ===== UPDATED SCORING LOGIC ===== #}
+  {# Default: 2 attempts per course #}
+  {# 80%+ on ANY attempt = PASS #}
+  {# After 1st attempt fail (<80%) = Can retry automatically (2nd attempt) #}
+  {# After 2nd attempt with <75% = FAIL - contact admin #}
+  {# After 2nd attempt with 75-79.99% = Can REQUEST 3rd attempt via dashboard #}
+  {% set can_retry_automatically = (percent < 80 and current_attempt < 2) %}
+  {% set can_request_third = (percent >= 75 and percent < 80 and current_attempt >= 2) %}
+  {% set must_contact_admin = (percent < 75 and current_attempt >= 2) %}
+
+  {% set _course_id = (course_id if (course_id is defined and course_id) else (course.id if (course is defined and
+  course) else none)) %}
+  {% set course_code = (course_code if course_code is defined and course_code is not none else none) %}
+  {% set left_text = (attempts_left if attempts_left is not none else '0') %}
+
+  {# ⭐ pick a course id for the feedback route; fallback is harmless #}
+  {% set cid = _course_id or course_id or (course.id if (course is defined and course) else 22) %}
+
+  <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-lg card-gradient">
+    <div class="p-6">
+
+      <div class="flex justify-between items-start flex-wrap gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl font-semibold mb-1">{{ (title or (course.title if course else '')) }} Result</h2>
+          <div class="text-gray-500">
+            Student:
+            <strong>{{ full_name or (student.name if (student is defined and student and student.name) else 'N/A')
+              }}</strong>
+            <span class="ml-2">
+              ({{ student_id or (student.student_id if (student is defined and student and student.student_id) else
+              'N/A') }})
+            </span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="score-display {{ 'text-green-600' if passed_flag else 'text-red-600' }}">
+            {{ "%.2f"|format(percent) }}%
+          </div>
+          <div class="text-gray-500 text-sm">Score</div>
+        </div>
+      </div>
+
+      {% if passed_flag %}
+      <div class="mb-6 flex items-center bg-green-100 text-green-800 rounded-lg py-3 px-4">
+        <div class="mr-2">✅</div>
+        <div>
+          <strong>PASS</strong> — Congratulations! You have successfully passed the assessment.
+        </div>
+      </div>
+      {% elif can_retry_automatically %}
+      <div class="mb-6 flex items-center bg-amber-100 text-amber-800 rounded-lg py-3 px-4">
+        <div class="mr-2">🔄</div>
+        <div>
+          <strong>RETRY AVAILABLE</strong> — You still have another attempt available. Click below to retry.
+        </div>
+      </div>
+      {% elif can_request_third %}
+      <div class="mb-6 flex items-center bg-blue-100 text-blue-800 rounded-lg py-3 px-4">
+        <div class="mr-2">📋</div>
+        <div>
+          <strong>REQUEST AVAILABLE</strong> — You scored {{ "%.1f"|format(percent) }}% on your 2nd attempt. You may request a 3rd attempt from your dashboard.
+        </div>
+      </div>
+      {% else %}
+      <div class="mb-6 flex items-center bg-red-100 text-red-800 rounded-lg py-3 px-4">
+        <div class="mr-2">❌</div>
+        <div>
+          <strong>FAIL</strong> — You scored below 75% on your final attempt. Please contact your administrator if you wish to discuss further options.
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="mb-4 space-x-2">
+        <span class="inline-block bg-gray-100 text-gray-800 border border-gray-300 rounded-full px-3 py-1">
+          Attempt: <strong>{{ current_attempt }}</strong>
+        </span>
+        {% if passed_flag %}
+        <span class="inline-block bg-green-100 text-green-800 rounded-full px-3 py-1">Passed</span>
+        {% elif can_retry_automatically %}
+        <span class="inline-block bg-amber-100 text-amber-800 rounded-full px-3 py-1">Retry available</span>
+        {% elif can_request_third %}
+        <span class="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1">Request 3rd attempt</span>
+        {% else %}
+        <span class="inline-block bg-red-100 text-red-800 rounded-full px-3 py-1">Contact admin</span>
+        {% endif %}
+      </div>
+
+      {% set barw = 0 if percent < 0 else (100 if percent> 100 else percent|round(2)) %}
+        <div class="mb-6">
+          <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+            <div class="{{ 'bg-green-600' if passed_flag else 'bg-red-600' }}"
+              style="width: {{ barw }}%; height: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-sm">
+          <div>
+            <div class="text-gray-500">Correct</div>
+            <div class="font-semibold">{{ (correct if correct is defined else 0) }} / {{ (total if total is defined else
+              0) }}</div>
+          </div>
+          <div>
+            <div class="text-gray-500">Pass mark</div>
+            <div class="font-semibold">{{ passpct|int }}%</div>
+          </div>
+          <div>
+            <div class="text-gray-500">Status</div>
+            <div>
+              {% if passed_flag %}
+              <span class="px-2 py-0.5 rounded bg-green-100 text-green-800">PASS</span>
+              {% elif can_retry_automatically %}
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800">RETRY</span>
+              {% elif can_request_third %}
+              <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800">REQUEST</span>
+              {% else %}
+              <span class="px-2 py-0.5 rounded bg-red-100 text-red-800">FAIL</span>
+              {% endif %}
+            </div>
+          </div>
+          {# Remediation report is gated to passing attempts only. Failing
+             students don't get to see the answer breakdown; they retry instead. #}
+          {% if video_filename and passed %}
+          <div>
+            <button onclick="generatePDF();" class="view-remediation-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              Remediation Report
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        {# ==== AUTO RETAKE TARGET (fallback) ==== #}
+        {% set auto_retake_slug = course_code %}
+        {% if not auto_retake_slug %}
+        {% set parts = request.path.split('/') %}
+        {% if parts|length > 1 %}
+        {% set auto_retake_slug = parts[1] %}
+        {% endif %}
+        {% endif %}
+
+        <div class="flex flex-wrap gap-3 mb-8">
+          {# ===== UPDATED SCORE-BASED RETRY LOGIC ===== #}
+          {% if is_quiz %}
+            {# Quizzes have unlimited retakes by design and never have a
+               feedback or certificate workflow. Show a Retake button when
+               the learner didn't pass, otherwise just Back to Dashboard. #}
+            {% if not passed_flag and retake_url %}
+            <a href="{{ retake_url }}"
+               class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">
+              🔁 Retake Quiz
+            </a>
+            {% endif %}
+
+          {% elif passed_flag and not feedback_already_submitted %}
+            {# Passed but hasn't given feedback yet — show prominent feedback CTA #}
+            <a href="{{ url_for('assessment_feedback', course_key=course_code) if course_code else url_for('course_feedback', course_id=cid) }}"
+              onclick="document.getElementById('course-feedback-block-{{ course_code or cid }}').scrollIntoView({behavior:'smooth'}); return false;"
+              class="bg-amber-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-amber-600 transition shadow-md">
+              Give Feedback to Complete
+            </a>
+
+          {% elif passed_flag %}
+            {# Passed and feedback submitted - no action needed #}
+
+          {% elif can_retry_automatically %}
+            {# Failed attempt 1 - Allow automatic retry #}
+            {% if retake_url %}
+            <a href="{{ retake_url }}" class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">
+              🔁 Retry Assessment
+            </a>
+            {% elif course_code %}
+            <a href="{{ url_for('course_take', course_key=course_code) }}"
+              class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">
+              🔁 Retry Assessment
+            </a>
+            {% elif auto_retake_slug %}
+            <a href="/{{ auto_retake_slug }}" class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">
+              🔁 Retry Assessment
+            </a>
+            {% endif %}
+
+          {% elif can_request_third %}
+            {# 75-79.99% on attempt 2 - Can request 3rd attempt from dashboard #}
+            <div class="flex-grow bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg">
+              <p class="font-semibold mb-2">📋 Request 3rd Attempt</p>
+              <p class="text-sm">You scored {{ "%.1f"|format(percent) }}% on your 2nd attempt. You are eligible to request a 3rd attempt.</p>
+              <p class="text-sm mt-2">Go to your <strong>Dashboard</strong> and click the <strong>"Request Retry"</strong> button on your course card.</p>
+            </div>
+
+          {% else %}
+            {# Below 75% on attempt 2+ - Contact admin #}
+            <div class="flex-grow bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
+              <p class="font-semibold mb-2">🚫 No automatic retake available</p>
+              <p class="text-sm">You scored below 75% on your final attempt. Please contact your administrator if you wish to discuss further options.</p>
+              <p class="text-sm mt-2">
+                <strong>📧 Contact:</strong> digital@professional.za.com or call +27 10 594 5417
+              </p>
+            </div>
+          {% endif %}
+
+          <a href="{{ back_url or url_for('dashboard') }}"
+            class="border border-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-100">
+            ⬅ Back to Dashboard
+          </a>
+        </div>
+
+        {# ===========================
+        FEEDBACK FORM — ONLY WHEN PASSED, and only for final assessments.
+        Quizzes are formative and never collect this kind of feedback.
+        =========================== #}
+        {% if passed_flag and not is_quiz %}
+        {# Determine if this is a final assessment (has course_code) or regular course (has course_id) #}
+        {% set feedback_id = course_code or cid %}
+
+        {% if feedback_already_submitted %}
+        {# Already submitted feedback - show thank you message #}
+        <div class="max-w-2xl mx-auto bg-green-50 border border-green-200 rounded-lg shadow-sm p-6 text-center">
+          <div class="text-green-600 text-4xl mb-3">✅</div>
+          <h5 class="text-lg font-semibold text-green-800 mb-2">Thank You for Your Feedback!</h5>
+          <p class="text-sm text-green-700">Your feedback has been recorded and will help us improve our courses.</p>
+        </div>
+        {% else %}
+        {# Show feedback form #}
+        <div id="course-feedback-block-{{ feedback_id }}"
+          class="max-w-2xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          {% if course_code %}
+          {# Final assessment - use assessment_feedback route with course_key #}
+          <form action="{{ url_for('assessment_feedback', course_key=course_code) }}" method="POST">
+            <input type="hidden" name="course_key" value="{{ course_code }}">
+          {% else %}
+          {# Regular course - use course_feedback route with course_id #}
+          <form action="{{ url_for('course_feedback', course_id=cid) }}" method="POST">
+            <input type="hidden" name="course_id" value="{{ cid }}">
+          {% endif %}
+            <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+
+            <div class="flex items-baseline mb-3">
+              <h5 class="text-lg font-semibold text-blue-800">💬 Quick Course Feedback</h5>
+              <span
+                class="ml-auto inline-block text-xs font-bold text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-full px-2 py-0.5">
+                1–3 scale
+              </span>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-4">
+              Please rate each statement from 1 to 3:
+              <span class="font-medium text-gray-700">1 = Poor</span>,
+              <span class="font-medium text-gray-700">2 = Average</span>,
+              <span class="font-medium text-gray-700">3 = Excellent</span>.
+            </p>
+
+            {% set qs = {
+            'q_navigate': 'Was the course easy to navigate?',
+            'q_understand': 'Were the assessment questions appropriate for e-learning platform?',
+            'q_apply': 'Was there enough time to complete the final assessment?',
+            'q_value': 'Does the assessment effectively measure your learning outcomes?'
+            } %}
+
+            {% for name, text in qs.items() %}
+            <fieldset class="mb-4">
+              <legend class="block text-sm font-medium text-gray-700 mb-1">{{ text }}</legend>
+              <div class="flex gap-4">
+                {% for n in range(1, 4) %}
+                <label class="inline-flex items-center gap-2">
+                  <input type="radio" name="{{ name }}" value="{{ n }}" required
+                    class="text-blue-600 focus:ring-blue-500 border-gray-300">
+                  <span class="text-sm">{{ n }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+            {% endfor %}
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Comments (optional)</label>
+              <textarea name="comments" rows="3"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="What worked well? What could we improve?"></textarea>
+            </div>
+
+            <div class="text-right">
+              <button type="submit"
+                class="bg-blue-800 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none">
+                Submit Feedback
+              </button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+        {% endif %}
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const blkId = 'course-feedback-block-{{ course_code or cid }}';
+      const block = document.getElementById(blkId);
+      if (!block) return;
+      const form = block.querySelector('form');
+      if (!form) return;
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+        try {
+          const resp = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'fetch' }
+          });
+          const html = await resp.text();
+          block.innerHTML = html; // server returns the thank-you fragment
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (err) {
+          if (btn) { btn.disabled = false; btn.textContent = 'Submit Feedback'; }
+          alert('Sorry — something went wrong submitting your feedback.');
+        }
+      });
+    });
+  </script>
+
+  <!-- PDF Modal Backdrop -->
+  <div id="pdfModalBackdrop" class="pdf-modal-backdrop" onclick="closePdfModal()"></div>
+
+  <!-- PDF Modal Viewer -->
+  <div id="pdfModal" class="pdf-modal" oncontextmenu="return false;">
+    <div class="pdf-modal-header">
+      <div class="pdf-modal-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Assessment Remediation Report
+      </div>
+      <button class="pdf-modal-close" onclick="closePdfModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        Close Report
+      </button>
+    </div>
+
+    <div class="pdf-modal-nav">
+      <button id="pdfPrevBtn" onclick="pdfPrevPage()" title="Previous Page (Left Arrow)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Prev
+      </button>
+      <span class="pdf-page-indicator" id="pdfPageIndicator">1 / 1</span>
+      <button id="pdfNextBtn" onclick="pdfNextPage()" title="Next Page (Right Arrow)">
+        Next
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <span class="pdf-zoom-indicator">
+        <button id="pdfZoomOutBtn" onclick="pdfZoomOut()" title="Zoom Out (-)">−</button>
+        <span id="pdfZoomIndicator">150%</span>
+        <button id="pdfZoomInBtn" onclick="pdfZoomIn()" title="Zoom In (+)">+</button>
+      </span>
+    </div>
+
+    <div class="pdf-modal-container">
+      <div class="pdf-modal-loading" id="pdfModalLoading">
+        <div class="spinner"></div>
+        <span>Generating report...</span>
+      </div>
+      <canvas id="pdfModalCanvas" class="pdf-modal-canvas" style="display: none;"></canvas>
+    </div>
+  </div>
+
+</body>
+
+</html>

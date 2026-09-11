@@ -1,0 +1,53 @@
+<!-- Student Heartbeat — sends activity to /api/heartbeat every 30s -->
+<script>
+(function(){
+  if (!document.body) return;
+
+  var INTERVAL = 30000;
+  var IDLE_TIMEOUT = 120000;
+  var _lastInput = Date.now();
+  var _idle = false;
+
+  // Detect page context from meta tags or data attributes
+  function getPageContext() {
+    var meta = document.querySelector('meta[name="page-context"]');
+    var ctx = { page: 'unknown', course: '', chapter: '' };
+    if (meta) {
+      ctx.page = meta.getAttribute('data-page') || 'unknown';
+      ctx.course = meta.getAttribute('data-course') || '';
+      ctx.chapter = meta.getAttribute('data-chapter') || '';
+      // Set when the page is a proctored final assessment. The server uses this
+      // to open / refresh an AssessmentSession row so admins can monitor live
+      // sit-downs from /admin/assessment-monitor.
+      var fak = meta.getAttribute('data-final-assessment-key') || '';
+      if (fak) ctx.final_assessment_key = fak;
+    }
+    return ctx;
+  }
+
+  function resetIdle() { _lastInput = Date.now(); _idle = false; }
+  document.addEventListener('mousemove', resetIdle, { passive: true });
+  document.addEventListener('keydown', resetIdle, { passive: true });
+  document.addEventListener('click', resetIdle, { passive: true });
+  document.addEventListener('scroll', resetIdle, { passive: true });
+  document.addEventListener('touchstart', resetIdle, { passive: true });
+
+  function sendHeartbeat() {
+    _idle = (Date.now() - _lastInput) > IDLE_TIMEOUT;
+    var ctx = getPageContext();
+    ctx.idle = _idle;
+    try {
+      fetch('/api/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ctx),
+        keepalive: true
+      });
+    } catch(e) {}
+  }
+
+  // Send immediately on page load, then every 30s
+  sendHeartbeat();
+  setInterval(sendHeartbeat, INTERVAL);
+})();
+</script>

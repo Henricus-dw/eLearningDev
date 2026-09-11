@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Users | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { blue: '#17306B', gold: '#C7A434' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .status-online { background: #16a34a; box-shadow: 0 0 6px rgba(22,163,74,0.6); }
+    .status-idle { background: #d97706; box-shadow: 0 0 6px rgba(217,119,6,0.5); }
+    .status-offline { background: #94a3b8; }
+    .pulse { animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <div>
+          <p class="text-xs text-white/70 uppercase tracking-wider">Professional Training</p>
+          <h1 class="text-xl font-bold">Live Users</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin_session_logs') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-history"></i> Session Logs
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border-t-4 border-emerald-500">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <span class="status-dot status-online"></span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-800" id="statOnline">{{ online_count }}</p>
+            <p class="text-xs text-slate-500 uppercase tracking-wide">Online</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-t-4 border-amber-500">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+            <span class="status-dot status-idle"></span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-800" id="statIdle">{{ idle_count }}</p>
+            <p class="text-xs text-slate-500 uppercase tracking-wide">Idle</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-t-4 border-brand-blue">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-users text-brand-blue text-sm"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-800" id="statTotal">{{ total_count }}</p>
+            <p class="text-xs text-slate-500 uppercase tracking-wide">Recent (30 min)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Refresh -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="relative max-w-sm flex-1">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input id="searchInput" type="text" placeholder="Search by name, ID, email..."
+               class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+               oninput="filterUsers()">
+      </div>
+      <div class="flex items-center gap-3 text-sm text-slate-500">
+        <span id="refreshTimer">Refreshing in 15s</span>
+        <button onclick="refreshNow()" class="px-3 py-1.5 bg-brand-blue text-white rounded-lg text-xs font-semibold hover:opacity-90 transition">
+          <i class="fas fa-sync-alt mr-1"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border-top: 4px solid #C7A434;">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-brand-blue text-white">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Status</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Student</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Company</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Current Activity</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">Last Seen</th>
+              <th class="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wide">IP</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody" class="divide-y divide-slate-100">
+            {% for u in users %}
+            <tr class="hover:bg-slate-50 transition user-row"
+                data-search="{{ u.name|lower }} {{ u.student_id }} {{ u.email|lower }} {{ (u.company or '')|lower }}">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <span class="status-dot status-{{ u.status }} {% if u.status == 'online' %}pulse{% endif %}"></span>
+                  <span class="text-xs font-semibold
+                    {% if u.status == 'online' %}text-emerald-600
+                    {% elif u.status == 'idle' %}text-amber-600
+                    {% else %}text-slate-400{% endif %}">
+                    {{ u.status|capitalize }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  {% if u.selfie %}
+                  <img src="/uploads/{{ u.student_id }}/{{ u.selfie }}"
+                       class="w-8 h-8 rounded-full object-cover border-2 border-slate-200"
+                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                  <div class="w-8 h-8 rounded-full bg-brand-blue text-white text-xs font-bold flex items-center justify-center" style="display:none">
+                    {{ u.name[0] }}
+                  </div>
+                  {% else %}
+                  <div class="w-8 h-8 rounded-full bg-brand-blue text-white text-xs font-bold flex items-center justify-center">
+                    {{ u.name[0] }}
+                  </div>
+                  {% endif %}
+                  <div>
+                    <p class="font-semibold text-slate-800">{{ u.name }}</p>
+                    <p class="text-xs text-slate-500">{{ u.student_id }} &middot; {{ u.email }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-slate-600">{{ u.company or '—' }}</td>
+              <td class="px-4 py-3">
+                <div>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold
+                    {% if 'Final Assessment' in u.page %}bg-red-100 text-red-700
+                    {% elif 'Chapter' in u.page %}bg-blue-100 text-brand-blue
+                    {% elif 'Dashboard' in u.page %}bg-emerald-100 text-emerald-700
+                    {% elif 'Quiz' in u.page %}bg-purple-100 text-purple-700
+                    {% elif 'Onboarding' in u.page %}bg-amber-100 text-amber-700
+                    {% else %}bg-slate-100 text-slate-600{% endif %}">
+                    <i class="fas {% if 'Final Assessment' in u.page %}fa-file-alt
+                      {% elif 'Chapter' in u.page %}fa-book-open
+                      {% elif 'Dashboard' in u.page %}fa-home
+                      {% elif 'Quiz' in u.page %}fa-question-circle
+                      {% elif 'Onboarding' in u.page %}fa-id-card
+                      {% else %}fa-globe{% endif %} text-[10px]"></i>
+                    {{ u.page }}
+                  </span>
+                  {% if u.course %}
+                  <p class="text-xs text-slate-500 mt-0.5">{{ u.course }}{% if u.chapter %} — {{ u.chapter }}{% endif %}</p>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="px-4 py-3 text-slate-500 text-xs font-mono">
+                {{ u.last_seen.strftime('%H:%M:%S') if u.last_seen else '—' }}
+              </td>
+              <td class="px-4 py-3 text-slate-500 text-xs font-mono">{{ u.ip or '—' }}</td>
+            </tr>
+            {% endfor %}
+
+            {% if not users %}
+            <tr>
+              <td colspan="6" class="py-12 text-center">
+                <div class="text-slate-400">
+                  <i class="fas fa-ghost text-4xl mb-3"></i>
+                  <p class="font-medium">No active users in the last 30 minutes</p>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-auto">
+    <p class="text-sm">&copy; 2026 Professional Aviation Training</p>
+  </footer>
+
+  <script>
+    var _countdown = 15;
+    var _timer = setInterval(function() {
+      _countdown--;
+      var el = document.getElementById('refreshTimer');
+      if (el) el.textContent = 'Refreshing in ' + _countdown + 's';
+      if (_countdown <= 0) refreshNow();
+    }, 1000);
+
+    function refreshNow() {
+      _countdown = 15;
+      fetch('/api/live-users')
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('statOnline').textContent = data.online;
+          document.getElementById('statIdle').textContent = data.idle;
+          document.getElementById('statTotal').textContent = data.total;
+          rebuildTable(data.users);
+        })
+        .catch(() => {});
+    }
+
+    function rebuildTable(users) {
+      var tbody = document.getElementById('usersBody');
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center"><div class="text-slate-400"><i class="fas fa-ghost text-4xl mb-3"></i><p class="font-medium">No active users in the last 30 minutes</p></div></td></tr>';
+        return;
+      }
+      var html = '';
+      users.forEach(function(u) {
+        var statusClass = u.status === 'online' ? 'status-online pulse' : (u.status === 'idle' ? 'status-idle' : 'status-offline');
+        var statusColor = u.status === 'online' ? 'text-emerald-600' : (u.status === 'idle' ? 'text-amber-600' : 'text-slate-400');
+        var pageBg = 'bg-slate-100 text-slate-600', pageIcon = 'fa-globe';
+        if (u.page.indexOf('Final Assessment') >= 0) { pageBg = 'bg-red-100 text-red-700'; pageIcon = 'fa-file-alt'; }
+        else if (u.page.indexOf('Chapter') >= 0) { pageBg = 'bg-blue-100 text-brand-blue'; pageIcon = 'fa-book-open'; }
+        else if (u.page.indexOf('Dashboard') >= 0) { pageBg = 'bg-emerald-100 text-emerald-700'; pageIcon = 'fa-home'; }
+        else if (u.page.indexOf('Quiz') >= 0) { pageBg = 'bg-purple-100 text-purple-700'; pageIcon = 'fa-question-circle'; }
+        else if (u.page.indexOf('Onboarding') >= 0) { pageBg = 'bg-amber-100 text-amber-700'; pageIcon = 'fa-id-card'; }
+
+        var avatarHtml = '<div class="w-8 h-8 rounded-full bg-brand-blue text-white text-xs font-bold flex items-center justify-center">' + (u.name[0] || '?') + '</div>';
+        if (u.selfie) {
+          avatarHtml = '<img src="/uploads/' + u.student_id + '/' + u.selfie + '" class="w-8 h-8 rounded-full object-cover border-2 border-slate-200" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+            '<div class="w-8 h-8 rounded-full bg-brand-blue text-white text-xs font-bold items-center justify-center" style="display:none">' + (u.name[0] || '?') + '</div>';
+        }
+
+        html += '<tr class="hover:bg-slate-50 transition user-row" data-search="' + (u.name + ' ' + u.student_id + ' ' + u.email + ' ' + (u.company || '')).toLowerCase() + '">' +
+          '<td class="px-4 py-3"><div class="flex items-center gap-2"><span class="status-dot ' + statusClass + '"></span><span class="text-xs font-semibold ' + statusColor + '">' + u.status.charAt(0).toUpperCase() + u.status.slice(1) + '</span></div></td>' +
+          '<td class="px-4 py-3"><div class="flex items-center gap-3">' + avatarHtml + '<div><p class="font-semibold text-slate-800">' + u.name + '</p><p class="text-xs text-slate-500">' + u.student_id + ' &middot; ' + u.email + '</p></div></div></td>' +
+          '<td class="px-4 py-3 text-slate-600">' + (u.company || '—') + '</td>' +
+          '<td class="px-4 py-3"><div><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ' + pageBg + '"><i class="fas ' + pageIcon + ' text-[10px]"></i> ' + u.page + '</span>' +
+          (u.course ? '<p class="text-xs text-slate-500 mt-0.5">' + u.course + (u.chapter ? ' — ' + u.chapter : '') + '</p>' : '') +
+          '</div></td>' +
+          '<td class="px-4 py-3 text-slate-500 text-xs font-mono">' + (u.last_seen || '—') + '</td>' +
+          '<td class="px-4 py-3 text-slate-500 text-xs font-mono">' + (u.ip || '—') + '</td>' +
+          '</tr>';
+      });
+      tbody.innerHTML = html;
+      filterUsers();
+    }
+
+    function filterUsers() {
+      var q = (document.getElementById('searchInput').value || '').toLowerCase();
+      document.querySelectorAll('.user-row').forEach(function(row) {
+        var data = row.getAttribute('data-search') || '';
+        row.style.display = (!q || data.indexOf(q) >= 0) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

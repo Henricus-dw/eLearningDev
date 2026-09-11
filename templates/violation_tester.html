@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Violation Tester | Professional Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#17306B',
+              gold: '#C7A434'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .card { border-top: 4px solid #C7A434; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Logo" class="h-10">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 border border-white/50 hover:bg-white/10 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-brand-blue rounded-xl flex items-center justify-center">
+        <i class="fas fa-vial text-brand-gold text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-brand-blue">Violation Tester</h1>
+        <p class="text-sm text-slate-500">Simulate violations to test the point-based alert system</p>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="mb-6 p-4 rounded-lg {% if category == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-800{% elif category == 'danger' %}bg-red-50 border border-red-200 text-red-800{% elif category == 'warning' %}bg-amber-50 border border-amber-200 text-amber-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          <div class="flex items-center gap-2">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Current Status -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-brand-blue">
+        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Alert Threshold</div>
+        <div class="text-2xl font-bold text-brand-blue">{{ alert_settings.threshold }} points</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 {% if alert_settings.is_enabled %}border-emerald-500{% else %}border-red-500{% endif %}">
+        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">System Status</div>
+        <div class="text-2xl font-bold {% if alert_settings.is_enabled %}text-emerald-600{% else %}text-red-600{% endif %}">
+          {{ "Enabled" if alert_settings.is_enabled else "Disabled" }}
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-brand-gold">
+        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Email Recipients</div>
+        <div class="text-2xl font-bold text-slate-700">{{ violation_recipients|length }}</div>
+      </div>
+    </div>
+
+    <!-- Simulate Violation Card -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-play text-brand-gold"></i>
+          Simulate Violation
+        </h2>
+      </div>
+      <form action="{{ url_for('violation_tester_simulate') }}" method="POST" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Student</label>
+            <select name="student_id" required
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+              <option value="">Select a student...</option>
+              {% for student in students %}
+              <option value="{{ student.student_id }}">{{ student.name }} {{ student.surname }} ({{ student.student_id }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Course</label>
+            <select name="course_key" required
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+              <option value="">Select a course...</option>
+              {% for course in courses %}
+              {% if course.final_assessment_key %}
+              <option value="{{ course.final_assessment_key }}">{{ course.title }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Violation Type</label>
+            <select name="reason" required
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue">
+              <option value="">Select violation...</option>
+              {% for reason_code, label in reason_labels.items() %}
+              <option value="{{ reason_code }}">{{ label }} ({{ point_configs.get(reason_code, 0) }} pts)</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <button type="submit"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-blue hover:bg-blue-900 text-white font-semibold rounded-lg text-sm transition">
+          <i class="fas fa-bolt"></i>
+          Simulate Violation
+        </button>
+      </form>
+    </div>
+
+    <!-- Point Values Reference -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-list-ol text-brand-gold"></i>
+          Point Values
+        </h2>
+        <a href="{{ url_for('violation_settings') }}" class="text-sm text-brand-blue hover:underline">
+          <i class="fas fa-cog mr-1"></i>Edit Settings
+        </a>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {% for reason_code, label in reason_labels.items() %}
+          <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+            <span class="text-xs text-slate-600 truncate mr-2" title="{{ label }}">{{ label[:25] }}{% if label|length > 25 %}...{% endif %}</span>
+            <span class="text-sm font-bold {% if point_configs.get(reason_code, 0) > 0 %}text-brand-blue{% else %}text-slate-400{% endif %}">
+              {{ point_configs.get(reason_code, 0) }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Trackers -->
+    <div class="bg-white rounded-xl shadow-sm card overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-brand-blue flex items-center gap-2">
+          <i class="fas fa-chart-line text-brand-gold"></i>
+          Active Trackers
+        </h2>
+      </div>
+      {% if trackers %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Student ID</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Course</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Current Points</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Progress</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Last Updated</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-600">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for tracker in trackers %}
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-mono text-xs">{{ tracker.student_id }}</td>
+              <td class="px-4 py-3">{{ tracker.course_key }}</td>
+              <td class="px-4 py-3 font-bold text-brand-blue">{{ tracker.current_points }}</td>
+              <td class="px-4 py-3">
+                {% set percent = (tracker.current_points / alert_settings.threshold * 100) %}
+                <div class="w-32 bg-slate-200 rounded-full h-2">
+                  <div class="bg-brand-blue h-2 rounded-full" style="width: {{ percent if percent <= 100 else 100 }}%"></div>
+                </div>
+                <span class="text-xs text-slate-500">{{ tracker.current_points }}/{{ alert_settings.threshold }}</span>
+              </td>
+              <td class="px-4 py-3 text-slate-500 text-xs">
+                {{ tracker.updated_at.strftime('%Y-%m-%d %H:%M') if tracker.updated_at else '—' }}
+              </td>
+              <td class="px-4 py-3">
+                <form action="{{ url_for('violation_tester_reset_tracker', student_id=tracker.student_id, course_key=tracker.course_key) }}" method="POST" class="inline">
+                  <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">
+                    <i class="fas fa-trash mr-1"></i>Reset
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-8 text-center text-slate-500">
+        <i class="fas fa-inbox text-4xl text-slate-300 mb-3"></i>
+        <p>No active trackers. Simulate a violation to create one.</p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-blue text-white/70 text-center py-4 mt-8">
+    <p class="text-sm">Professional Training Win &copy; 2026</p>
+  </footer>
+</body>
+</html>

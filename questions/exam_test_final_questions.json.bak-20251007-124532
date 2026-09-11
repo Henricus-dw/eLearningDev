@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {
+      "question": "What is 1 + 1",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is 2 + 2",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct_index": 3
+    }
+  ]
+}

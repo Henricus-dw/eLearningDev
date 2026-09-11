@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attendance Register</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --brand-blue: #17306B;
+      --brand-gold: #C7A434;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+    }
+
+    .header-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: #ffffff;
+      color: var(--brand-blue);
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(23, 48, 107, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%);
+    }
+
+    .footer-bar {
+      background: var(--brand-blue);
+      padding: 1rem 0;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-12">
+      <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for cat, msg in messages %}
+            <div class="px-4 py-3 rounded-lg border
+              {{ 'border-green-400 bg-green-50 text-green-700' if cat=='success'
+                 else 'border-red-400 bg-red-50 text-red-700' if cat=='danger'
+                 else 'border-amber-400 bg-amber-50 text-amber-700' if cat=='warning'
+                 else 'border-blue-400 bg-blue-50 text-blue-700' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Title -->
+    <div class="flex items-center gap-3 mb-6">
+      <h1 class="text-2xl font-bold" style="color: var(--brand-blue);">
+        <i class="fas fa-clipboard-list text-[var(--brand-gold)]"></i> Attendance Register
+      </h1>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card p-6 mb-6">
+      <form method="GET" action="{{ url_for('admin_attendance_register') }}">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+          <!-- Company -->
+          <div>
+            <label for="company_id" class="block text-sm font-semibold text-slate-600 mb-1">Company</label>
+            <select name="company_id" id="company_id"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent">
+              <option value="">-- Select Company --</option>
+              <option value="0" {{ 'selected' if company_id == 0 }}>All Students (incl. Private)</option>
+              {% for c in companies %}
+                <option value="{{ c.id }}" {{ 'selected' if company_id == c.id }}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Course -->
+          <div>
+            <label for="course_id" class="block text-sm font-semibold text-slate-600 mb-1">Course</label>
+            <select name="course_id" id="course_id"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent">
+              <option value="">-- Select Course --</option>
+              {% for co in courses %}
+                <option value="{{ co.id }}" {{ 'selected' if course_id == co.id }}>{{ co.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Filter Button -->
+          <div>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white shadow transition"
+                    style="background: var(--brand-blue);"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results -->
+    {% if students is defined and students|length > 0 %}
+    <div class="card p-6">
+      <form id="pdfForm" method="POST" action="{{ url_for('admin_attendance_register_pdf') }}">
+        <input type="hidden" name="company_id" value="{{ company_id }}">
+        <input type="hidden" name="course_id" value="{{ course_id }}">
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <p class="text-sm text-slate-500">
+            <i class="fas fa-users mr-1"></i>
+            <strong>{{ students|length }}</strong> student{{ 's' if students|length != 1 }} found
+            {% if selected_company %} for <strong>{{ selected_company.name }}</strong>{% endif %}
+            {% if company_id == 0 %} across <strong>all companies</strong>{% endif %}
+            {% if selected_course %} &mdash; <strong>{{ selected_course.title }}</strong>{% endif %}
+          </p>
+          <div class="flex items-center gap-3">
+            <!-- Search filter -->
+            <div class="relative">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="studentSearch" placeholder="Search students..."
+                     class="pl-8 pr-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent w-56">
+            </div>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white shadow transition"
+                    style="background: var(--brand-gold); color: var(--brand-blue);"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+              <i class="fas fa-file-pdf"></i> Generate PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Pagination info -->
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="selectAll" class="rounded border-slate-300 cursor-pointer">
+            <label for="selectAll" class="text-xs text-slate-500 cursor-pointer">Select all visible</label>
+            <span class="text-xs text-slate-400 ml-2" id="selectedCount"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-500">Per page:</label>
+            <select id="perPage" class="rounded border-slate-300 text-xs px-2 py-1">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="999999">All</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left" id="studentTable">
+            <thead>
+              <tr class="border-b-2 border-slate-200 text-slate-500 uppercase text-xs tracking-wider">
+                <th class="py-3 px-3 w-8"></th>
+                <th class="py-3 px-3">Name</th>
+                <th class="py-3 px-3">Surname</th>
+                <th class="py-3 px-3">ID Number</th>
+                <th class="py-3 px-3">Email</th>
+                <th class="py-3 px-3">Enrolled</th>
+                <th class="py-3 px-3">Completed</th>
+                <th class="py-3 px-3">Score</th>
+                <th class="py-3 px-3">Cert Status</th>
+              </tr>
+            </thead>
+            <tbody id="studentBody">
+              {% for s, enrollment, cert in students %}
+              <tr class="border-b border-slate-100 hover:bg-slate-50 transition student-row"
+                  data-search="{{ s.name|lower }} {{ s.surname|lower }} {{ s.national_id|lower if s.national_id else '' }} {{ s.email|lower }}">
+                <td class="py-3 px-3">
+                  <input type="checkbox" name="student_ids" value="{{ s.id }}" class="student-cb rounded border-slate-300 cursor-pointer" checked>
+                </td>
+                <td class="py-3 px-3 font-medium text-slate-700">{{ s.name }}</td>
+                <td class="py-3 px-3 text-slate-700">{{ s.surname }}</td>
+                <td class="py-3 px-3 text-slate-600 font-mono text-sm">{{ s.national_id or '—' }}</td>
+                <td class="py-3 px-3 text-slate-600">{{ s.email }}</td>
+                <td class="py-3 px-3 text-slate-600">{{ enrollment.enrolled_at.strftime('%d %b %Y') if enrollment.enrolled_at else '—' }}</td>
+                <td class="py-3 px-3 text-slate-600">{{ cert.passed_at.strftime('%d %b %Y') if cert and cert.passed_at else '—' }}</td>
+                <td class="py-3 px-3 text-slate-600">{{ '%.0f%%' % cert.score if cert and cert.score else '—' }}</td>
+                <td class="py-3 px-3">
+                  {% if cert %}
+                    {% if cert.status == 'done' %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                        <i class="fas fa-check-circle"></i> Issued
+                      </span>
+                    {% elif cert.status == 'pending' %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                        <i class="fas fa-clock"></i> Pending
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                        {{ cert.status }}
+                      </span>
+                    {% endif %}
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                      <i class="fas fa-minus-circle"></i> N/A
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination controls -->
+        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+          <span class="text-xs text-slate-500" id="pageInfo"></span>
+          <div class="flex items-center gap-1" id="pageButtons"></div>
+        </div>
+      </form>
+    </div>
+
+    {% elif company_id is not none and course_id %}
+    <div class="card p-6">
+      <div class="text-center py-8 text-slate-500">
+        <i class="fas fa-search text-4xl mb-3 text-slate-300"></i>
+        <p class="text-lg font-medium">No completed students found for this selection.</p>
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Aviation Training</span>
+      <span>Attendance Register</span>
+    </div>
+  </footer>
+
+  <!-- Search, Select All, Pagination JS -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('studentSearch');
+    const selectAll = document.getElementById('selectAll');
+    const perPageSelect = document.getElementById('perPage');
+    const rows = Array.from(document.querySelectorAll('.student-row'));
+    const pageInfo = document.getElementById('pageInfo');
+    const pageButtons = document.getElementById('pageButtons');
+    const selectedCount = document.getElementById('selectedCount');
+    let currentPage = 1;
+
+    if (!rows.length) return;
+
+    function getVisibleRows() {
+      const q = (searchInput?.value || '').toLowerCase().trim();
+      return rows.filter(r => !q || r.dataset.search.includes(q));
+    }
+
+    function getPerPage() {
+      return parseInt(perPageSelect?.value || 50);
+    }
+
+    function render() {
+      const visible = getVisibleRows();
+      const perPage = getPerPage();
+      const totalPages = Math.max(1, Math.ceil(visible.length / perPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * perPage;
+      const end = start + perPage;
+
+      // Hide/show rows
+      rows.forEach(r => r.style.display = 'none');
+      visible.forEach((r, i) => {
+        r.style.display = (i >= start && i < end) ? '' : 'none';
+      });
+
+      // Page info
+      if (pageInfo) {
+        const showing = Math.min(end, visible.length);
+        pageInfo.textContent = `Showing ${start + 1}–${showing} of ${visible.length}` +
+          (visible.length < rows.length ? ` (filtered from ${rows.length})` : '');
+      }
+
+      // Page buttons
+      if (pageButtons) {
+        pageButtons.innerHTML = '';
+        if (totalPages > 1) {
+          for (let p = 1; p <= totalPages; p++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = p;
+            btn.className = p === currentPage
+              ? 'px-3 py-1 rounded text-xs font-bold text-white'
+              : 'px-3 py-1 rounded text-xs font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50';
+            if (p === currentPage) btn.style.background = 'var(--brand-blue)';
+            btn.addEventListener('click', () => { currentPage = p; render(); });
+            pageButtons.appendChild(btn);
+          }
+        }
+      }
+
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.student-cb:checked').length;
+      if (selectedCount) selectedCount.textContent = `${checked} selected`;
+    }
+
+    // Search
+    if (searchInput) {
+      searchInput.addEventListener('input', () => { currentPage = 1; render(); });
+    }
+
+    // Per page
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', () => { currentPage = 1; render(); });
+    }
+
+    // Select all (visible only)
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        const visible = getVisibleRows();
+        const perPage = getPerPage();
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        visible.forEach((r, i) => {
+          if (i >= start && i < end) {
+            const cb = r.querySelector('.student-cb');
+            if (cb) cb.checked = selectAll.checked;
+          }
+        });
+        updateSelectedCount();
+      });
+    }
+
+    // Track individual checkbox changes
+    document.addEventListener('change', function (e) {
+      if (e.target.classList.contains('student-cb')) updateSelectedCount();
+    });
+
+    render();
+  });
+  </script>
+
+</body>
+</html>

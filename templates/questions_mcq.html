@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MCQ Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f8fafc; } /* light gray background */
+    .card { background: #ffffff; border: 1px solid #e2e8f0; } /* white card, light border */
+    .btn { padding:.5rem .9rem; border-radius:.5rem; border:1px solid #cbd5e1; background:#f1f5f9; }
+    .btn:hover { background:#e2e8f0; }
+    .btn-primary { background:#3b82f6; color:white; border:none; }
+    .btn-primary:hover { background:#2563eb; }
+    .field { border:1px solid #cbd5e1; background:#fff; }
+    .field:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 1px #3b82f6; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">MCQ Editor</h1>
+        <p class="text-xs text-slate-600">File: <span class="font-mono">{{ selected }}</span> • Last saved: {{ last_saved }}</p>
+      </div>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn">⬅ Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for cat,msg in messages %}
+            <div class="px-4 py-3 rounded border 
+              {{ 'border-green-400 bg-green-50 text-green-700' if cat=='success'
+                 else 'border-red-400 bg-red-50 text-red-700' if cat=='danger'
+                 else 'border-amber-400 bg-amber-50 text-amber-700' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <aside class="card rounded-lg p-4 lg:col-span-3">
+        <h2 class="font-medium mb-2 text-slate-700">Files</h2>
+        <div class="space-y-2 max-h-[70vh] overflow-auto">
+          {% for f in files %}
+            <a href="{{ url_for('questions_mcq', filename=f) }}"
+               class="block px-3 py-2 rounded border border-slate-200 hover:bg-slate-100 {{ 'ring-2 ring-blue-400' if f==selected }}">
+              {{ f }}
+            </a>
+          {% endfor %}
+        </div>
+      </aside>
+
+      <main class="lg:col-span-9">
+        <form id="mcqForm" method="POST">
+          <input type="hidden" name="payload" id="payload" />
+          <div id="list" class="space-y-4">
+            {% for item in mcq %}
+            {% set qloop = loop %}
+            <div class="qcard card rounded-lg p-4 shadow-sm" data-index="{{ qloop.index0 }}">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium text-slate-800">Question {{ qloop.index }}</h3>
+                <button type="button" class="btn del-q">Delete Question</button>
+              </div>
+              <textarea class="q field w-full rounded p-2 mb-3" rows="2" placeholder="Question">{{ item.q }}</textarea>
+
+              <!-- Image attachment (optional) -->
+              <div class="img-section mb-3">
+                <input type="hidden" class="img-filename" value="{{ item.image or '' }}">
+                {% if item.image %}
+                <div class="img-preview mb-2">
+                  <img src="{{ url_for('static', filename='uploads/questions/' + item.image) }}"
+                       class="max-h-48 rounded border border-slate-200" alt="Question image">
+                  <button type="button" class="btn remove-img text-red-600 mt-1">Remove image</button>
+                </div>
+                {% else %}
+                <div class="img-preview mb-2 hidden"></div>
+                {% endif %}
+                <label class="btn cursor-pointer inline-flex items-center gap-1">
+                  📷 Attach Image
+                  <input type="file" accept="image/png,image/jpeg,image/webp" class="img-upload hidden">
+                </label>
+                <span class="img-status text-xs text-slate-500 ml-2"></span>
+                <div class="img-progress-wrap hidden mt-2">
+                  <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div class="img-progress-bar bg-blue-500 h-2 rounded-full transition-all" style="width:0%"></div>
+                  </div>
+                  <span class="img-progress-text text-xs text-slate-500 mt-0.5 block">0%</span>
+                </div>
+              </div>
+
+              <div class="space-y-2 opts">
+                {% for opt in item.options %}
+                <div class="flex items-center gap-2">
+                  <input type="radio"
+                         name="correct_{{ qloop.index0 }}"
+                         class="corr"
+                         value="{{ loop.index0 }}"
+                         {% if loop.index0 == item.correct_index %}checked{% endif %}>
+                  <input type="text" class="field w-full rounded p-2 opt" value="{{ opt }}" placeholder="Option">
+                  <button type="button" class="btn del-opt">Remove</button>
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="mt-3">
+                <button type="button" class="btn add-opt">Add Option</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-6 flex items-center gap-3">
+            <button type="button" id="addQ" class="btn">➕ Add Question</button>
+            <button type="submit" class="btn-primary">💾 Save</button>
+            <span class="text-xs text-slate-500">Select a radio to mark the correct answer.</span>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const list = document.getElementById('list');
+    const payload = document.getElementById('payload');
+
+    function reindex() {
+      [...list.querySelectorAll('.qcard')].forEach((card, i) => {
+        card.dataset.index = i;
+        card.querySelectorAll('input.corr').forEach(r => { r.name = 'correct_' + i; });
+      });
+    }
+
+    document.getElementById('addQ').addEventListener('click', () => {
+      const card = document.createElement('div');
+      card.className = 'qcard card rounded-lg p-4 shadow-sm';
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-medium text-slate-800">New Question</h3>
+          <button type="button" class="btn del-q">Delete Question</button>
+        </div>
+        <textarea class="q field w-full rounded p-2 mb-3" rows="2" placeholder="Question"></textarea>
+        <div class="img-section mb-3">
+          <input type="hidden" class="img-filename" value="">
+          <div class="img-preview mb-2 hidden"></div>
+          <label class="btn cursor-pointer inline-flex items-center gap-1">
+            📷 Attach Image
+            <input type="file" accept="image/png,image/jpeg,image/webp" class="img-upload hidden">
+          </label>
+          <span class="img-status text-xs text-slate-500 ml-2"></span>
+          <div class="img-progress-wrap hidden mt-2">
+            <div class="w-full bg-slate-200 rounded-full h-2">
+              <div class="img-progress-bar bg-blue-500 h-2 rounded-full transition-all" style="width:0%"></div>
+            </div>
+            <span class="img-progress-text text-xs text-slate-500 mt-0.5 block">0%</span>
+          </div>
+        </div>
+        <div class="space-y-2 opts">
+          <div class="flex items-center gap-2">
+            <input type="radio" class="corr" checked>
+            <input type="text" class="field w-full rounded p-2 opt" placeholder="Option A">
+            <button type="button" class="btn del-opt">Remove</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="radio" class="corr">
+            <input type="text" class="field w-full rounded p-2 opt" placeholder="Option B">
+            <button type="button" class="btn del-opt">Remove</button>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button type="button" class="btn add-opt">Add Option</button>
+        </div>`;
+      list.appendChild(card);
+      reindex();
+    });
+
+    list.addEventListener('click', (e) => {
+      const card = e.target.closest('.qcard');
+      if (!card) return;
+
+      if (e.target.classList.contains('add-opt')) {
+        const line = document.createElement('div');
+        line.className = 'flex items-center gap-2';
+        line.innerHTML = `
+          <input type="radio" class="corr">
+          <input type="text" class="field w-full rounded p-2 opt" placeholder="Option">
+          <button type="button" class="btn del-opt">Remove</button>`;
+        card.querySelector('.opts').appendChild(line);
+        reindex();
+      }
+
+      if (e.target.classList.contains('del-opt')) {
+        e.target.closest('.flex.items-center').remove();
+        reindex();
+      }
+
+      if (e.target.classList.contains('del-q')) {
+        card.remove();
+        reindex();
+      }
+
+      if (e.target.classList.contains('remove-img')) {
+        e.preventDefault();
+        const hidden = card.querySelector('.img-filename');
+        const preview = card.querySelector('.img-preview');
+        if (hidden.value) {
+          fetch('{{ url_for("delete_question_image") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({filename: hidden.value})
+          }).catch(() => {});
+        }
+        hidden.value = '';
+        preview.innerHTML = '';
+        preview.classList.add('hidden');
+      }
+    });
+
+    // Image upload via AJAX
+    list.addEventListener('change', (e) => {
+      if (!e.target.classList.contains('img-upload')) return;
+      const card = e.target.closest('.qcard');
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const status = card.querySelector('.img-status');
+      const preview = card.querySelector('.img-preview');
+      const hidden = card.querySelector('.img-filename');
+
+      const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+      if (!allowed.includes(file.type)) {
+        status.textContent = 'Invalid file type. Use PNG/JPG/WEBP.';
+        status.className = 'img-status text-xs text-red-600 ml-2';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        status.textContent = 'File too large (max 5 MB).';
+        status.className = 'img-status text-xs text-red-600 ml-2';
+        return;
+      }
+
+      const progressWrap = card.querySelector('.img-progress-wrap');
+      const progressBar = card.querySelector('.img-progress-bar');
+      const progressText = card.querySelector('.img-progress-text');
+
+      status.textContent = 'Uploading...';
+      status.className = 'img-status text-xs text-slate-500 ml-2';
+      progressWrap.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+
+      const fd = new FormData();
+      fd.append('image', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '{{ url_for("upload_question_image") }}');
+
+      xhr.upload.onprogress = (evt) => {
+        if (evt.lengthComputable) {
+          const pct = Math.round((evt.loaded / evt.total) * 100);
+          progressBar.style.width = pct + '%';
+          progressText.textContent = pct + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.ok) {
+            hidden.value = data.filename;
+            preview.innerHTML = `
+              <img src="${data.url}" class="max-h-48 rounded border border-slate-200" alt="Question image">
+              <button type="button" class="btn remove-img text-red-600 mt-1">Remove image</button>`;
+            preview.classList.remove('hidden');
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('bg-blue-500');
+            progressBar.classList.add('bg-green-500');
+            progressText.textContent = 'Complete';
+            status.textContent = 'Uploaded.';
+            status.className = 'img-status text-xs text-green-600 ml-2';
+            setTimeout(() => progressWrap.classList.add('hidden'), 1500);
+          } else {
+            status.textContent = data.error || 'Upload failed.';
+            status.className = 'img-status text-xs text-red-600 ml-2';
+            progressWrap.classList.add('hidden');
+          }
+        } catch {
+          status.textContent = 'Upload failed.';
+          status.className = 'img-status text-xs text-red-600 ml-2';
+          progressWrap.classList.add('hidden');
+        }
+      };
+
+      xhr.onerror = () => {
+        status.textContent = 'Upload failed. Please try again.';
+        status.className = 'img-status text-xs text-red-600 ml-2';
+        progressWrap.classList.add('hidden');
+      };
+
+      xhr.send(fd);
+      e.target.value = '';
+    });
+
+    document.getElementById('mcqForm').addEventListener('submit', () => {
+  const data = [];
+  list.querySelectorAll('.qcard').forEach((card) => {
+    const q = card.querySelector('textarea.q').value.trim();
+    const opts = [...card.querySelectorAll('.opt')].map(o => o.value.trim());
+
+    // Always keep at least 2 options (fill blanks if needed)
+    while (opts.length < 2) opts.push("");
+
+    // If no text, keep as empty string (instead of dropping)
+    let correct = 0;
+    const radios = card.querySelectorAll('input.corr');
+    radios.forEach((r, idx) => { if (r.checked) correct = idx; });
+    if (correct >= opts.length) correct = 0;
+
+    const image = card.querySelector('.img-filename')?.value || '';
+    const entry = { q, options: opts, correct_index: correct };
+    if (image) entry.image = image;
+    data.push(entry);
+  });
+  payload.value = JSON.stringify(data);
+});
+
+    reindex();
+  </script>
+</body>
+</html>

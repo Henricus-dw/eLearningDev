@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{% if admin_role_level >= 4 %}Developer Dashboard{% else %}Analytics Dashboard{% endif %} — Professional Training</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { brand: { blue:'#17306B', gold:'#C7A434' } },
+        boxShadow: { soft: '0 10px 30px rgba(23,48,107,.12)' }
+      }
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-brand-blue text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-10">
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">{% if admin_role_level >= 4 %}Developer Dashboard{% else %}Analytics Dashboard{% endif %}</h1>
+          <p class="text-sm text-blue-200">Welcome, {{ admin_name }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-arrow-left mr-1"></i> Admin Dashboard
+        </a>
+        <a href="{{ url_for('logout', from='admin') }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">
+          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
+
+    <!-- KPI Cards -->
+    <h2 class="text-lg font-semibold text-brand-blue mb-4">
+      <i class="fas fa-chart-bar mr-2 text-brand-gold"></i> Platform Analytics
+    </h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+            <i class="fas fa-user-graduate text-blue-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Students</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_students }}</div>
+        <div class="text-xs text-slate-400 mt-1">Total registered</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <i class="fas fa-building text-amber-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Companies</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_companies }}</div>
+        <div class="text-xs text-slate-400 mt-1">{{ approved_companies }} approved</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+            <i class="fas fa-certificate text-emerald-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Certificates</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_certs }}</div>
+        <div class="text-xs text-slate-400 mt-1">{{ pending_certs }} pending</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
+            <i class="fas fa-user-check text-violet-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Enrollments</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_enrollments }}</div>
+        <div class="text-xs text-slate-400 mt-1">{{ active_enrollments }} active</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Pass Rate (7d)</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ pass_rate_7d }}%</div>
+        <div class="text-xs text-slate-400 mt-1">Last 7 days</div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center">
+            <i class="fas fa-chart-line text-teal-600"></i>
+          </div>
+          <span class="text-sm font-medium text-slate-500">Pass Rate (All)</span>
+        </div>
+        <div class="text-3xl font-bold text-slate-900">{{ pass_rate_all }}%</div>
+        <div class="text-xs text-slate-400 mt-1">All time</div>
+      </div>
+
+    </div>
+
+    <!-- Daily Trends Charts -->
+    <h2 class="text-lg font-semibold text-brand-blue mb-4">
+      <i class="fas fa-chart-area mr-2 text-brand-gold"></i> Daily Trends (Last 30 Days)
+    </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3"><i class="fas fa-user-graduate text-blue-500 mr-2"></i>New Students</h3>
+        <div class="relative" style="height:200px"><canvas id="chartStudents"></canvas></div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3"><i class="fas fa-building text-amber-500 mr-2"></i>New Companies</h3>
+        <div class="relative" style="height:200px"><canvas id="chartCompanies"></canvas></div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3"><i class="fas fa-certificate text-emerald-500 mr-2"></i>Certificates Issued</h3>
+        <div class="relative" style="height:200px"><canvas id="chartCertificates"></canvas></div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3"><i class="fas fa-user-check text-violet-500 mr-2"></i>New Enrollments</h3>
+        <div class="relative" style="height:200px"><canvas id="chartEnrollments"></canvas></div>
+      </div>
+
+    </div>
+
+    <!-- Quick Links (Super Admin+) -->
+    <h2 class="text-lg font-semibold text-brand-blue mb-4">
+      <i class="fas fa-link mr-2 text-brand-gold"></i> Quick Links
+    </h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+
+      <a href="{{ url_for('admin_patch_notes') }}" class="group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-clipboard-list text-indigo-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Patch Notes</h5>
+        <p class="text-xs text-slate-500 mt-1">Version history and changes</p>
+      </a>
+
+      <a href="{{ url_for('admin_dev_tools') }}" class="group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-orange-100 group-hover:bg-orange-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-flask text-orange-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Course Manipulator</h5>
+        <p class="text-xs text-slate-500 mt-1">Simulate assessment results</p>
+      </a>
+
+      <a href="{{ url_for('admin_dev_otps') }}" class="relative group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 group-hover:bg-amber-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-key text-amber-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Student Access</h5>
+        <p class="text-xs text-slate-500 mt-1">Find any student, verify them, resend codes and links</p>
+        {% if pending_otp_count is defined and pending_otp_count > 0 %}
+        <span class="absolute top-3 right-3 inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 text-xs font-bold text-white bg-amber-500 rounded-full">
+          {{ pending_otp_count }}
+        </span>
+        {% endif %}
+      </a>
+
+      <a href="{{ url_for('task_board') }}" class="relative group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-tasks text-purple-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Task Board</h5>
+        <p class="text-xs text-slate-500 mt-1">Sprint planning &amp; feature requests</p>
+        {% if admin_role_level >= 4 and unscored_task_count is defined and unscored_task_count > 0 %}
+        <span class="absolute top-3 right-3 inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 rounded-full">
+          {{ unscored_task_count }}
+        </span>
+        {% endif %}
+      </a>
+
+    </div>
+
+    {% if admin_role_level >= 4 %}
+    <!-- Developer Tools Section -->
+    <h2 class="text-lg font-semibold text-brand-blue mb-4">
+      <i class="fas fa-code mr-2 text-brand-gold"></i> Developer Tools
+    </h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+
+      <a href="{{ url_for('admin_dev_tools') }}" class="group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-orange-100 group-hover:bg-orange-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-flask text-orange-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Course Manipulator</h5>
+        <p class="text-xs text-slate-500 mt-1">Simulate assessment results</p>
+      </a>
+
+      <a href="{{ url_for('violation_tester') }}" class="group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-red-100 group-hover:bg-red-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-vial text-red-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Violation Tester</h5>
+        <p class="text-xs text-slate-500 mt-1">Test proctoring violation alerts</p>
+      </a>
+
+      <a href="{{ url_for('testing_dashboard') }}" class="group bg-white rounded-xl shadow-soft ring-1 ring-slate-200 p-5 hover:ring-brand-blue/40 hover:shadow-lg transition">
+        <div class="w-12 h-12 rounded-xl bg-cyan-100 group-hover:bg-cyan-200 flex items-center justify-center mb-3 transition">
+          <i class="fas fa-clipboard-check text-cyan-600 text-lg"></i>
+        </div>
+        <h5 class="font-semibold text-slate-800">Testing Dashboard</h5>
+        <p class="text-xs text-slate-500 mt-1">QA testing blocks and tasks</p>
+      </a>
+
+    </div>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-brand-blue text-white/70 text-xs py-4">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <span>&copy; 2026 Professional Training. All rights reserved.</span>
+      <span class="flex items-center gap-2">Powered by <a href="https://asimo.tech" target="_blank" class="flex items-center gap-1 text-white hover:text-brand-gold transition">Asimotech <img src="{{ url_for('static', filename='images/asimowhitesmall.png') }}" alt="Asimotech" class="h-4"></a></span>
+    </div>
+  </footer>
+
+  <script>
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    function buildChart(canvasId, label, data, rawLabels, color) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+
+      // Pre-compute display labels (dd/mm) and full tooltip titles (dd/mm Day)
+      const displayLabels = rawLabels.map((d, i) => {
+        const [y, m, day] = d.split('-');
+        return `${day}/${m}`;
+      });
+      const tooltipTitles = rawLabels.map(d => {
+        const [y, m, day] = d.split('-');
+        const dt = new Date(+y, +m - 1, +day);
+        return `${day}/${m} ${DAYS[dt.getDay()]}`;
+      });
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: displayLabels,
+          datasets: [{
+            label: label,
+            data: data,
+            borderColor: color,
+            backgroundColor: color + '18',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: color,
+            clip: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 10, right: 12 } },
+          interaction: { mode: 'index', intersect: false },
+          hover: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#17306B',
+              titleFont: { size: 12 },
+              bodyFont: { size: 13, weight: 'bold' },
+              padding: 10,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                title: function(items) {
+                  return tooltipTitles[items[0].dataIndex];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { size: 9 },
+                color: '#94a3b8',
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 8,
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                font: { size: 10 },
+                color: '#94a3b8',
+                precision: 0,
+              }
+            }
+          }
+        }
+      });
+    }
+
+    fetch('/api/analytics/daily-trends')
+      .then(r => r.json())
+      .then(d => {
+        buildChart('chartStudents',     'New Students',       d.students,     d.labels, '#3b82f6');
+        buildChart('chartCompanies',    'New Companies',      d.companies,    d.labels, '#d97706');
+        buildChart('chartCertificates', 'Certificates Issued', d.certificates, d.labels, '#10b981');
+        buildChart('chartEnrollments',  'New Enrollments',    d.enrollments,  d.labels, '#8b5cf6');
+      })
+      .catch(err => console.error('Failed to load trend data:', err));
+  </script>
+
+</body>
+</html>

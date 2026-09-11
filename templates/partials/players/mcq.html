@@ -1,0 +1,27 @@
+{#
+  Legacy MCQ / True-False question player.
+  Extracted from final_assessment_proctor.html so the assessment template can
+  dispatch on question type. Context: `q` (question dict), `loop` (outer loop).
+#}
+<div class="rounded-xl border border-slate-200 bg-white shadow-sm mb-3 question-card" data-qid="{{ q.id }}">
+  <div class="p-4 border-l-4 border-blue-600 rounded-l-xl">
+    <h5 class="font-semibold">Q{{ loop.index }}.</h5>
+    <p class="mt-1">{{ q.question }}</p>
+    {% if q.image %}
+    <div class="mt-2 mb-2">
+      <img src="{{ url_for('static', filename='uploads/questions/' + q.image) }}"
+           alt="Question {{ loop.index }} image"
+           class="max-w-full max-h-64 rounded-lg border border-slate-200 shadow-sm">
+    </div>
+    {% endif %}
+    <div class="mt-2 space-y-2">
+      {% for key, text in q.options.items() %}
+      <label class="flex items-start gap-2">
+        <input class="mt-1 h-4 w-4 rounded border-slate-300" type="radio" name="q_{{ q.id }}"
+          id="q{{ q.id }}_{{ key }}" value="{{ key }}" required>
+        <span><strong>{{ key }})</strong> {{ text }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+</div>

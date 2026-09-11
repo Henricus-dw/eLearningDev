@@ -1,0 +1,458 @@
+{
+  "questions": [
+    {
+      "question": "What does the abbreviation UAS stand for?",
+      "options": [
+        "Unmanned Aircraft System",
+        "Unauthorized Aircraft Systems",
+        "Unavailible Aircraft Systems",
+        "United Aircraft Systems"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of Aviation Security Awareness",
+      "options": [
+        "Ensure the safe and secure transportation of passengers and cargo",
+        "It is the policy other terrorist organizations",
+        "To avoid any security related matters",
+        "None of the above"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the percentage of Incidents that involve human error?",
+      "options": [
+        "10%",
+        "95%",
+        "20%",
+        "80%"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "How many Annexures are there to the Convention on International Civil Aviation?",
+      "options": [
+        "17",
+        "18",
+        "19",
+        "16"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Who can attack Civil Aviation?",
+      "options": [
+        "Terrorist",
+        "Criminals",
+        "Insider threat",
+        "All the above"
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "ICAO is the International Civil Aviation Organization.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "According to the International Civil Aviation Organization ICAO Annex 17 – Aviation Security Standard 2.1.1, what must be the primary objective of each Contracting State in matters related to safeguarding against acts of unlawful interference with civil aviation?",
+      "options": [
+        "Passengers",
+        "Cars on the highway",
+        "Children in the park",
+        "None of the above"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The “Appropriate Authority” in South Africa is?",
+      "options": [
+        "The South African Maritime Authority",
+        "The South African Civil Aviation Authority",
+        "The South African Transport Authority",
+        "The South African Civil Authority"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "RPA can be homemade.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Within how many hours should an incident be reported to the SACAA",
+      "options": [
+        "72 hours",
+        "Never",
+        "48 hours",
+        "24 hours"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Choose a risk related to RPAS",
+      "options": [
+        "RPAS loaded with envelopes",
+        "RPAS switched off and stored in a PRAS hanger",
+        "Flying RPAS into Air Traffic Towers",
+        "painting the RPAS"
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "IED stands for Improvised Explosive Detector",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Dangerous Goods are Lithium Batteries",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Give one advantage that an RPA system can bring to a terrorist organization",
+      "options": [
+        "Easily assembled",
+        "It is not readily availible",
+        "Technology is highly expensive",
+        "Lack of flexibility and covert capability in the selection of take-off sites."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Choose one Part of Civil Aviation Act which are applicable to RPAS Aviation Security",
+      "options": [
+        "Part 101",
+        "Part 110",
+        "Part 187",
+        "Part 97"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "An Improvised Explosive Device (IED) is made up of three basic parts. Which of the following correctly lists those parts?",
+      "options": [
+        "Battery, camera, and antenna.",
+        "Fuel, wings, and navigation system.",
+        "Motor, propeller, and landing gear.",
+        "Power source, switch/initiator, and explosive material."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Are Improvised Incendiary Devices (IID) normally used to start a fire?",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Access to hangars and remote pilot station to be limited to authorized persons with operational needs.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the purpose of inspecting the interior and exterior of an RPA, including the Remote Pilot Station?",
+      "options": [
+        "To improve the speed and performance of the RPA during flight.",
+        "To detect any signs of sabotage, intentional damage, suspicious objects, weapons, explosives, or other dangerous items.",
+        "To increase the battery life of the Remote Pilot Station.",
+        "To test the weather conditions before take-off."
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "All staff involved in RAPS operations must undergo?",
+      "options": [
+        "medical checks",
+        "RPAS ASAT Training",
+        "psychological evaluation",
+        "DG Training"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "In which situations must the storage of an RPAS be considered?",
+      "options": [
+        "Only when the battery is being charged.",
+        "Only when the RPAS is flying in the airspace.",
+        "When travelling with the RPAS, when not in use at the Remote Pilot Station, and when not in use at hangars.",
+        "Only during annual inspections."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "Countermeasure stands for an action taken to counteract a danger or threat",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "During a telephonic bomb threat incident, you should hang up the phone.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is Security Culture?",
+      "options": [
+        "The set of Values beliefs and assumptions shared by everyone that determine how people are accepted to think about and approach security",
+        "The lack of shared Values, beliefs, and assumptions among people that prevents a common understanding of how to think about or approach security."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "When packing the RPAS, make sure that it is separated from the Lithium Polymer Battery to avoid self-activation",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Which of the following areas are considered security restricted areas of RPAS operations?",
+      "options": [
+        "Public parking areas near the operation site.",
+        "Passenger waiting lounges at airports.",
+        "RPA hangars, C2 link & software systems, and Remote Pilot Stations.",
+        "Fuel stations outside the operational area."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "How can RPAS hangars be protected when not in use?",
+      "options": [
+        "By ensuring they are closed, locked, and/or guarded to prevent unauthorized access.",
+        "By leaving the hangar open for easy access.",
+        "By storing the key inside the hangar door.",
+        "By allowing unrestricted public access."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "How do regulatory and operational controls such as geofencing assist RPAS operations?",
+      "options": [
+        "By increasing the speed of the RPAS during flight.",
+        "By enforcing no-fly zones and approved flight paths to ensure compliance with regulations and prevent unauthorized access to restricted areas.",
+        "By eliminating the need for pilot authorization.",
+        "By allowing unrestricted flight in all airspace."
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "RPAS unit can release an object or substance without needing prior approval.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Name one responsibility of the security coordinator.",
+      "options": [
+        "Formulation and implementation of the security policy",
+        "Patrols",
+        "Security liaison with stake holders",
+        "Vehicle Search"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A bomb threat is not an act of interference with RPAS.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "What is one of the main characteristics that terror attacks produce?",
+      "options": [
+        "Celebration.",
+        "Peaceful negotiation.",
+        "Routine business operations.",
+        "Violence."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "What is a possible danger of negligent operation of an UAS/RPAS?",
+      "options": [
+        "Collision with other aircraft, which could result in fatal consequences.",
+        "Improved flight performance and increased efficiency.",
+        "Automatic compliance with all aviation regulations.",
+        "Reduced air traffic in all airspace."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What is the trend towards attacking airports that has probably been driven by several factors?",
+      "options": [
+        "Firearms will most probably be a vital component of future attacks given their relative ease of use and accessibility, in comparison to explosives",
+        "Religious Beliefs",
+        "Quality control",
+        "Lots of people"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Hijacking an aircraft is one of the most effective means for terrorists to achieve their intended goals.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "The aviation industry needs to be prepared for the possible terrorist misuse of an RPAS.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "These Annexures are universally applied by contracting states (193 states) across the world, allowing uniformity in aviation, and allowing the safe and efficient development of aviation throughout the world.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Annex 17 Standard 2.1.2 - “Each Contracting State shall establish an organization and develop and implement regulations, practices and procedures to safeguard civil aviation against acts of unlawful interference taking into account the safety, regularity and efficiency of flights.”",
+      "options": [
+        "False",
+        "True"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "\"Detailed security procedures may be included in Standard Operating Procedures (SOPs) within the Airport Security Program and Airline Operator Security Program.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "An RPA operator shall ensure that policy and procedures in respect of the following aspects of security are addressed in its Operations Manual",
+      "options": [
+        "Security liaison with stake holders.",
+        "Protection efforts pertaining to limiting the software and C2 links from forms of interference.",
+        "Security liaison with Police."
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "Pre-Flight Security Checks and Searches: What is an RPA security check?",
+      "options": [
+        "A training exercise conducted to improve pilot flying skills.",
+        "A procedure used to register the RPA with air traffic control before every flight.",
+        "A maintenance procedure focused only on engine performance adjustments.",
+        "An inspection of the interior and exterior of the RPA, including the Remote Pilot Station, to detect sabotage, wilful damage, suspicious objects, weapons, explosives, dangerous devices, prohibited articles, or substances."
+      ],
+      "correct_index": 3
+    },
+    {
+      "question": "Criminal record checks and RPAS Aviation Security Awareness Training must be repeated every 24 months",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "What are the 4 prohibited categories in Aviation known as:",
+      "options": [
+        "Weapons, Explosives, Dangerous articles, and Dangerous substances.",
+        "Weapons, Explosives, Dangerous goods, and Dangerous substances.",
+        "Weapons, Explosives, Dangerous articles, and Dangerous people.",
+        "Weapons, prohibited items, Dangerous articles, and Dangerous substances."
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "A full permit entitles the holder to remain unescorted in a restricted area; the holder of a temporary pass must always be escorted or kept under observation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Always do a risk analysis of the area you will be working at. What will the color red indicate?",
+      "options": [
+        "Apply normal security measures",
+        "Apply Extra security measures",
+        "Apply Heightened security or abandon operation."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "\"Contact numbers for local police authorities must be confirmed and readily available to the RPA pilot.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Within how many months must recurrent training for RPAS Awareness be completed?",
+      "options": [
+        "12",
+        "24",
+        "5",
+        "36"
+      ],
+      "correct_index": 1
+    },
+    {
+      "question": "The area of RPA operations can be secured by:",
+      "options": [
+        "Allowing members of the public to stand close to the take-off and landing area.",
+        "Operating the RPA without any form of ground control or supervision.",
+        "Establishing a safety perimeter and restricting unauthorised access around the operating area.",
+        "Relying only on verbal warnings without implementing any physical barriers or controls."
+      ],
+      "correct_index": 2
+    },
+    {
+      "question": "\"Staff members must be briefed on the security controls in place to mitigate acts of unlawful interference.”",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 0
+    },
+    {
+      "question": "Lithium-polymer (Li-Po) batteries in an RPA must not be managed with strict safety protocols, particularly during transport",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_index": 1
+    }
+  ]
+}
