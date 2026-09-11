@@ -20171,6 +20171,7 @@ class AssessmentAttempt(db.Model):
     score = db.Column(db.Float)
     passed = db.Column(db.Boolean, default=False)
     answers_json = db.Column(db.Text)
+    questions_json = db.Column(db.Text, nullable=True)
     # proctoring
     video_filename = db.Column(db.String(255))
     # meta
@@ -20868,6 +20869,12 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
     norm_key = (course_key or "").strip().lower()
     # normalize once so counting/saving is consistent
     norm_key = (course_key or "").strip().lower()
+    assessment_cfg = next(
+        (item for item in load_assessments_cfg()
+         if normalize_course_key(item.get("key")) == norm_key),
+        {},
+    )
+    question_count = assessment_cfg.get("question_count")
 
     # ----- NEW: Idempotency guard -----
     take_ep = f"{course_key}_take"
@@ -20880,11 +20887,53 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
 
     def take():
         print(f"[TAKE ROUTE] Entered take() for course_key={course_key}, norm_key={norm_key}")
-        qs = load_questions(course_key)
         stu = current_student()
         if not stu:
             flash("Please log in first.", "warning")
             return redirect(url_for("login"))
+
+        attempt = (AssessmentAttempt.query
+                   .filter(
+                       AssessmentAttempt.student_id == str(stu["student_id"]),
+                       AssessmentAttempt.course_key == norm_key,
+                       AssessmentAttempt.is_active.is_(True),
+                       AssessmentAttempt.finished_at.is_(None),
+                   )
+                   .order_by(AssessmentAttempt.created_at.desc())
+                   .first())
+        qs = None
+        if attempt:
+            try:
+                qs = json.loads(attempt.questions_json or "")
+                if not isinstance(qs, list) or not qs:
+                    raise ValueError("question snapshot is empty or invalid")
+            except (TypeError, ValueError, json.JSONDecodeError) as exc:
+                app.logger.error(
+                    "Invalid question snapshot for attempt %s: %s", attempt.id, exc)
+                flash("This assessment attempt could not be resumed safely. Please contact PAS.", "danger")
+                return redirect(url_for("dashboard"))
+
+        # Preserve the existing retry/idempotency behavior before any
+        # unfinished-attempt or eligibility guard can reject a retried POST.
+        duplicate = None
+        if request.method == "POST":
+            recent_cutoff = _now_sast() - timedelta(seconds=60)
+            duplicate = (AssessmentAttempt.query
+                         .filter(
+                             AssessmentAttempt.student_id == stu["student_id"],
+                             AssessmentAttempt.course_key == norm_key,
+                             AssessmentAttempt.finished_at >= recent_cutoff,
+                         )
+                         .order_by(AssessmentAttempt.finished_at.desc())
+                         .first())
+            if duplicate:
+                app.logger.info(
+                    "Duplicate submission suppressed for student %s on %s; returning attempt %d",
+                    stu["student_id"], norm_key, duplicate.id)
+                target = url_for(f"{course_key}_result", attempt_id=duplicate.id)
+                if request.headers.get("X-Requested-With", "").lower() == "xmlhttprequest":
+                    return jsonify({"redirect": target})
+                return redirect(target)
 
         # ---- Enforce attempt policy using SCORE-BASED RULES ----
         # Rules: 80%+ = Pass (no more needed), 75-79% = 1 retry, <75% = Fail (contact admin)
@@ -20897,6 +20946,7 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             .filter(
                 AssessmentAttempt.student_id == stu["student_id"],
                 AssessmentAttempt.course_key == norm_key,
+                AssessmentAttempt.finished_at.isnot(None),
             ).scalar()
         ) or 0
 
@@ -20905,7 +20955,8 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             student_id=stu["student_id"],
             course_key=norm_key,
             is_active=True
-        ).order_by(AssessmentAttempt.created_at.desc()).first()
+        ).filter(AssessmentAttempt.finished_at.isnot(None)).order_by(
+            AssessmentAttempt.created_at.desc()).first()
 
         latest_score = latest_attempt.score if latest_attempt else None
 
@@ -20937,7 +20988,7 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
         print(f"[BLOCKING DEBUG] _calculate_attempts_left({latest_score}, {used}, {allowed_cap}) = {left}")
 
         # ---- If no attempts remain, show the info page (do NOT redirect) ----
-        if left <= 0:
+        if not attempt and left <= 0:
             return render_template(
                 "no_attempts_left.html",
                 course_title=title,
@@ -20963,8 +21014,45 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
                 )
 
             # ---- Student confirmed ready — proceed to assessment ----
-            # mark start time for duration
-            session[f"{norm_key}_started_at"] = _now_sast().isoformat()
+            if not attempt:
+                try:
+                    question_bank = load_questions(course_key)
+                    if question_count is None:
+                        qs = question_bank
+                    else:
+                        if (isinstance(question_count, bool)
+                                or not isinstance(question_count, int)
+                                or question_count <= 0):
+                            raise ValueError(
+                                f"Invalid question_count for {course_key}: {question_count}"
+                            )
+                        if len(question_bank) < question_count:
+                            raise ValueError(
+                                f"Assessment has {len(question_bank)} questions; "
+                                f"at least {question_count} are required."
+                            )
+                        rng = secrets.SystemRandom()
+                        qs = rng.sample(question_bank, question_count)
+                        rng.shuffle(qs)
+                    attempt = AssessmentAttempt(
+                        course_key=norm_key,
+                        student_id=str(stu["student_id"]),
+                        student_number=stu.get("student_number") or str(stu["student_id"]),
+                        full_name=stu["full_name"],
+                        email=stu["email"],
+                        started_at=_now_sast(),
+                        questions_json=json.dumps(qs, ensure_ascii=False),
+                    )
+                    db.session.add(attempt)
+                    db.session.commit()
+                except Exception as exc:
+                    db.session.rollback()
+                    app.logger.exception("Could not create assessment attempt: %s", exc)
+                    flash("This assessment could not be started safely. Please try again.", "danger")
+                    return redirect(url_for("dashboard"))
+
+            session[f"{norm_key}_started_at"] = (
+                attempt.started_at or _now_sast()).isoformat()
 
             # Reset violation point tracker so leftover points from a
             # previous attempt don't cause an instant boot.
@@ -20980,9 +21068,9 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             except Exception:
                 db.session.rollback()
 
-            if len(qs) != 50:
+            if question_count is not None and len(qs) != question_count:
                 flash(
-                    f"⚠️ {title} not ready. Expected 50 Qs, found {len(qs)}.", "warning")
+                    f"⚠️ {title} not ready. Expected {question_count} Qs, found {len(qs)}.", "warning")
 
             # Get detailed student info from database
             student_first_name = student_obj.name if student_obj else ""
@@ -21007,38 +21095,11 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             )
 
         # ---------- POST ----------
-        # Guard again (multi-tabs/back-button race)
-        if left <= 0:
-            flash("🚫 No attempts remaining for this course.", "danger")
+        if not attempt:
+            flash("This assessment attempt is no longer available. Please start a new attempt.", "danger")
             return redirect(url_for("dashboard"))
 
-        # Idempotency guard. The client-side AssessmentSafeguard wrapper retries
-        # the POST if it perceives the upload as failed (slow response, nginx
-        # timeout, dropped connection). Without this guard, every retry creates
-        # a fresh AssessmentAttempt row with the same answers and timestamp,
-        # producing the "4 attempts, identical date/score" anomaly admins were
-        # seeing. If the same student already finished an attempt on this course
-        # in the last 60 seconds, this POST is treated as a duplicate of that
-        # attempt and the user is redirected to its result page instead of being
-        # re-graded.
-        recent_cutoff = _now_sast() - timedelta(seconds=60)
-        duplicate = (AssessmentAttempt.query
-                     .filter(
-                         AssessmentAttempt.student_id == stu["student_id"],
-                         AssessmentAttempt.course_key == norm_key,
-                         AssessmentAttempt.finished_at >= recent_cutoff,
-                     )
-                     .order_by(AssessmentAttempt.finished_at.desc())
-                     .first())
-        if duplicate:
-            app.logger.info(
-                "Duplicate submission suppressed for student %s on %s; returning attempt %d",
-                stu["student_id"], norm_key, duplicate.id)
-            target = url_for(f"{course_key}_result", attempt_id=duplicate.id)
-            if request.headers.get("X-Requested-With", "").lower() == "xmlhttprequest":
-                return jsonify({"redirect": target})
-            return redirect(target)
-
+        # Guard again (multi-tabs/back-button race)
         # Grade answers via the v1.1.0 dispatch table so we support mcq, tf,
         # short_answer, and table_fill uniformly. We sum weighted points across
         # questions rather than counting raw 1-per-question hits, so e.g. a
@@ -21152,26 +21213,20 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             return redirect(url_for("dashboard"))
         # ---------------------------------------------------------------------
 
-        # Persist attempt — IMPORTANT: save normalized course_key
-        attempt = AssessmentAttempt(
-            course_key=norm_key,
-            student_id=stu["student_id"],
-            student_number=resolved_number,
-            full_name=stu["full_name"],
-            email=stu["email"],
-            score=percentage,                      # percentage saved
-            passed=passed,
-            answers_json=json.dumps(detailed, ensure_ascii=False),
-            video_filename=video_rel,
-            started_at=started_at,
-            finished_at=finished_at,
-            duration_s=duration_s,
-            ip_address=ip,
-            user_agent=ua,
-            # If your AssessmentAttempt has attempt_no, you can set it:
-            # attempt_no = used + 1,
-        )
-        db.session.add(attempt)
+        # Persist the existing in-progress attempt.
+        attempt.student_id = str(stu["student_id"])
+        attempt.student_number = resolved_number
+        attempt.full_name = stu["full_name"]
+        attempt.email = stu["email"]
+        attempt.score = percentage
+        attempt.passed = passed
+        attempt.answers_json = json.dumps(detailed, ensure_ascii=False)
+        attempt.video_filename = video_rel
+        attempt.started_at = started_at or attempt.started_at
+        attempt.finished_at = finished_at
+        attempt.duration_s = duration_s
+        attempt.ip_address = ip
+        attempt.user_agent = ua
         db.session.commit()
 
         # Close the open AssessmentSession (heartbeat tracking) for this student
@@ -21228,7 +21283,8 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             db.session.query(func.count(AssessmentAttempt.id))
             .filter(
                 AssessmentAttempt.student_id == str(a.student_id),
-                AssessmentAttempt.course_key == norm_key
+                AssessmentAttempt.course_key == norm_key,
+                AssessmentAttempt.finished_at.isnot(None),
             )
             .scalar()
         ) or 0

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assessment Randomisation Test</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #65718a;
+      --line: #dce2ec;
+      --paper: #ffffff;
+      --wash: #f4f7fb;
+      --blue: #2453a6;
+      --blue-dark: #17376f;
+      --gold: #c5972b;
+      --green: #18794e;
+      --red: #a33232;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: linear-gradient(135deg, #edf3fb 0%, #faf8f1 100%);
+      font: 15px/1.5 Georgia, "Times New Roman", serif;
+    }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 56px; }
+    header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 24px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1; letter-spacing: -.03em; }
+    h2 { font-size: 1.2rem; margin-bottom: 14px; }
+    .eyebrow { color: var(--gold); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+    .lede { max-width: 680px; color: var(--muted); margin-bottom: 0; }
+    .status { padding: 10px 14px; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 4px; white-space: nowrap; font-family: Arial, sans-serif; font-size: 13px; }
+    .layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+    .panel { background: color-mix(in srgb, var(--paper) 94%, transparent); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 12px 30px rgba(33, 52, 82, .07); }
+    .panel-body { padding: 20px; }
+    .controls { display: grid; gap: 12px; }
+    label { display: grid; gap: 5px; color: var(--muted); font: 700 12px Arial, sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+    input { width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: #fff; font: 15px Georgia, serif; }
+    button { border: 0; border-radius: 4px; padding: 10px 13px; cursor: pointer; font: 700 13px Arial, sans-serif; }
+    button.primary { color: white; background: var(--blue); }
+    button.primary:hover { background: var(--blue-dark); }
+    button.secondary { color: var(--blue-dark); background: #e8eef9; }
+    button.warning { color: #5f4300; background: #f4e5b7; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+    .metric { padding: 12px; background: var(--wash); border: 1px solid var(--line); border-radius: 4px; }
+    .metric strong { display: block; font: 700 22px Arial, sans-serif; }
+    .metric span { color: var(--muted); font: 11px Arial, sans-serif; }
+    .attempts { margin-top: 20px; }
+    .attempt-row { display: flex; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-family: Arial, sans-serif; font-size: 12px; }
+    .attempt-row:last-child { border-bottom: 0; }
+    .badge { display: inline-block; padding: 3px 7px; border-radius: 99px; font: 700 10px Arial, sans-serif; text-transform: uppercase; }
+    .badge.open { color: #805d05; background: #f8edc9; }
+    .badge.done { color: var(--green); background: #dff4e9; }
+    .question-list { display: grid; gap: 10px; }
+    .question { padding: 15px; border: 1px solid var(--line); border-left: 4px solid var(--gold); background: #fff; border-radius: 4px; }
+    .question-head { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font: 700 11px Arial, sans-serif; text-transform: uppercase; }
+    .question h3 { margin: 7px 0 12px; font-size: 17px; }
+    .options { display: grid; gap: 6px; }
+    .option { display: flex; gap: 8px; align-items: center; padding: 8px; border: 1px solid #e8ecf2; border-radius: 3px; font-family: Arial, sans-serif; }
+    .option input { width: auto; }
+    .snapshot { margin-top: 20px; }
+    pre { overflow: auto; max-height: 280px; margin: 0; padding: 14px; background: #152033; color: #dce8ff; border-radius: 4px; font: 12px/1.5 Consolas, monospace; }
+    .notice { margin: 0 0 18px; padding: 11px 13px; border-radius: 4px; font-family: Arial, sans-serif; font-size: 13px; }
+    .notice.info { color: var(--blue-dark); background: #e8eef9; }
+    .notice.success { color: var(--green); background: #dff4e9; }
+    .notice.error { color: var(--red); background: #f9e1e1; }
+    @media (max-width: 800px) { header { display: block; } .status { margin-top: 16px; white-space: normal; } .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="eyebrow">Local feature test</div>
+        <h1>ASAT General</h1>
+        <p class="lede">A small browser simulation of the assessment snapshot lifecycle. It uses a 500-question bank and creates 50-question attempts without needing Flask or the production database.</p>
+      </div>
+      <div class="status" id="status">No attempt started</div>
+    </header>
+
+    <div id="notice" class="notice info">Start a new attempt to generate a private question selection.</div>
+
+    <div class="layout">
+      <aside>
+        <section class="panel">
+          <div class="panel-body">
+            <h2>Test controls</h2>
+            <div class="controls">
+              <label>Question count
+                <input id="questionCount" type="number" min="1" max="500" value="50">
+              </label>
+              <div class="button-row">
+                <button class="primary" id="newAttempt">New attempt</button>
+                <button class="secondary" id="refreshAttempt" disabled>Refresh / resume</button>
+              </div>
+              <button class="warning" id="clearAll">Clear local test data</button>
+            </div>
+            <div class="metrics">
+              <div class="metric"><strong id="bankSize">500</strong><span>bank questions</span></div>
+              <div class="metric"><strong id="selectedSize">0</strong><span>selected</span></div>
+              <div class="metric"><strong id="attemptId">-</strong><span>open attempt</span></div>
+            </div>
+            <div class="attempts">
+              <h2>Attempt history</h2>
+              <div id="history"></div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section>
+        <section class="panel">
+          <div class="panel-body">
+            <h2>Stored assessment snapshot</h2>
+            <div id="questionList" class="question-list"></div>
+            <div class="button-row" style="margin-top:18px">
+              <button class="primary" id="submitAttempt" disabled>Submit attempt</button>
+            </div>
+          </div>
+        </section>
+        <section class="panel snapshot">
+          <div class="panel-body">
+            <h2>Snapshot JSON</h2>
+            <pre id="snapshot">No snapshot stored.</pre>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const BANK = Array.from({ length: 500 }, (_, index) => ({
+      id: index + 1,
+      type: 'mcq',
+      question: `ASAT General test question ${index + 1}`,
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correct: 'A',
+      points: 1
+    }));
+    const STORAGE_KEY = 'asat-general-randomisation-test';
+    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"attempts":[],"currentId":null}');
+    const $ = (id) => document.getElementById(id);
+    const rng = (max) => {
+      const values = new Uint32Array(1);
+      crypto.getRandomValues(values);
+      return values[0] / 4294967296 * max;
+    };
+    function sample(items, count) {
+      const copy = [...items];
+      for (let index = copy.length - 1; index > 0; index--) {
+        const swap = Math.floor(rng(index + 1));
+        [copy[index], copy[swap]] = [copy[swap], copy[index]];
+      }
+      return copy.slice(0, count);
+    }
+    function current() { return state.attempts.find((attempt) => attempt.id === state.currentId); }
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function notice(message, kind = 'info') { $('notice').textContent = message; $('notice').className = `notice ${kind}`; }
+    function render() {
+      const attempt = current();
+      $('bankSize').textContent = BANK.length;
+      $('selectedSize').textContent = attempt ? attempt.questions.length : 0;
+      $('attemptId').textContent = attempt ? attempt.id : '-';
+      $('refreshAttempt').disabled = !attempt;
+      $('submitAttempt').disabled = !attempt || attempt.status === 'submitted';
+      $('status').textContent = attempt ? `Attempt ${attempt.id} · ${attempt.status}` : 'No attempt started';
+      $('history').innerHTML = state.attempts.length ? state.attempts.map((item) => `<div class="attempt-row"><span>Attempt ${item.id}<br>${item.questions.length} questions</span><span class="badge ${item.status === 'submitted' ? 'done' : 'open'}">${item.status}</span></div>`).join('') : '<p style="color:var(--muted);font:13px Arial">No attempts yet.</p>';
+      $('questionList').innerHTML = attempt ? attempt.questions.map((question, index) => `<article class="question"><div class="question-head"><span>Position ${index + 1}</span><span>Question ID ${question.id}</span></div><h3>${question.question}</h3><div class="options">${question.options.map((option) => `<label class="option"><input type="radio" name="q-${question.id}" value="${option}" ${attempt.answers[question.id] === option ? 'checked' : ''} ${attempt.status === 'submitted' ? 'disabled' : ''}>${option}</label>`).join('')}</div></article>`).join('') : '<p style="color:var(--muted)">No attempt loaded. Choose “New attempt”.</p>';
+      if (attempt) {
+        $('snapshot').textContent = JSON.stringify(attempt.questions, null, 2);
+        document.querySelectorAll('.option input').forEach((input) => input.addEventListener('change', () => { attempt.answers[input.name.slice(2)] = input.value; save(); }));
+      } else $('snapshot').textContent = 'No snapshot stored.';
+    }
+    $('newAttempt').addEventListener('click', () => {
+      const count = Number($('questionCount').value);
+      if (!Number.isInteger(count) || count < 1 || count > BANK.length) { notice(`Question count must be an integer from 1 to ${BANK.length}.`, 'error'); return; }
+      const questions = sample(BANK, count);
+      const attempt = { id: state.attempts.length + 1, status: 'in_progress', questions, answers: {}, startedAt: new Date().toISOString() };
+      state.attempts.push(attempt); state.currentId = attempt.id; save(); notice(`Attempt ${attempt.id} created with ${count} unique questions.`, 'success'); render();
+    });
+    $('refreshAttempt').addEventListener('click', () => { const attempt = current(); if (!attempt) return; state.currentId = attempt.id; save(); notice(`Attempt ${attempt.id} resumed from its stored snapshot. No new randomisation occurred.`, 'info'); render(); });
+    $('submitAttempt').addEventListener('click', () => { const attempt = current(); if (!attempt || attempt.status === 'submitted') return; const correct = attempt.questions.filter((question) => attempt.answers[question.id] === 'Option A').length; attempt.score = Math.round(correct / attempt.questions.length * 100); attempt.status = 'submitted'; attempt.finishedAt = new Date().toISOString(); save(); notice(`Attempt ${attempt.id} submitted. Score: ${attempt.score}% from ${attempt.questions.length} questions.`, 'success'); render(); });
+    $('clearAll').addEventListener('click', () => { localStorage.removeItem(STORAGE_KEY); location.reload(); });
+    render();
+  </script>
+</body>
+</html>
