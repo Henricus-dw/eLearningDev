@@ -52,5 +52,10 @@ _suppressed = getattr(getattr(app_module, 'mail', None), 'state', None)
 print(f"[run_dev] smtplib blocked; Flask-Mail suppress="
       f"{getattr(_suppressed, 'suppress', 'unknown')} (no emails will be sent)",
       flush=True)
-print("[run_dev] Listening on 127.0.0.1:8008", flush=True)
-app_module.app.run(host="127.0.0.1", port=8008, debug=True, use_reloader=False)
+
+# Guarded so local_dev.py can import this module for its email blocking without
+# starting a second server. deploy-dev.sh runs this file directly, so on the dev
+# server this block always runs.
+if __name__ == "__main__":
+    print("[run_dev] Listening on 127.0.0.1:8008", flush=True)
+    app_module.app.run(host="127.0.0.1", port=8008, debug=True, use_reloader=False)
