@@ -52,6 +52,18 @@
     .sblock.untranslated { background:#cbd5e1; color:#475569;
       border-style:dashed; border-color:#94a3b8; }
     .sblock.active { outline:2px solid var(--brand-gold); outline-offset:1px; }
+    /* Subtitle length warnings, judged against the student-side box (see
+       SUB_SOFT / SUB_HARD in the script). Amber: shrinks a little on phones.
+       Red: too long to fit a phone's subtitle box at all. */
+    .sblock.long { box-shadow:inset 0 -4px 0 #f59e0b; }
+    .sblock.toolong { box-shadow:inset 0 -4px 0 #dc2626; }
+    .lencount { font-size:.7rem; color:#64748b; text-align:right; margin-top:.15rem; }
+    .lencount.long { color:#b45309; font-weight:600; }
+    .lencount.toolong { color:#b91c1c; font-weight:600; }
+    .langrow.long textarea { border-color:#f59e0b; }
+    .langrow.toolong textarea { border-color:#dc2626; }
+    .sublenwarn { color:#b45309; font-weight:600; }
+    .sublenwarn.toolong { color:#b91c1c; }
     .langtabs { display:flex; flex-wrap:wrap; gap:.35rem; margin:.75rem 0 .5rem; }
     .langtab { border:1px solid #dbe2ea; background:#fff; border-radius:999px;
       padding:.3rem .75rem; font-size:.78rem; font-weight:600; color:#475569;
@@ -628,6 +640,24 @@
 
   function msClock(ms) { return (Math.max(0, ms) / 1000).toFixed(2) + 's'; }
 
+  // Subtitle length limits, measured against the student-side subtitle box
+  // (chapter_content.html) on a 390px-wide phone, with long-word text as the
+  // worst case. Up to SUB_SOFT characters fits at full size on every screen;
+  // beyond it the text is shrunk a little on phones; beyond SUB_HARD it no
+  // longer fits a phone's box and the bar grows. Warnings only: saving is never
+  // blocked.
+  const SUB_SOFT = 140, SUB_HARD = 220;
+  function lenLevel(text) {
+    const n = String(text || '').trim().length;
+    return n > SUB_HARD ? 'toolong' : (n > SUB_SOFT ? 'long' : '');
+  }
+  function lenNote(text) {
+    const n = String(text || '').trim().length, lvl = lenLevel(text);
+    return n + ' / ' + SUB_SOFT + ' characters' +
+      (lvl === 'toolong' ? ': too long to fit on phones, split this block'
+       : lvl === 'long' ? ': shrinks a little on phones, consider splitting' : '');
+  }
+
   function renderLangTabs() {
     const wrap = document.getElementById('langTabs');
     wrap.innerHTML = '';
@@ -644,7 +674,6 @@
                       (subs.length ? n + '/' + subs.length : 'empty') + '</span>';
       btn.addEventListener('click', function () {
         activeLang = code;
-        document.getElementById('textColHead').textContent = 'Text (' + name + ')';
         renderSubs();
       });
       wrap.appendChild(btn);
@@ -657,11 +686,14 @@
     subs.forEach(function (b, i) {
       const el = document.createElement('div');
       const has = String(b.texts[activeLang] || '').trim();
+      const lvl = lenLevel(has);
       el.className = 'sblock' + (has ? '' : ' untranslated') +
+                     (lvl ? ' ' + lvl : '') +
                      (i === selectedSub ? ' active' : '');
       el.style.left = (b.start_ms / d * 100) + '%';
       el.style.width = Math.max(0.6, (b.end_ms - b.start_ms) / d * 100) + '%';
-      el.title = msClock(b.start_ms) + ' to ' + msClock(b.end_ms);
+      el.title = msClock(b.start_ms) + ' to ' + msClock(b.end_ms) +
+                 (lvl ? '\n' + lenNote(has) : '');
       el.textContent = has || 'not translated';
       el.addEventListener('click', function () {
         selectedSub = i;
@@ -675,9 +707,26 @@
     renderLangTabs();
     renderSubTrack();
     const c = document.getElementById('subCount');
-    if (c) c.textContent = subs.length
+    if (!c) return;
+    c.textContent = subs.length
       ? '(' + subs.length + ' block' + (subs.length === 1 ? '' : 's') + ')'
       : '(none yet)';
+    // Name the blocks that are too long in the language being looked at, so an
+    // author can split them before learners see shrunken or overflowing text.
+    const long = subs.filter(function (b) { return lenLevel(b.texts[activeLang]); });
+    if (long.length) {
+      const tooLong = long.filter(function (b) {
+        return lenLevel(b.texts[activeLang]) === 'toolong';
+      }).length;
+      const lang = (LANGS.find(function (p) { return p[0] === activeLang; }) || [])[1] || '';
+      const w = document.createElement('span');
+      w.className = 'sublenwarn' + (tooLong ? ' toolong' : '');
+      w.textContent = ' ' + long.length + ' ' + lang + ' block' +
+        (long.length === 1 ? ' is' : 's are') + ' longer than ' + SUB_SOFT +
+        ' characters' + (tooLong ? ' (' + tooLong + ' too long for phones)' : '') +
+        '. Split long narration into shorter blocks.';
+      c.appendChild(w);
+    }
   }
 
   document.getElementById('addSub').addEventListener('click', function () {
@@ -749,12 +798,25 @@
       ta.placeholder = code === 'en' ? 'What the meerkat says here'
                                      : 'Not translated yet';
       ta.value = val;
+      // Live length counter, so a block can be split while it is being written.
+      const count = document.createElement('div');
+      function showLen() {
+        const lvl = lenLevel(ta.value);
+        row.classList.toggle('long', lvl === 'long');
+        row.classList.toggle('toolong', lvl === 'toolong');
+        count.className = 'lencount' + (lvl ? ' ' + lvl : '');
+        count.textContent = ta.value.trim() ? lenNote(ta.value) : '';
+      }
       ta.addEventListener('input', function () {
         subs[inspectIdx].texts[code] = ta.value;
         row.classList.toggle('isempty', !ta.value.trim());
+        showLen();
         renderSubs();
       });
-      row.appendChild(lab); row.appendChild(ta);
+      const cell = document.createElement('div');
+      cell.appendChild(ta); cell.appendChild(count);
+      row.appendChild(lab); row.appendChild(cell);
+      showLen();
       wrap.appendChild(row);
     });
     inspect.classList.add('open');
