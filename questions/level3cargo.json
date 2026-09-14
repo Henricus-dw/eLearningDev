@@ -1,1861 +1,1261 @@
-{
-  "title": "Level 3 Cargo Final",
-  "version": "2025-08-21",
-  "questions": [
-    {
-      "id": 1,
-      "question": "AVSEC IS…? A combination of measures and human and material resources intended to safeguard international civil aviation against acts of unlawful interference.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 2,
-      "question": "The primary objective of AVSEC is…? To assure the protection and safety of passengers, crew, ground personnel, the public, aircraft and facilities of an airport serving civil aviation, against acts of unlawful interference perpetrated on the ground or in",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "flight.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 3,
-      "question": "Choose the correct answer from the statements below…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Civil Aviation shall operate from a Safe and open environment.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Develop and implement Legislation and procedures necessary to ensure a safe and secure environment.",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "Prosecute or extradite persons who carry out acts of lawful interference.",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": false
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 4,
-      "question": "Which of the following are considered “offenders” within Civil Aviation?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Hijacking of vehicles",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Air crew",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Air traffic controllers",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 5,
-      "question": "The reason terrorist attack Civil Aviation is to gain international attention and publicity for their cause?2 Point",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 6,
-      "question": "The following are all examples of Aviation security conventions…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Tokyo – 1963",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "The Hague – 1970",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Montreal – 1971",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 7,
-      "question": "There are a total of 17 Annexes to the Chicago Convention on International Civil Aviation? 2 Point",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": true
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 8,
-      "question": "Contingency plans should include:2 Points.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Lines of command",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Policy",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Responsibilities",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All of the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 9,
-      "question": "ANNEX 17, STANDARD 3.4. “Each Contracting State shall require the appropriate authority to develop, implement and maintain a national civil aviation security quality control programme to determine compliance with and validate the effectiveness of its national civil aviation security programme.”",
-      "points": 42,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 10,
-      "question": "The quality control program contains?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Structure",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Cover letter",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Responsibilities",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "Memo’s",
-          "correct": false
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 11,
-      "question": "All aviation operations are subject to:",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Audits and inspections",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Contingency plan exercises",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "End of year functions",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "Changing the branding",
-          "correct": false
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 12,
-      "question": "ICAO Security Manual…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Full title is “Security Manual for Safeguarding Civil Aviation Against Acts of Unlawful Interference” Doc 8973 – (Restricted)",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 13,
-      "question": "National AVSEC Program (NASP) Comprehensive set of standards, regulations and safeguards that implement regional policy objectives within the region to protect international civil aviation against acts of unlawful interference.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 14,
-      "question": "ICAO ANNEX 17, STANDARD 3.2.1: “Each Contracting State shall require each airport serving civil aviation to establish, implement and maintain a written airport security programme appropriate to meet the requirements of the national aviation security programme.”",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 15,
-      "question": "Airport Security Manager must be.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Employed by SACAA.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Have a degree.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Have accounting experience.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 16,
-      "question": "Role of the AVSEC manager…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Organizing",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Directing",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "Meeting",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "Planning",
-          "correct": true
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 17,
-      "question": "3 Desirable attributes of an AVSEC Manager.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Very strict.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Know At least 3 official languages.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Must have level 3 first aid.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 18,
-      "question": "AVSEC manager must have technical knowledge of…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Methods/detection techniques.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Control of access to critical areas.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Existing equipment and industry research.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All of the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 19,
-      "question": "Human Resource Planning is Defined as? “The process that leads to the wrong person being in the wrong place at the right time.”     2 Point",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": true
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 20,
-      "question": "The purpose of Human Resource Planning is?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Ensure optimum use of human resources.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Provide for future human resource needs.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Ensure the right staff for the right positions.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 21,
-      "question": "In case of X-Ray machine failure, you…?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Determine availability and provide additional search benches…",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 22,
-      "question": "What is a Designated Official?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "A DO is a person who is responsible for cargo security.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 23,
-      "question": "Human Resource Planning tasks…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Forecasting future requirements",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Ensuring patrol vehicles are clean",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Preparing inventories to ensure adequate resources",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "Anticipating problems",
-          "correct": true
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 24,
-      "question": "Human Resource Development defined…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "“The process which ensures the fullest utilization and growth of personnel resources assigned to the organization.”",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 25,
-      "question": "Performance appraisals are used for?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Management Development",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Performance Measurement",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "Discipline personnel",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "Performance Improvement",
-          "correct": true
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 26,
-      "question": "ANNEX 17, STANDARD 3.4.1 states. “Each Contracting State shall ensure that the persons implementing security controls are subject to background checks and selection procedures.”",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 27,
-      "question": "ANNEX 17, STANDARD 3.4.2 states. “Each Contracting State shall ensure that the persons implementing security controls are appropriately trained and possess all competencies required to perform their duties and appropriate records are maintained. Relevant standards of performance shall be established, and initial and periodic assessments shall be introduced to maintain those standards.”",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 28,
-      "question": "Aviation security training objectives are?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Defined at national level.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Identifies needs and responsibilities.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Linked to national objectives.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above,",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 29,
-      "question": "Which of the following are relevant Documentation within AVSEC?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Legislation, conventions & guidelines:",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Administrative instructions, SOPs, local",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "orders",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "Duty free checklist",
-          "correct": false
-        },
-        {
-          "label": "E",
-          "text": "Equipment use instructions",
-          "correct": false
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 30,
-      "question": "How do you determine resource requirements?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Buy as needed.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Get the cheapest quote.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "It’s not relevant.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 31,
-      "question": "Standard Operating Procedures (SOP’s) are defined as? “A rule or instruction issued by a person in authority to ensure that specific security task is performed in accordance with the prescribed requirements necessary for the achievement of the task objective(s).”",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 32,
-      "question": "SOP’s are required for?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "All individual security tasks.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Pre-operational equipment checks procedure.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Metal detector procedure.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 33,
-      "question": "Quality control consists of.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Contingency planning exercises.",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Roll call.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Cleaning equipment before use.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above.",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 34,
-      "question": "Objectives of a Quality control program is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Discipline personnel",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Verify implementation",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "Monitor compliance",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "Ensure retail personnel do training",
-          "correct": false
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 35,
-      "question": "Quality control programme…",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "“Guided towards preventing acts of unlawful interference”",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 36,
-      "question": "Contingency Planning is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Planning for future growth.",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "A Set of plans to ensure availability of fuel.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Plan to increase budget for emergencies.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above.",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 37,
-      "question": "The Aims of Contingency planning is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Designate command authority.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Ensure efficient transition from normal procedures to emergency status.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Assign responsibilities.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 38,
-      "question": "The following are all Acts of un-lawful interference.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Communicating false information.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Placing substance or device on aircraft.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Violence against a person on an aircraft.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 39,
-      "question": "The Definition of a “Crisis” is?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "“A decisive moment, time of danger or great difficulty”",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 40,
-      "question": "Some characteristics of a crisis is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Surprise.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Insufficient information when you need it most.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Loss of Control.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 41,
-      "question": "The Objective of a crisis is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "“To bring about the successful termination of the incident with minimum loss of life or damage to property”",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 42,
-      "question": "Principles of a crisis is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Containment",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "Isolation",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Special task force",
-          "correct": true
-        },
-        {
-          "label": "D",
-          "text": "Preparation",
-          "correct": true
-        }
-      ],
-      "type": "multi"
-    },
-    {
-      "id": 43,
-      "question": "The Basic strategy of a crisis is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Secure the release of hostages unharmed through negotiation.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Ensuring crisis is resolved without loss of life if possible.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Using of task force as a last resort.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 44,
-      "question": "Objectives of hostage negotiations are to.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Give in to all demands.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Immediately send in the task force.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Give the hostage takers an ultimatum.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 45,
-      "question": "Once a strategy has been acted upon other than that of hostage negotiation, it is virtually impossible to return to the strategy of negotiation because the hostage takers will more likely be agitated and    uncooperative.2 Point",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "B",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "true_false"
-    },
-    {
-      "id": 46,
-      "question": "ICAO ANNEX 14 RECOMMENDED PRACTICE 9.1.",
-      "points": 72,
-      "options": [
-        {
-          "label": "A",
-          "text": "“A fixed operations emergency centre and a mobile command post should be available during an emergency”",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "True",
-          "correct": true
-        },
-        {
-          "label": "C",
-          "text": "False",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 47,
-      "question": "Some Considerations for an Emergency Centre is.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Access control.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Location.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Design.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above.",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 48,
-      "question": "In South Africa, the national legislation that governs aviation security is the following:      2 Points.",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Civil Aviation Act, 2009 (Act 13 of 2009)",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "National Aviation Security Programme (NASP)",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "South African Civil Aviation Technical Standards",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 49,
-      "question": "Which part applies to all persons engaged in the acceptance, forwarding, storage and carriage of cargo by air. 2 Points",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Part 109",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Part 92",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Part 141",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "None of the above",
-          "correct": true
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 50,
-      "question": "What does the National Aviation Security Program provide ?",
-      "points": 2,
-      "options": [
-        {
-          "label": "A",
-          "text": "Preventative measures in general to prevent occurrences jeopardizing civil aviation safety.",
-          "correct": false
-        },
-        {
-          "label": "B",
-          "text": "Liaison with government departments concerning matters of civil aviation security.",
-          "correct": false
-        },
-        {
-          "label": "C",
-          "text": "Efficient methods of communication between all bodies responsible for civil aviation security.",
-          "correct": false
-        },
-        {
-          "label": "D",
-          "text": "All the above",
-          "correct": true
-        },
-        {
-          "label": "E",
-          "text": "END",
-          "correct": false
-        }
-      ],
-      "type": "single"
-    },
-    {
-      "id": 51,
-      "question": "Dummy question 51",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 52,
-      "question": "Dummy question 52",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 53,
-      "question": "Dummy question 53",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 54,
-      "question": "Dummy question 54",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 55,
-      "question": "Dummy question 55",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 56,
-      "question": "Dummy question 56",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 57,
-      "question": "Dummy question 57",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 58,
-      "question": "Dummy question 58",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 59,
-      "question": "Dummy question 59",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 60,
-      "question": "Dummy question 60",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 61,
-      "question": "Dummy question 61",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 62,
-      "question": "Dummy question 62",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 63,
-      "question": "Dummy question 63",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 64,
-      "question": "Dummy question 64",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 65,
-      "question": "Dummy question 65",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 66,
-      "question": "Dummy question 66",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 67,
-      "question": "Dummy question 67",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 68,
-      "question": "Dummy question 68",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 69,
-      "question": "Dummy question 69",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 70,
-      "question": "Dummy question 70",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 71,
-      "question": "Dummy question 71",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 72,
-      "question": "Dummy question 72",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 73,
-      "question": "Dummy question 73",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 74,
-      "question": "Dummy question 74",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 75,
-      "question": "Dummy question 75",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 76,
-      "question": "Dummy question 76",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 77,
-      "question": "Dummy question 77",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 78,
-      "question": "Dummy question 78",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 79,
-      "question": "Dummy question 79",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 80,
-      "question": "Dummy question 80",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 81,
-      "question": "Dummy question 81",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 82,
-      "question": "Dummy question 82",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 83,
-      "question": "Dummy question 83",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 84,
-      "question": "Dummy question 84",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 85,
-      "question": "Dummy question 85",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 86,
-      "question": "Dummy question 86",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 87,
-      "question": "Dummy question 87",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 88,
-      "question": "Dummy question 88",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 89,
-      "question": "Dummy question 89",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 90,
-      "question": "Dummy question 90",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 91,
-      "question": "Dummy question 91",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 92,
-      "question": "Dummy question 92",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 93,
-      "question": "Dummy question 93",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 94,
-      "question": "Dummy question 94",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 95,
-      "question": "Dummy question 95",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 96,
-      "question": "Dummy question 96",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 97,
-      "question": "Dummy question 97",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 98,
-      "question": "Dummy question 98",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 99,
-      "question": "Dummy question 99",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    },
-    {
-      "id": 100,
-      "question": "Dummy question 100",
-      "points": 2,
-      "options": [
-        {"label": "A", "text": "Option A", "correct": true},
-        {"label": "B", "text": "Option B", "correct": false},
-        {"label": "C", "text": "Option C", "correct": false},
-        {"label": "D", "text": "Option D", "correct": false}
-      ],
-      "type": "single"
-    }
-  ]
+﻿{
+    "title":  "Level 3 Cargo Final",
+    "version":  "2025-08-21",
+    "questions":  [
+                      {
+                          "id":  1,
+                          "question":  "AVSEC ISâ€¦? A combination of measures and human and material resources intended to safeguard international civil aviation against acts of unlawful interference.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  2,
+                          "question":  "The primary objective of AVSEC isâ€¦? To assure the protection and safety of passengers, crew, ground personnel, the public, aircraft and facilities of an airport serving civil aviation, against acts of unlawful interference perpetrated on the ground or in",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "flight.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  3,
+                          "question":  "Choose the correct answer from the statements belowâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Civil Aviation shall operate from a Safe and open environment.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Develop and implement Legislation and procedures necessary to ensure a safe and secure environment.",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Prosecute or extradite persons who carry out acts of lawful interference.",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  4,
+                          "question":  "Which of the following are considered â€œoffendersâ€ within Civil Aviation?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Hijacking of vehicles",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Air crew",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Air traffic controllers",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  5,
+                          "question":  "The reason terrorist attack Civil Aviation is to gain international attention and publicity for their cause?2 Point",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  6,
+                          "question":  "The following are all examples of Aviation security conventionsâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Tokyo â€“ 1963",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "The Hague â€“ 1970",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Montreal â€“ 1971",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  7,
+                          "question":  "There are a total of 17 Annexes to the Chicago Convention on International Civil Aviation? 2 Point",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  8,
+                          "question":  "Contingency plans should include:2 Points.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Lines of command",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Policy",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Responsibilities",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All of the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  9,
+                          "question":  "ANNEX 17, STANDARD 3.4. â€œEach Contracting State shall require the appropriate authority to develop, implement and maintain a national civil aviation security quality control programme to determine compliance with and validate the effectiveness of its national civil aviation security programme.â€",
+                          "points":  42,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  10,
+                          "question":  "The quality control program contains?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Structure",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Cover letter",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Responsibilities",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Memoâ€™s",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  11,
+                          "question":  "All aviation operations are subject to:",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Audits and inspections",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Contingency plan exercises",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "End of year functions",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Changing the branding",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  12,
+                          "question":  "ICAO Security Manualâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Full title is â€œSecurity Manual for Safeguarding Civil Aviation Against Acts of Unlawful Interferenceâ€ Doc 8973 â€“ (Restricted)",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  13,
+                          "question":  "National AVSEC Program (NASP) Comprehensive set of standards, regulations and safeguards that implement regional policy objectives within the region to protect international civil aviation against acts of unlawful interference.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  14,
+                          "question":  "ICAO ANNEX 17, STANDARD 3.2.1: â€œEach Contracting State shall require each airport serving civil aviation to establish, implement and maintain a written airport security programme appropriate to meet the requirements of the national aviation security programme.â€",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  15,
+                          "question":  "Airport Security Manager must be.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Employed by SACAA.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Have a degree.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Have accounting experience.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  16,
+                          "question":  "Role of the AVSEC managerâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Organizing",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Directing",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Meeting",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Planning",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  17,
+                          "question":  "3 Desirable attributes of an AVSEC Manager.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Very strict.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Know At least 3 official languages.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Must have level 3 first aid.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  18,
+                          "question":  "AVSEC manager must have technical knowledge ofâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Methods/detection techniques.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Control of access to critical areas.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Existing equipment and industry research.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All of the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  19,
+                          "question":  "Human Resource Planning is Defined as? â€œThe process that leads to the wrong person being in the wrong place at the right time.â€     2 Point",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  20,
+                          "question":  "The purpose of Human Resource Planning is?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Ensure optimum use of human resources.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Provide for future human resource needs.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Ensure the right staff for the right positions.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  21,
+                          "question":  "In case of X-Ray machine failure, youâ€¦?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Determine availability and provide additional search benchesâ€¦",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  22,
+                          "question":  "What is a Designated Official?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "A DO is a person who is responsible for cargo security.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  23,
+                          "question":  "Human Resource Planning tasksâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Forecasting future requirements",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Ensuring patrol vehicles are clean",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Preparing inventories to ensure adequate resources",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Anticipating problems",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  24,
+                          "question":  "Human Resource Development definedâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "â€œThe process which ensures the fullest utilization and growth of personnel resources assigned to the organization.â€",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  25,
+                          "question":  "Performance appraisals are used for?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Management Development",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Performance Measurement",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Discipline personnel",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Performance Improvement",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  26,
+                          "question":  "ANNEX 17, STANDARD 3.4.1 states. â€œEach Contracting State shall ensure that the persons implementing security controls are subject to background checks and selection procedures.â€",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  27,
+                          "question":  "ANNEX 17, STANDARD 3.4.2 states. â€œEach Contracting State shall ensure that the persons implementing security controls are appropriately trained and possess all competencies required to perform their duties and appropriate records are maintained. Relevant standards of performance shall be established, and initial and periodic assessments shall be introduced to maintain those standards.â€",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  28,
+                          "question":  "Aviation security training objectives are?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Defined at national level.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Identifies needs and responsibilities.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Linked to national objectives.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above,",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  29,
+                          "question":  "Which of the following are relevant Documentation within AVSEC?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Legislation, conventions \u0026 guidelines:",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Administrative instructions, SOPs, local",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "orders",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Duty free checklist",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "E",
+                                              "text":  "Equipment use instructions",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  30,
+                          "question":  "How do you determine resource requirements?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Buy as needed.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Get the cheapest quote.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Itâ€™s not relevant.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  31,
+                          "question":  "Standard Operating Procedures (SOPâ€™s) are defined as? â€œA rule or instruction issued by a person in authority to ensure that specific security task is performed in accordance with the prescribed requirements necessary for the achievement of the task objective(s).â€",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  32,
+                          "question":  "SOPâ€™s are required for?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "All individual security tasks.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Pre-operational equipment checks procedure.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Metal detector procedure.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  33,
+                          "question":  "Quality control consists of.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Contingency planning exercises.",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Roll call.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Cleaning equipment before use.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above.",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  34,
+                          "question":  "Objectives of a Quality control program is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Discipline personnel",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Verify implementation",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Monitor compliance",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Ensure retail personnel do training",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  35,
+                          "question":  "Quality control programmeâ€¦",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "â€œGuided towards preventing acts of unlawful interferenceâ€",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  36,
+                          "question":  "Contingency Planning is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Planning for future growth.",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "A Set of plans to ensure availability of fuel.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Plan to increase budget for emergencies.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above.",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  37,
+                          "question":  "The Aims of Contingency planning is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Designate command authority.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Ensure efficient transition from normal procedures to emergency status.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Assign responsibilities.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  38,
+                          "question":  "The following are all Acts of un-lawful interference.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Communicating false information.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Placing substance or device on aircraft.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Violence against a person on an aircraft.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  39,
+                          "question":  "The Definition of a â€œCrisisâ€ is?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "â€œA decisive moment, time of danger or great difficultyâ€",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  40,
+                          "question":  "Some characteristics of a crisis is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Surprise.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Insufficient information when you need it most.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Loss of Control.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  41,
+                          "question":  "The Objective of a crisis is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "â€œTo bring about the successful termination of the incident with minimum loss of life or damage to propertyâ€",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  42,
+                          "question":  "Principles of a crisis is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Containment",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Isolation",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Special task force",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "Preparation",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "multi"
+                      },
+                      {
+                          "id":  43,
+                          "question":  "The Basic strategy of a crisis is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Secure the release of hostages unharmed through negotiation.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Ensuring crisis is resolved without loss of life if possible.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Using of task force as a last resort.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  44,
+                          "question":  "Objectives of hostage negotiations are to.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Give in to all demands.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Immediately send in the task force.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Give the hostage takers an ultimatum.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  45,
+                          "question":  "Once a strategy has been acted upon other than that of hostage negotiation, it is virtually impossible to return to the strategy of negotiation because the hostage takers will more likely be agitated and    uncooperative.2 Point",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "true_false"
+                      },
+                      {
+                          "id":  46,
+                          "question":  "ICAO ANNEX 14 RECOMMENDED PRACTICE 9.1.",
+                          "points":  72,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "â€œA fixed operations emergency centre and a mobile command post should be available during an emergencyâ€",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "True",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "False",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  47,
+                          "question":  "Some Considerations for an Emergency Centre is.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Access control.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Location.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Design.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above.",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  48,
+                          "question":  "In South Africa, the national legislation that governs aviation security is the following:      2 Points.",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Civil Aviation Act, 2009 (Act 13 of 2009)",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "National Aviation Security Programme (NASP)",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "South African Civil Aviation Technical Standards",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  49,
+                          "question":  "Which part applies to all persons engaged in the acceptance, forwarding, storage and carriage of cargo by air. 2 Points",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Part 109",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Part 92",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Part 141",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "None of the above",
+                                              "correct":  true
+                                          }
+                                      ],
+                          "type":  "single"
+                      },
+                      {
+                          "id":  50,
+                          "question":  "What does the National Aviation Security Program provide ?",
+                          "points":  2,
+                          "options":  [
+                                          {
+                                              "label":  "A",
+                                              "text":  "Preventative measures in general to prevent occurrences jeopardizing civil aviation safety.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "B",
+                                              "text":  "Liaison with government departments concerning matters of civil aviation security.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "C",
+                                              "text":  "Efficient methods of communication between all bodies responsible for civil aviation security.",
+                                              "correct":  false
+                                          },
+                                          {
+                                              "label":  "D",
+                                              "text":  "All the above",
+                                              "correct":  true
+                                          },
+                                          {
+                                              "label":  "E",
+                                              "text":  "END",
+                                              "correct":  false
+                                          }
+                                      ],
+                          "type":  "single"
+                      }
+                  ]
 }
