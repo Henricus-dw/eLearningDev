@@ -14060,14 +14060,54 @@ def final_assessment(course_id):
             f"FINAL → course_id={course.id} mapped_key={final_key} → redirect endpoint '{ep}'")
         return redirect(url_for(ep))
 
-    # Load questions
-    try:
-        cfg, final_questions = get_runtime_for_course(
-            final_key)  # (cfg, list-of-dicts)
-        source = "json"
-    except Exception as e:
-        print(f"FINAL load runtime failed for key '{final_key}': {e}")
-        cfg, final_questions, source = None, [], "none"
+    # Load questions. Questions created through the course admin editor are
+    # stored in FinalAssessmentQuestion, so prefer that bank over JSON when it
+    # exists. A student's selected IDs are kept in session for the attempt.
+    db_questions = []
+    if final_key == "asat_gen":
+        db_questions = FinalAssessmentQuestion.query.filter_by(
+            course_id=course.id
+        ).order_by(FinalAssessmentQuestion.id).all()
+    if db_questions:
+        cfg = {
+            "key": final_key,
+            "title": getattr(course, "title", "Final Assessment"),
+            "pass_mark": 80,
+        }
+        question_bank = [
+            {
+                "id": row.id,
+                "question": row.question,
+                "options": [row.option_a, row.option_b, row.option_c, row.option_d],
+                "correct_index": "ABCD".index((row.correct or "A").upper()),
+            }
+            for row in db_questions
+        ]
+        question_count = 50
+        selection_key = f"final_assessment_question_ids_{course.id}"
+        selected_ids = session.get(selection_key)
+        if request.method == "POST" and selected_ids:
+            by_id = {row.id: question for row, question in zip(db_questions, question_bank)}
+            final_questions = [by_id[qid] for qid in selected_ids if qid in by_id]
+        else:
+            if len(question_bank) < question_count:
+                raise ValueError(
+                    f"ASAT/course final has {len(question_bank)} questions; "
+                    f"at least {question_count} are required."
+                )
+            rng = secrets.SystemRandom()
+            final_questions = rng.sample(question_bank, question_count)
+            rng.shuffle(final_questions)
+            session[selection_key] = [question["id"] for question in final_questions]
+        source = "database"
+    else:
+        try:
+            cfg, final_questions = get_runtime_for_course(
+                final_key)  # (cfg, list-of-dicts)
+            source = "json"
+        except Exception as e:
+            print(f"FINAL load runtime failed for key '{final_key}': {e}")
+            cfg, final_questions, source = None, [], "none"
 
     if not cfg:
         class _Cfg:
