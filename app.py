@@ -19109,6 +19109,10 @@ def level_3_Cargo():
                     "is_multi": is_multi
                 })
 
+        # Keep the legacy Level 3 Cargo entry point randomized as well. The
+        # mapped assessment route snapshots its order per attempt separately.
+        secrets.SystemRandom().shuffle(questions)
+
     # Fallback if file missing/empty
     course = {"title": title}
     return render_template(
