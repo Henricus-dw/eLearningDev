@@ -16211,6 +16211,29 @@ def run_final(code):
         flash("No questions found for this assessment.", "danger")
         return redirect(url_for("dashboard"))
 
+    # Randomize the paper for the requested finals and keep that order in the
+    # student's session until submission, so POST grading uses the same paper.
+    randomized_final_keys = {
+        "level_3_airport_and_airlines_air_carrier",
+        "level_3_cargo",
+        "test_1",
+        "asat_cargo",
+        "asat2",
+        "rpas_final",
+        "rpas_awareness",
+        "30",
+    }
+    question_order_key = f"final_question_order_{course.id}"
+    if runtime_key in randomized_final_keys:
+        saved_order = session.get(question_order_key)
+        question_by_id = {str(q.get("id")): q for q in questions}
+        if saved_order and all(str(qid) in question_by_id for qid in saved_order):
+            questions = [question_by_id[str(qid)] for qid in saved_order]
+        else:
+            questions = list(questions)
+            secrets.SystemRandom().shuffle(questions)
+            session[question_order_key] = [q.get("id") for q in questions]
+
     # Resolve DB student row (sid is the public student number; we need the internal PK)
     student_row = Student.query.filter_by(student_id=str(sid)).first()
     if not student_row:
@@ -16357,6 +16380,8 @@ def run_final(code):
             student_id=student_row.id,
             course_key=runtime_key
         ).first() is not None
+
+        session.pop(question_order_key, None)
 
         return render_template(
             "assessment_result.html",
