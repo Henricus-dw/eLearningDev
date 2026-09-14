@@ -30154,8 +30154,8 @@ def api_taskboard_update(task_id):
     if "description" in data:
         task.description = (data["description"] or "").strip() or None
     if "score" in data:
-        if role_level < 4:
-            return jsonify({"ok": False, "error": "Only Developers can score tasks"}), 403
+        if role_level < 3:
+            return jsonify({"ok": False, "error": "Only Super Admins and Developers can edit task points"}), 403
         task.score = int(data["score"]) if data["score"] is not None else None
         task.scored_by = session.get("admin_email", session.get("admin_name", ""))
     if "status" in data and data["status"] in ("backlog", "sprint"):
