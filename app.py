@@ -3135,12 +3135,24 @@ class MascotPlayback(db.Model):
 # Languages offered for slide subtitles. English is first and is the default:
 # the course itself is delivered in English and subtitles are an accessibility
 # aid on top of it, not an alternative language mode.
+#
+# All eleven spoken official languages of South Africa (South African Sign
+# Language, the twelfth, cannot be subtitled). The first five were the original
+# set; the rest follow alphabetically. A learner is only ever offered the
+# languages that have text on the slide in front of them, so an untranslated
+# language costs nothing on the student side.
 SUBTITLE_LANGUAGES = [
     ("en", "English"),
     ("af", "Afrikaans"),
     ("zu", "isiZulu"),
     ("xh", "isiXhosa"),
     ("tn", "Setswana"),
+    ("nr", "isiNdebele"),
+    ("nso", "Sepedi"),
+    ("st", "Sesotho"),
+    ("ss", "siSwati"),
+    ("ve", "Tshivenḓa"),
+    ("ts", "Xitsonga"),
 ]
 SUBTITLE_LANG_CODES = [c for c, _ in SUBTITLE_LANGUAGES]
 SUBTITLE_LANG_NAMES = dict(SUBTITLE_LANGUAGES)
@@ -28841,6 +28853,19 @@ def _mascot_payload(chapter, student=None):
                          "src": _mascot_media_url(cue.gesture.image_path),
                          "name": cue.gesture.name})
     cues.sort(key=lambda c: c["at_ms"])
+    # Subtitles. Timing is shared by every language, so one list of windows
+    # carries all of the wording and the player just picks a key.
+    subtitles = [
+        {"start_ms": int(b.start_ms or 0),
+         "end_ms": int(b.end_ms or 0),
+         "texts": {t.lang: t.text for t in b.texts if (t.text or "").strip()}}
+        for b in sorted(
+            MascotSubtitle.query.filter_by(mascot_id=m.id).all(),
+            key=lambda x: x.start_ms or 0)
+    ]
+    # Languages with something written on this slide. Read from the blocks just
+    # loaded rather than with one query per language, now that there are eleven.
+    written = {lang for s in subtitles for lang in s["texts"]}
     return {
         "audio_url": _mascot_media_url(m.audio_path),
         "duration_ms": int(m.duration_ms or 0),
@@ -28848,26 +28873,11 @@ def _mascot_payload(chapter, student=None):
         "cues": cues,
         # Preload every image this slide can show so a swap never flashes blank.
         "preload": sorted({c["src"] for c in cues}),
-        # Subtitles. Timing is shared by every language, so one list of windows
-        # carries all of the wording and the player just picks a key.
-        "subtitles": [
-            {"start_ms": int(b.start_ms or 0),
-             "end_ms": int(b.end_ms or 0),
-             "texts": {t.lang: t.text for t in b.texts if (t.text or "").strip()}}
-            for b in sorted(
-                MascotSubtitle.query.filter_by(mascot_id=m.id).all(),
-                key=lambda x: x.start_ms or 0)
-        ],
+        "subtitles": subtitles,
         # Only offer a language that actually has something written on this
         # slide, so a learner never picks one and gets silence.
-        "languages": [
-            {"code": code, "name": name}
-            for code, name in SUBTITLE_LANGUAGES
-            if MascotSubtitleText.query.join(MascotSubtitle).filter(
-                MascotSubtitle.mascot_id == m.id,
-                MascotSubtitleText.lang == code,
-                MascotSubtitleText.text != "").first()
-        ],
+        "languages": [{"code": code, "name": name}
+                      for code, name in SUBTITLE_LANGUAGES if code in written],
         "prefs": {
             "enabled": bool(getattr(student, "subtitles_enabled", False)),
             "lang": (getattr(student, "subtitle_lang", None) or "en"),
