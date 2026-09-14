@@ -16220,6 +16220,7 @@ def run_final(code):
         "asat_cargo",
         "asat2",
         "rpas_final",
+        "rpas",
         "rpas_awareness",
         "30",
     }
@@ -20962,6 +20963,7 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
         "test_1",
         "asat2",
         "rpas_final",
+        "rpas",
         "30",
     }
 
