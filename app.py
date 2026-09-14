@@ -20902,6 +20902,19 @@ def attempts_used(student_id: int, course_key: str) -> int:
 
 
 def register_assessment(course_key: str, title: str, pass_mark: int):
+    # Level 3 Cargo has a bespoke route and question format. Keep the
+    # lowercase course-flow URL pointed at that original-question route.
+    if (course_key or "").strip().lower() == "level_3_cargo" and _endpoint_exists("level_3_Cargo"):
+        take_ep = "level_3_cargo_take"
+        if not _endpoint_exists(take_ep):
+            app.add_url_rule(
+                "/level_3_cargo",
+                endpoint=take_ep,
+                view_func=lambda: redirect(url_for("level_3_Cargo")),
+                methods=["GET", "POST"],
+            )
+        return
+
     tpl_take = "proctored_assessment.html"   # shared take template
     tpl_result = "assessment_result.html"      # shared result template
 
