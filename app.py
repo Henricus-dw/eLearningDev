@@ -20952,6 +20952,14 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
         {},
     )
     question_count = assessment_cfg.get("question_count")
+    randomized_keys = {
+        "level_3_airport_and_airlines_air_carrier",
+        "level_3_cargo",
+        "test_1",
+        "asat2",
+        "rpas_final",
+        "30",
+    }
 
     # ----- NEW: Idempotency guard -----
     take_ep = f"{course_key}_take"
@@ -21096,7 +21104,9 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
                 try:
                     question_bank = load_questions(course_key)
                     if question_count is None:
-                        qs = question_bank
+                        qs = list(question_bank)
+                        if norm_key in randomized_keys:
+                            secrets.SystemRandom().shuffle(qs)
                     else:
                         if (isinstance(question_count, bool)
                                 or not isinstance(question_count, int)
