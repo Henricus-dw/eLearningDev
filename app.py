@@ -20946,6 +20946,7 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             .filter(
                 AssessmentAttempt.student_id == stu["student_id"],
                 AssessmentAttempt.course_key == norm_key,
+                AssessmentAttempt.is_active.is_(True),
                 AssessmentAttempt.finished_at.isnot(None),
             ).scalar()
         ) or 0
@@ -21284,6 +21285,7 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             .filter(
                 AssessmentAttempt.student_id == str(a.student_id),
                 AssessmentAttempt.course_key == norm_key,
+                AssessmentAttempt.is_active.is_(True),
                 AssessmentAttempt.finished_at.isnot(None),
             )
             .scalar()

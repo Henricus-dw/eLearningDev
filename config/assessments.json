@@ -3,7 +3,7 @@
     "key": "asat_gen",
     "title": "ASAT General",
     "pass_mark": 80,
-    "question_count": 20,
+    "question_count": 50,
     "icon": "fa-file-alt",
     "qfile": "asat_gen_final_questions.json",
     "pdf_endpoint": null
