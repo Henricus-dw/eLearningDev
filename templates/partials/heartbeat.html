@@ -1,10 +1,12 @@
-<!-- Student Heartbeat — sends activity to /api/heartbeat every 30s -->
+<!-- Student Heartbeat: sends activity to /api/heartbeat every 30s, and logs a
+     learner out after 2 minutes 30 seconds without activity on ordinary learner
+     pages. Never on a final assessment. -->
 <script>
 (function(){
   if (!document.body) return;
 
   var INTERVAL = 30000;
-  var IDLE_TIMEOUT = 120000;
+  var IDLE_TIMEOUT = 120000;   // reported as "idle" on the admin Live Users page
   var _lastInput = Date.now();
   var _idle = false;
 
@@ -25,12 +27,32 @@
     return ctx;
   }
 
-  function resetIdle() { _lastInput = Date.now(); _idle = false; }
-  document.addEventListener('mousemove', resetIdle, { passive: true });
-  document.addEventListener('keydown', resetIdle, { passive: true });
-  document.addEventListener('click', resetIdle, { passive: true });
-  document.addEventListener('scroll', resetIdle, { passive: true });
-  document.addEventListener('touchstart', resetIdle, { passive: true });
+  // ── Activity ──────────────────────────────────────────────────────────────
+  // Shared with the learner's other tabs through localStorage, so someone busy
+  // in one tab is not logged out by a tab left open in the background.
+  // partials/assessment_keepalive.html writes the same key.
+  var KEY_ACTIVE = 'pt.learnerActiveAt';
+  var KEY_LOGOUT = 'pt.learnerIdleLogoutAt';
+  function store(key, value) { try { localStorage.setItem(key, String(value)); } catch (e) {} }
+  function read(key) { try { return parseInt(localStorage.getItem(key), 10) || 0; } catch (e) { return 0; } }
+
+  var _lastShared = 0;
+  function resetIdle() {
+    var now = Date.now();
+    _lastInput = now;
+    _idle = false;
+    if (now - _lastShared > 5000) { _lastShared = now; store(KEY_ACTIVE, now); }
+  }
+  // Capture phase, so scrolling inside panels (the handbook viewer) and the
+  // timeupdate events of a playing <audio> or <video>, which do not bubble,
+  // count as activity too.
+  ['mousemove', 'mousedown', 'click', 'keydown', 'wheel', 'touchstart',
+   'scroll', 'timeupdate'].forEach(function (type) {
+    document.addEventListener(type, resetIdle, { capture: true, passive: true });
+  });
+  // Players that are not elements on the page (the mascot narration is an
+  // Audio object) dispatch this while they play.
+  document.addEventListener('learner-activity', resetIdle);
 
   function sendHeartbeat() {
     _idle = (Date.now() - _lastInput) > IDLE_TIMEOUT;
@@ -49,5 +71,100 @@
   // Send immediately on page load, then every 30s
   sendHeartbeat();
   setInterval(sendHeartbeat, INTERVAL);
+
+  // ── Auto-logout after inactivity ──────────────────────────────────────────
+  var WARN_AFTER = 120000;     // "Are you still there?" countdown from 2:00
+  var LOGOUT_AFTER = 150000;   // logged out at 2:30
+
+  // An allowlist on purpose: only the pages named here time out. Final
+  // assessments, their readiness screen, the camera-recorded quiz and any page
+  // added later never do, so a new assessment page cannot log a learner out
+  // mid-exam by accident. Names match each page's page-context data-page.
+  var TIMED_PAGES = ['Dashboard', 'Chapter', 'Course Content', 'Courses',
+    'Unit Quiz', 'Support Centre', 'Certificates', 'Course Feedback',
+    'Onboarding — ID Upload', 'Onboarding — Selfie'];
+
+  var page = getPageContext();
+  if (TIMED_PAGES.indexOf(page.page) === -1 || page.final_assessment_key) {
+    // A page that never times out still counts as activity for the learner's
+    // other tabs, so an idle dashboard tab cannot log them out mid-assessment.
+    store(KEY_ACTIVE, Date.now());
+    setInterval(function () { store(KEY_ACTIVE, Date.now()); }, 10000);
+    return;
+  }
+
+  var loadedAt = Date.now();
+  var leaving = false;
+  var warnBox = null, warnCount = null;
+
+  function leave() {
+    if (leaving) return;
+    leaving = true;
+    window.location.href = '/logout/idle';
+  }
+
+  function hideWarning() { if (warnBox) warnBox.style.display = 'none'; }
+
+  function showWarning(secondsLeft) {
+    if (!warnBox) {
+      warnBox = document.createElement('div');
+      warnBox.id = 'idleLogoutWarning';
+      warnBox.setAttribute('role', 'alertdialog');
+      warnBox.setAttribute('aria-labelledby', 'idleWarnTitle');
+      warnBox.setAttribute('aria-describedby', 'idleWarnText');
+      // Inline styles: learner pages use different CSS frameworks.
+      warnBox.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:flex;' +
+        'align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.55);' +
+        'font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;';
+      warnBox.innerHTML =
+        '<div style="background:#fff;border-radius:14px;max-width:380px;width:100%;' +
+          'padding:22px 22px 18px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center;color:#0f172a;">' +
+          '<div id="idleWarnTitle" style="font-size:18px;font-weight:700;color:#17306B;margin-bottom:8px;">' +
+            'Are you still there?</div>' +
+          '<div id="idleWarnText" style="font-size:14px;line-height:1.5;color:#475569;margin-bottom:16px;">' +
+            'There has been no activity for a while, so you will be logged out in ' +
+            '<strong id="idleWarnCount">30</strong> seconds.</div>' +
+          '<button type="button" id="idleWarnStay" style="border:none;border-radius:999px;' +
+            'padding:10px 22px;background:#17306B;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">' +
+            'Stay logged in</button>' +
+        '</div>';
+      warnCount = warnBox.querySelector('#idleWarnCount');
+      warnBox.querySelector('#idleWarnStay').addEventListener('click', function () {
+        _lastShared = 0;   // tell the other tabs straight away
+        resetIdle();
+        hideWarning();
+      });
+      document.body.appendChild(warnBox);
+    }
+    warnCount.textContent = secondsLeft;
+    warnBox.style.display = 'flex';
+  }
+
+  function check() {
+    if (leaving) return;
+    // Another tab has just logged the learner out: follow it.
+    if (read(KEY_LOGOUT) > loadedAt) return leave();
+    // Interacting with an embedded frame (an embedded video, for example) is
+    // invisible to this page, so count it while the frame has focus.
+    var el = document.activeElement;
+    if (el && el.tagName === 'IFRAME' && document.hasFocus()) resetIdle();
+
+    var idleFor = Date.now() - Math.max(_lastInput, read(KEY_ACTIVE));
+    if (idleFor >= LOGOUT_AFTER) {
+      store(KEY_LOGOUT, Date.now());
+      return leave();
+    }
+    if (idleFor >= WARN_AFTER) showWarning(Math.ceil((LOGOUT_AFTER - idleFor) / 1000));
+    else hideWarning();
+  }
+
+  setInterval(check, 1000);
+  // Timers slow down in background tabs and stop while a laptop sleeps, so
+  // check straight away when the learner comes back.
+  document.addEventListener('visibilitychange', check);
+  window.addEventListener('focus', check);
+  window.addEventListener('storage', function (e) {
+    if (e.key === KEY_LOGOUT) check();
+  });
 })();
 </script>

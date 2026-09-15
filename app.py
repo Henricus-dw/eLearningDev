@@ -9578,6 +9578,35 @@ def logout():
         return redirect(url_for('frontpage'))
     return redirect(url_for('frontpage'))
 
+
+# Session keys that belong to a learner's login. The idle logout removes only
+# these, so an administrator or company user signed in to the same browser is
+# not signed out along with the learner.
+_LEARNER_SESSION_KEYS = (
+    'student_id', 'email', 'national_id', 'selfie_filename', 'post_login_next',
+    'pending_user', 'responses', 'question_index', 'completed',
+    'rpas_started_at', 'airside_started_at',
+)
+
+
+@app.route('/logout/idle')
+def logout_idle():
+    """Log a learner out after 2m30s without activity.
+
+    Called by partials/heartbeat.html, which only does so on ordinary learner
+    pages and never while a final assessment is open in any tab. A learner who
+    is already logged out (a second tab arriving a moment later) simply lands
+    on the front page.
+    """
+    sid = session.get('student_id')
+    if sid:
+        _log_session('student', sid, '', 'idle_logout')
+        for key in _LEARNER_SESSION_KEYS:
+            session.pop(key, None)
+        flash('You were logged out because there was no activity for 2 minutes '
+              'and 30 seconds. Please log in again to continue.', 'warning')
+    return redirect(url_for('frontpage'))
+
 ############## *************************###################
 
 
