@@ -1864,6 +1864,9 @@
         lastPos = pos;
         // Heartbeat roughly every 10s so a partial listen is still recorded.
         if (highWater - lastSent > 10000) { lastSent = highWater; report(); }
+        // The narration is an Audio object, not an element on the page, so the
+        // inactivity timer (partials/heartbeat.html) cannot see it play.
+        document.dispatchEvent(new CustomEvent('learner-activity'));
       });
 
       playBtn.addEventListener('click', function () {
