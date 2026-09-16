@@ -28898,6 +28898,17 @@ def _ensure_certificate_pdf_column():
 _ensure_certificate_pdf_column()
 
 
+def _ensure_appeal_dispute_table():
+    """Create appeal_dispute if missing (new table, no existing rows affected)."""
+    with app.app_context():
+        insp = sa_inspect(db.engine)
+        if 'appeal_dispute' not in insp.get_table_names():
+            AppealDispute.__table__.create(db.engine)
+            print("  ✅ Created appeal_dispute table")
+
+_ensure_appeal_dispute_table()
+
+
 def _ensure_company_approved_courses_table():
     """Create company_approved_course table if missing."""
     with app.app_context():
