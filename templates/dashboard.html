@@ -1626,6 +1626,14 @@
                 <span class="tab-badge">{{ open_tickets|length }}</span>
                 {% endif %}
               </button>
+              <button class="support-tab" onclick="showSupportTab('appeals-tab')">
+                <i class="fa fa-balance-scale"></i>
+                Appeals &amp; Disputes
+                {% set open_appeal_count = appeals|selectattr('status', 'ne', 'Resolved')|list|length %}
+                {% if open_appeal_count > 0 %}
+                <span class="tab-badge">{{ open_appeal_count }}</span>
+                {% endif %}
+              </button>
             </div>
 
             <!-- Tab: New Ticket -->
@@ -1676,6 +1684,12 @@
                   <li>Describe what you were trying to do when the issue occurred</li>
                   <li>We typically respond within 24 hours</li>
                 </ul>
+                <p style="margin-top: 0.5rem;">
+                  Having trouble with the platform itself (logins, videos, uploads, errors)? Use a
+                  <strong>Support Ticket</strong>. Disagree with an assessment, remediation, or
+                  moderation <em>outcome</em>? Use
+                  <a href="javascript:void(0)" onclick="showSupportTab('appeals-tab')" style="color:#0369a1; font-weight:600;">Appeals &amp; Disputes</a> instead.
+                </p>
               </div>
             </div>
 
@@ -1748,6 +1762,84 @@
               </div>
             {% endif %}
             </div>
+
+            <!-- Tab: Appeals & Disputes -->
+            <div id="appeals-tab" class="support-tab-content">
+              <div class="support-tips" style="margin-top: 0;">
+                <strong><i class="fa fa-info-circle"></i> When to use this instead of a Support Ticket:</strong>
+                <p style="margin: 0.5rem 0 0;">
+                  A <strong>Support Ticket</strong> is for technical or platform problems (logins, videos not
+                  playing, upload errors, etc). An <strong>Appeal/Dispute</strong> is for when you disagree with
+                  the <em>outcome</em> of an assessment, remediation, or moderation decision.
+                </p>
+                <p style="margin: 0.5rem 0 0; color: #92400e; background: #fef3c7; border-radius: 6px; padding: 0.5rem 0.75rem;">
+                  {{ sacaa_appeal_notice }}
+                </p>
+              </div>
+
+              <form action="{{ url_for('submit_appeal') }}" method="POST" novalidate style="margin-top: 1.25rem;">
+                <div class="support-form-grid">
+                  <div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-user"></i>Your Name</label>
+                      <input type="text" class="support-field-input" value="{{ user.name }} {{ user.surname }}" disabled>
+                    </div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-envelope"></i>Email</label>
+                      <input type="email" class="support-field-input" value="{{ user.email }}" disabled>
+                    </div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-book"></i>Related Course <span style="font-weight:400; color:#94a3b8;">(optional)</span></label>
+                      <select name="course_id" class="support-field-input">
+                        <option value="">Not course-specific</option>
+                        {% for course in approved_courses %}
+                        <option value="{{ course.id }}">{{ course.title }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="support-field">
+                      <label class="support-field-label"><i class="fa fa-balance-scale"></i>Describe Your Appeal/Dispute</label>
+                      <textarea name="description" class="support-field-input textarea"
+                        placeholder="Please explain the basis of your appeal or dispute, including the assessment, remediation, or moderation decision it relates to..." required></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" class="support-submit-btn">
+                  <i class="fa fa-paper-plane"></i>
+                  Submit Appeal/Dispute
+                </button>
+              </form>
+
+              {% if appeals %}
+              <div class="ticket-section-title" style="margin-top: 1.5rem;">
+                <i class="fa fa-balance-scale" style="color: #C7A434;"></i>
+                Your Appeals/Disputes ({{ appeals|length }})
+              </div>
+              <div class="ticket-list">
+                {% for appeal in appeals %}
+                <div class="ticket-item">
+                  <div class="ticket-item-header">
+                    <span class="ticket-item-id">#{{ appeal.appeal_id }}</span>
+                    <span class="ticket-item-status {% if appeal.status == 'Open' %}status-open{% elif appeal.status == 'Under Review' %}status-progress{% else %}status-closed{% endif %}">
+                      {{ appeal.status }}
+                    </span>
+                  </div>
+                  <div class="ticket-item-course">{{ appeal.course.title if appeal.course else 'General' }}</div>
+                  <div class="ticket-item-preview">{{ appeal.description }}</div>
+                  {% if appeal.resolution_notes %}
+                  <div class="ticket-item-preview" style="color:#065F46; margin-top:0.35rem;"><strong>Resolution:</strong> {{ appeal.resolution_notes }}</div>
+                  {% endif %}
+                  <div class="ticket-item-meta">
+                    <span>{{ appeal.created_at.strftime('%d %b %Y') }}</span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
           </div><!-- /support-container -->
 
         </div>
@@ -1761,7 +1853,14 @@
 
           // Show selected tab
           document.getElementById(tabId).classList.add('active');
-          event.target.closest('.support-tab').classList.add('active');
+
+          // Highlight the matching tab button by index, so this also works when
+          // triggered from a link elsewhere (not just a click on the tab bar).
+          const btnIndex = { 'new-ticket-tab': 0, 'my-tickets-tab': 1, 'appeals-tab': 2 }[tabId];
+          const btns = document.querySelectorAll('.support-tab');
+          if (btnIndex !== undefined && btns[btnIndex]) {
+            btns[btnIndex].classList.add('active');
+          }
         }
       </script>
 
