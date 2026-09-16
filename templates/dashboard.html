@@ -1632,7 +1632,7 @@
               </button>
               <button class="support-tab" onclick="showSupportTab('my-appeals-tab')">
                 <i class="fa fa-scale-unbalanced"></i>
-                My Appeals
+                My Appeals/Disputes
                 {% set open_appeal_count = appeals|selectattr('status', 'ne', 'Resolved')|list|length %}
                 {% if open_appeal_count > 0 %}
                 <span class="tab-badge">{{ open_appeal_count }}</span>
