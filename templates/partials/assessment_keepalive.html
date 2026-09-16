@@ -1,0 +1,13 @@
+{# Keeps a learner's other tabs from logging them out for inactivity while this
+   page is open. For assessment pages that do not include partials/heartbeat.html
+   (which does the same for the pages that do); it writes the same
+   localStorage key that heartbeat.html reads. #}
+<script>
+(function () {
+  function beat() {
+    try { localStorage.setItem('pt.learnerActiveAt', String(Date.now())); } catch (e) {}
+  }
+  beat();
+  setInterval(beat, 10000);
+})();
+</script>
