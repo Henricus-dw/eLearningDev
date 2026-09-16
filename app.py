@@ -11575,10 +11575,10 @@ def submit_appeal():
     appeal = create_appeal(student, description, source="support", course=course)
     if not appeal:
         flash("⚠ Please describe your appeal/dispute before submitting.", "danger")
-        return redirect(url_for('support') + '#appeals')
+        return redirect(url_for('dashboard'))
 
     flash(f"✅ Appeal/dispute submitted! Reference: {appeal.appeal_id}", "success")
-    return redirect(url_for('support') + '#appeals')
+    return redirect(url_for('dashboard'))
 
 ############## *************************###################
 
