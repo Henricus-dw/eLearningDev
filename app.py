@@ -5351,7 +5351,11 @@ def create_appeal(student, description, source, course=None, course_key=None, fe
         status="Open",
     )
     db.session.add(appeal)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
 
     course_title = course.title if course else course_key
     send_appeal_confirmation(student.email, f"{student.name} {student.surname}", appeal.appeal_id)
@@ -5432,14 +5436,19 @@ def course_feedback(course_id):
     db.session.commit()
 
     # --- Optional SACAA appeal/dispute, submitted alongside feedback ---
+    # Wrapped so a failure here (e.g. transient DB error) can never block the
+    # certificate trigger below — that must always run once feedback is saved.
     if (request.form.get("lodge_appeal") or "").strip() == "yes":
-        create_appeal(
-            student,
-            request.form.get("appeal_description"),
-            source="feedback",
-            course=course,
-            feedback_id=fb.id,
-        )
+        try:
+            create_appeal(
+                student,
+                request.form.get("appeal_description"),
+                source="feedback",
+                course=course,
+                feedback_id=fb.id,
+            )
+        except Exception:
+            app.logger.exception("create_appeal failed during course_feedback submission")
 
     # --- Trigger certificate workflow now that feedback is submitted ---
     # Derive the course_key from the Course record
@@ -5580,14 +5589,19 @@ def assessment_feedback(course_key):
     db.session.commit()
 
     # --- Optional SACAA appeal/dispute, submitted alongside feedback ---
+    # Wrapped so a failure here (e.g. transient DB error) can never block the
+    # certificate trigger below — that must always run once feedback is saved.
     if (request.form.get("lodge_appeal") or "").strip() == "yes":
-        create_appeal(
-            student,
-            request.form.get("appeal_description"),
-            source="feedback",
-            course_key=norm_course_key,
-            feedback_id=fb.id,
-        )
+        try:
+            create_appeal(
+                student,
+                request.form.get("appeal_description"),
+                source="feedback",
+                course_key=norm_course_key,
+                feedback_id=fb.id,
+            )
+        except Exception:
+            app.logger.exception("create_appeal failed during assessment_feedback submission")
 
     # --- Trigger certificate workflow now that feedback is submitted ---
     _trigger_certificate_after_feedback(student, course_key)
@@ -23745,6 +23759,26 @@ def admin_dev_reset_all_attempts():
         if enrollment and hasattr(enrollment, 'allowed_attempts'):
             enrollment.allowed_attempts = 2
 
+        # Clear any existing certificate-queue entry and prior feedback for
+        # this student-course. Without this, a stale 'done'/'pending' queue
+        # row silently blocks re-enqueue on the next pass (idempotency guard
+        # in _trigger_certificate_after_feedback), and old feedback can make
+        # the feedback form look already-submitted.
+        cq_deleted = CertificateQueue.query.filter_by(
+            student_id=student_id, course_id=course_id
+        ).delete(synchronize_session=False)
+        deleted_count += cq_deleted
+
+        fb_deleted = CourseFeedback.query.filter_by(
+            student_id=student_id, course_id=course_id
+        ).delete(synchronize_session=False)
+        if possible_keys:
+            fb_deleted += CourseFeedback.query.filter(
+                CourseFeedback.student_id == student_id,
+                func.lower(CourseFeedback.course_key).in_([k.lower() for k in possible_keys])
+            ).delete(synchronize_session=False)
+        deleted_count += fb_deleted
+
         db.session.commit()
         flash(f"✅ Deleted {deleted_count} attempt(s) for {student.name} {student.surname} (including RPAS/Airside/Dynamic/{vqa_deleted} quiz). Attempts reset to fresh state.", "success")
     except Exception as e:
@@ -24059,10 +24093,28 @@ def admin_dev_reset_everything():
             if hasattr(enrollment, 'allowed_attempts'):
                 enrollment.allowed_attempts = 2
 
+        # 11. Clear any existing certificate-queue entry and prior feedback for
+        # this student-course. Without this, a stale 'done'/'pending' queue
+        # row silently blocks re-enqueue on the next pass (idempotency guard
+        # in _trigger_certificate_after_feedback), and old feedback can make
+        # the feedback form look already-submitted.
+        cq_deleted = CertificateQueue.query.filter_by(
+            student_id=student_id, course_id=course_id
+        ).delete(synchronize_session=False)
+
+        fb_deleted = CourseFeedback.query.filter_by(
+            student_id=student_id, course_id=course_id
+        ).delete(synchronize_session=False)
+        if possible_keys:
+            fb_deleted += CourseFeedback.query.filter(
+                CourseFeedback.student_id == student_id,
+                func.lower(CourseFeedback.course_key).in_([k.lower() for k in possible_keys])
+            ).delete(synchronize_session=False)
+
         db.session.commit()
 
-        total_deleted = progress_deleted + fas_deleted + faa_deleted + rpas_deleted + airside_deleted + assessment_attempt_deleted + retry_requests_deleted + adjustments_deleted + vqa_deleted
-        flash(f"✅ FULL RESET for {student.name} {student.surname}: {progress_deleted} chapters, {fas_deleted + faa_deleted} final attempts, {rpas_deleted} RPAS, {airside_deleted} Airside, {assessment_attempt_deleted} dynamic attempts, {retry_requests_deleted} retry requests, {vqa_deleted} pre-final quiz attempts cleared!", "success")
+        total_deleted = progress_deleted + fas_deleted + faa_deleted + rpas_deleted + airside_deleted + assessment_attempt_deleted + retry_requests_deleted + adjustments_deleted + vqa_deleted + cq_deleted + fb_deleted
+        flash(f"✅ FULL RESET for {student.name} {student.surname}: {progress_deleted} chapters, {fas_deleted + faa_deleted} final attempts, {rpas_deleted} RPAS, {airside_deleted} Airside, {assessment_attempt_deleted} dynamic attempts, {retry_requests_deleted} retry requests, {vqa_deleted} pre-final quiz attempts, {cq_deleted} certificate-queue entries, {fb_deleted} feedback rows cleared!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Error resetting: {e}", "danger")
