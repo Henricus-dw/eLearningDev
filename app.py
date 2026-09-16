@@ -6983,6 +6983,10 @@ def dashboard():
         SupportTicket.status == 'Closed'
     ).order_by(SupportTicket.created_at.desc()).limit(5).all()
 
+    # Appeals/disputes for the dashboard's embedded Support widget
+    appeals = AppealDispute.query.filter_by(student_id=user.id).order_by(
+        AppealDispute.created_at.desc()).all()
+
     # Virtual Training Portal (v1.1.0): walk every student_progress entry, tag whether
     # it's a virtual course, and attach per-enrollment Teams metadata + lock state.
     # The template then filters the list into normal (Learn tab) vs virtual (Virtual tab)
@@ -7098,6 +7102,8 @@ def dashboard():
         ticket_id=ticket_id,
         open_tickets=open_tickets,
         closed_tickets=closed_tickets,
+        appeals=appeals,
+        sacaa_appeal_notice=SACAA_APPEAL_NOTICE,
         has_virtual_enrollments=bool(virtual_progress),
     )
 
