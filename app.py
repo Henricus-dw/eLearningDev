@@ -2491,14 +2491,16 @@ def _trigger_certificate_after_feedback(student, course_key):
         ).order_by(FinalAssessmentAttempt.submitted_at.desc()).first()
 
         if not attempt:
-            # Also check AssessmentAttempt table (RPAS, ASAT, etc.)
+            # Also check AssessmentAttempt table (RPAS, ASAT, etc.). Filter on
+            # the stored `passed` flag (computed against the course's actual
+            # pass_mark at submission time) rather than a hardcoded score
+            # threshold, which silently missed courses with a pass_mark != 80.
             attempt = AssessmentAttempt.query.filter(
                 AssessmentAttempt.student_id == str(student.student_id),
                 func.lower(AssessmentAttempt.course_key) == ck_lower,
+                AssessmentAttempt.passed == True,
                 AssessmentAttempt.is_active.is_(True)
             ).order_by(AssessmentAttempt.created_at.desc()).first()
-            if attempt and (attempt.score is None or attempt.score < 80):
-                attempt = None  # Not a passing attempt
 
         # Resolve the Course once — used both for FinalAssessmentSubmission lookup
         # below and for the idempotency / enqueue calls.
@@ -2520,6 +2522,10 @@ def _trigger_certificate_after_feedback(student, course_key):
                 attempt = sub  # treat it like any other passing attempt below
 
         if not attempt:
+            app.logger.warning(
+                "_trigger_certificate_after_feedback: no passing attempt found "
+                "for student %s on course_key=%r — certificate NOT enqueued.",
+                student.student_id, course_key)
             return  # No passing attempt found — nothing to do
 
         # Check if certificate was already enqueued (idempotent)
