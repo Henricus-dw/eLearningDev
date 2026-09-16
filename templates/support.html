@@ -367,9 +367,13 @@
           <span class="badge">{{ open_count }}</span>
         {% endif %}
       </button>
-      <button class="tab-btn" onclick="showTab('appeals')">
+      <button class="tab-btn" onclick="showTab('new-appeal')">
         <i class="fas fa-scale-balanced"></i>
-        <span>Appeals &amp; Disputes</span>
+        <span>New Appeal/Dispute</span>
+      </button>
+      <button class="tab-btn" onclick="showTab('my-appeals')">
+        <i class="fas fa-scale-unbalanced"></i>
+        <span>My Appeals</span>
         {% set open_appeal_count = appeals|selectattr('status', 'ne', 'Resolved')|list|length %}
         {% if open_appeal_count > 0 %}
           <span class="badge">{{ open_appeal_count }}</span>
@@ -443,7 +447,7 @@
               Having trouble with the platform itself (logins, videos, uploads, errors)?
               Use a <strong>Support Ticket</strong>. Disagree with an assessment,
               remediation, or moderation <em>outcome</em>? Use
-              <a href="javascript:void(0)" onclick="showTab('appeals')" class="text-blue-700 underline font-medium">Appeals &amp; Disputes</a> instead.
+              <a href="javascript:void(0)" onclick="showTab('new-appeal')" class="text-blue-700 underline font-medium">Appeals &amp; Disputes</a> instead.
             </p>
           </div>
         </div>
@@ -529,8 +533,8 @@
       {% endif %}
     </div>
 
-    <!-- Tab: Appeals & Disputes -->
-    <div id="appeals" class="tab-content">
+    <!-- Tab: New Appeal/Dispute -->
+    <div id="new-appeal" class="tab-content">
       <div class="card p-6 mb-4">
         <div class="flex items-start gap-3 mb-4">
           <i class="fas fa-circle-info text-blue-500 mt-0.5"></i>
@@ -583,7 +587,10 @@
           </div>
         </form>
       </div>
+    </div>
 
+    <!-- Tab: My Appeals -->
+    <div id="my-appeals" class="tab-content">
       {% if appeals %}
         <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
           <i class="fas fa-scale-balanced text-[var(--brand-gold)] mr-1"></i> Your Appeals/Disputes ({{ appeals|length }})
@@ -612,6 +619,17 @@
             </div>
           </div>
         {% endfor %}
+      {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <i class="fas fa-scale-balanced"></i>
+            <p class="text-slate-500 mb-1">No appeals/disputes yet</p>
+            <p class="text-sm text-slate-400">Submit one if you disagree with an assessment, remediation, or moderation outcome.</p>
+            <button onclick="showTab('new-appeal')" class="btn btn-blue mt-4">
+              <i class="fas fa-plus"></i> New Appeal/Dispute
+            </button>
+          </div>
+        </div>
       {% endif %}
     </div>
 
@@ -636,7 +654,7 @@
 
       // Highlight the matching tab button, whether this was triggered by a
       // click on the tab bar itself or a link elsewhere on the page.
-      const btnIndex = { 'new-ticket': 0, 'my-tickets': 1, 'appeals': 2 }[tabId];
+      const btnIndex = { 'new-ticket': 0, 'my-tickets': 1, 'new-appeal': 2, 'my-appeals': 3 }[tabId];
       const btns = document.querySelectorAll('.tab-btn');
       if (btnIndex !== undefined && btns[btnIndex]) {
         btns[btnIndex].classList.add('active');
@@ -646,8 +664,10 @@
     // Check URL hash for tab selection
     if (window.location.hash === '#my-tickets') {
       showTab('my-tickets');
-    } else if (window.location.hash === '#appeals') {
-      showTab('appeals');
+    } else if (window.location.hash === '#my-appeals') {
+      showTab('my-appeals');
+    } else if (window.location.hash === '#new-appeal') {
+      showTab('new-appeal');
     }
   </script>
 
