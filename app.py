@@ -2390,6 +2390,11 @@ EMAIL_CATEGORIES = {
         'name': 'Certificate Queue Reminders',
         'description': 'Overdue certificate creation alerts (24h deadline)',
         'icon': 'fa-certificate'
+    },
+    'appeals_disputes': {
+        'name': 'Appeals & Disputes',
+        'description': 'SACAA appeal/dispute submissions (assessment, remediation or moderation outcomes)',
+        'icon': 'fa-scale-balanced'
     }
 }
 
@@ -3865,6 +3870,37 @@ class CourseFeedback(db.Model):
 
 
 ############## *************************###################
+############# Appeals & Disputes (SACAA) #################
+# Standalone table (no new columns on CourseFeedback/CertificateQueue), so
+# existing feedback and certificate queue rows are completely unaffected.
+
+class AppealDispute(db.Model):
+    __tablename__ = 'appeal_dispute'
+
+    id = db.Column(db.Integer, primary_key=True)
+    appeal_id = db.Column(db.String(10), unique=True, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    # Nullable: an appeal may be raised outside a specific course context.
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=True)
+    course_key = db.Column(db.String(100), nullable=True)
+    # Set only when the appeal was raised from the feedback form.
+    feedback_id = db.Column(db.Integer, db.ForeignKey('course_feedback.id'), nullable=True)
+    # "feedback" | "support"
+    source = db.Column(db.String(20), nullable=False, default='support')
+    email = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    # Open -> Under Review -> Resolved
+    status = db.Column(db.String(20), default='Open', nullable=False)
+    resolution_notes = db.Column(db.Text, nullable=True)
+    resolved_by = db.Column(db.String(100), nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=_now_sast, nullable=False)
+
+    student = db.relationship('Student', backref='appeals')
+    course = db.relationship('Course')
+
+
+############## *************************###################
 
 ########## ******************##################
 # Handbook
@@ -5178,6 +5214,117 @@ def _add_template_header(resp):
     return resp
 
 ############## *************************###############
+### Appeals & Disputes (SACAA) ###
+
+SACAA_APPEAL_NOTICE = (
+    "If you are dissatisfied with the outcome of the assessment, remediation, "
+    "or moderation process, you may lodge an appeal in accordance with "
+    "Professional Aviation Services Assessment Appeal Procedure within 5 "
+    "working days."
+)
+
+
+def _new_appeal_id():
+    return str(random.randint(1000000000, 9999999999))
+
+
+def send_appeal_confirmation(student_email, student_name, appeal_id):
+    """Confirmation email to the student — their paper-trail receipt."""
+    subject = f"📩 Appeal/Dispute Received — Ref #{appeal_id}"
+    body = f"""
+Dear {student_name},
+
+Your appeal/dispute has been received and logged.
+
+📌 Reference: {appeal_id}
+📝 Status: Open
+
+{SACAA_APPEAL_NOTICE}
+
+We will review your submission and respond in due course.
+
+Thank you,
+Professional Training Support
+    """
+    try:
+        msg = Message(subject, recipients=[student_email], body=body)
+        mail.send(msg)
+    except Exception as e:
+        print(f"❌ Error sending appeal confirmation email: {e}")
+
+
+def send_appeal_admin_notification(appeal, student, course_title, description):
+    """Notify the configured appeals/disputes point of contact."""
+    subject = f"⚖️ NEW APPEAL/DISPUTE: {student.name} {student.surname} — Ref #{appeal.appeal_id}"
+    body = f"""
+═══════════════════════════════════════════════════════
+        NEW APPEAL / DISPUTE SUBMITTED
+═══════════════════════════════════════════════════════
+
+STUDENT DETAILS
+───────────────────────────────────────────────────────
+  Name:           {student.name} {student.surname}
+  Email:          {student.email}
+  Student ID:     {student.student_id}
+
+SUBMISSION DETAILS
+───────────────────────────────────────────────────────
+  Reference:      {appeal.appeal_id}
+  Source:         {appeal.source}
+  Course:         {course_title or 'N/A'}
+  Submitted:      {appeal.created_at.strftime('%d %b %Y %H:%M')}
+
+DESCRIPTION
+───────────────────────────────────────────────────────
+{description}
+───────────────────────────────────────────────────────
+
+ACTION REQUIRED
+───────────────────────────────────────────────────────
+  Please review via the Appeals & Disputes admin page.
+═══════════════════════════════════════════════════════
+    """
+    recipients = get_recipients_for_category('appeals_disputes')
+    if not recipients:
+        return
+    try:
+        msg = Message(subject, recipients=recipients, body=body)
+        mail.send(msg)
+    except Exception as e:
+        print(f"❌ Error sending appeal admin notification: {e}")
+
+
+def create_appeal(student, description, source, course=None, course_key=None, feedback_id=None):
+    """Create an AppealDispute row and send the paper-trail emails.
+
+    Returns the created AppealDispute, or None if description is blank.
+    """
+    description = (description or "").strip()
+    if not description:
+        return None
+
+    appeal = AppealDispute(
+        appeal_id=_new_appeal_id(),
+        student_id=student.id,
+        course_id=course.id if course else None,
+        course_key=course_key,
+        feedback_id=feedback_id,
+        source=source,
+        email=student.email,
+        description=description,
+        status="Open",
+    )
+    db.session.add(appeal)
+    db.session.commit()
+
+    course_title = course.title if course else course_key
+    send_appeal_confirmation(student.email, f"{student.name} {student.surname}", appeal.appeal_id)
+    send_appeal_admin_notification(appeal, student, course_title, description)
+
+    return appeal
+
+
+############## *************************###############
 ### Course Feedback ###
 
 
@@ -5247,6 +5394,16 @@ def course_feedback(course_id):
 
     db.session.add(fb)
     db.session.commit()
+
+    # --- Optional SACAA appeal/dispute, submitted alongside feedback ---
+    if (request.form.get("lodge_appeal") or "").strip() == "yes":
+        create_appeal(
+            student,
+            request.form.get("appeal_description"),
+            source="feedback",
+            course=course,
+            feedback_id=fb.id,
+        )
 
     # --- Trigger certificate workflow now that feedback is submitted ---
     # Derive the course_key from the Course record
@@ -5385,6 +5542,16 @@ def assessment_feedback(course_key):
 
     db.session.add(fb)
     db.session.commit()
+
+    # --- Optional SACAA appeal/dispute, submitted alongside feedback ---
+    if (request.form.get("lodge_appeal") or "").strip() == "yes":
+        create_appeal(
+            student,
+            request.form.get("appeal_description"),
+            source="feedback",
+            course_key=norm_course_key,
+            feedback_id=fb.id,
+        )
 
     # --- Trigger certificate workflow now that feedback is submitted ---
     _trigger_certificate_after_feedback(student, course_key)
@@ -11175,6 +11342,78 @@ def support_centre():
 ############## *************************###################
 
 
+def _appeal_status_rank():
+    """Sort expression matching _ticket_status_rank: open items float to top."""
+    s = func.lower(AppealDispute.status)
+    return case(
+        (s == "open", 0),
+        (s == "under review", 1),
+        (s == "resolved", 3),
+        else_=2,
+    )
+
+
+@app.route('/admin/appeals')
+def admin_appeals():
+    if 'admin_id' not in session or get_role_level(session.get('admin_role', '')) < 2:
+        flash(
+            "⚠ Unauthorized access! Please log in as an admin or support staff.", "danger")
+        return redirect(url_for('admin_login'))
+
+    appeals = AppealDispute.query.join(Student).order_by(
+        _appeal_status_rank(), AppealDispute.created_at.desc()).all()
+
+    return render_template('admin_appeals.html', appeals=appeals)
+
+
+@app.route('/admin/appeals/<int:appeal_id>')
+def admin_appeal_detail(appeal_id):
+    if 'admin_id' not in session or get_role_level(session.get('admin_role', '')) < 2:
+        flash(
+            "⚠ Unauthorized access! Please log in as an admin or support staff.", "danger")
+        return redirect(url_for('admin_login'))
+
+    appeal = db.session.get(AppealDispute, appeal_id)
+    if not appeal:
+        flash("⚠ Appeal/dispute not found!", "danger")
+        return redirect(url_for('admin_appeals'))
+
+    return render_template('admin_appeal_detail.html', appeal=appeal)
+
+
+@app.route('/admin/appeals/<int:appeal_id>/update', methods=['POST'])
+def admin_appeal_update(appeal_id):
+    if 'admin_id' not in session or get_role_level(session.get('admin_role', '')) < 2:
+        flash(
+            "⚠ Unauthorized access! Please log in as an admin or support staff.", "danger")
+        return redirect(url_for('admin_login'))
+
+    appeal = db.session.get(AppealDispute, appeal_id)
+    if not appeal:
+        flash("⚠ Appeal/dispute not found!", "danger")
+        return redirect(url_for('admin_appeals'))
+
+    new_status = (request.form.get('status') or '').strip()
+    resolution_notes = (request.form.get('resolution_notes') or '').strip()
+
+    if new_status in ("Open", "Under Review", "Resolved"):
+        appeal.status = new_status
+    appeal.resolution_notes = resolution_notes or appeal.resolution_notes
+
+    if appeal.status == "Resolved" and not appeal.resolved_at:
+        appeal.resolved_at = _now_sast()
+        appeal.resolved_by = session.get('admin_name', 'Admin')
+    elif appeal.status != "Resolved":
+        appeal.resolved_at = None
+        appeal.resolved_by = None
+
+    db.session.commit()
+    flash(f"✅ Appeal #{appeal.appeal_id} updated.", "success")
+    return redirect(url_for('admin_appeal_detail', appeal_id=appeal.id))
+
+############## *************************###################
+
+
 def send_ticket_confirmation(student_email, student_name, ticket_id, course_name):
     """ Sends an email confirmation to the student when they submit a support ticket. """
     subject = f"📩 Support Ticket #{ticket_id} — {student_name}"
@@ -11296,7 +11535,44 @@ def support():
     tickets = SupportTicket.query.filter_by(student_id=student.id).order_by(
         SupportTicket.created_at.desc()).all()
 
-    return render_template('support.html', student=student, courses=courses, ticket_id=ticket_id, tickets=tickets)
+    # Get student's existing appeals/disputes for the new sub-section
+    appeals = AppealDispute.query.filter_by(student_id=student.id).order_by(
+        AppealDispute.created_at.desc()).all()
+
+    return render_template('support.html', student=student, courses=courses,
+                          ticket_id=ticket_id, tickets=tickets, appeals=appeals,
+                          sacaa_appeal_notice=SACAA_APPEAL_NOTICE)
+
+############## *************************###################
+
+
+@app.route('/appeal', methods=['POST'])
+def submit_appeal():
+    """Standalone Appeals & Disputes submission from the Support page.
+
+    Independent of the Feedback Form flow; created for students who want to
+    raise a dispute without having just submitted feedback.
+    """
+    if 'student_id' not in session:
+        flash("⚠ Please log in first.", "danger")
+        return redirect(url_for('login'))
+
+    student = Student.query.filter_by(student_id=session['student_id']).first()
+    if not student:
+        flash("⚠ User not found!", "danger")
+        return redirect(url_for('dashboard'))
+
+    course_id = request.form.get('course_id') or None
+    description = request.form.get('description')
+    course = Course.query.get(course_id) if course_id else None
+
+    appeal = create_appeal(student, description, source="support", course=course)
+    if not appeal:
+        flash("⚠ Please describe your appeal/dispute before submitting.", "danger")
+        return redirect(url_for('support') + '#appeals')
+
+    flash(f"✅ Appeal/dispute submitted! Reference: {appeal.appeal_id}", "success")
+    return redirect(url_for('support') + '#appeals')
 
 ############## *************************###################
 
@@ -23751,6 +24027,20 @@ def admin_certificate_queue():
     pending = CertificateQueue.query.filter_by(
         status='pending').order_by(CertificateQueue.passed_at.asc()).all()
 
+    # --- Flag entries whose student has an unresolved appeal/dispute ---
+    # No schema change on CertificateQueue; looked up and attached at request
+    # time so past rows are never touched.
+    open_appeal_pairs = set(
+        db.session.query(AppealDispute.student_id, AppealDispute.course_id)
+        .filter(AppealDispute.status != 'Resolved')
+        .all()
+    )
+    for entry in pending:
+        entry.has_open_appeal = (
+            (entry.student_id, entry.course_id) in open_appeal_pairs
+            or (entry.student_id, None) in open_appeal_pairs
+        )
+
     # --- Done tab: filter + paginate ---
     done_q = CertificateQueue.query.filter_by(status='done')
 
@@ -23797,6 +24087,11 @@ def admin_certificate_queue():
         .limit(per_page)
         .all()
     )
+    for entry in done:
+        entry.has_open_appeal = (
+            (entry.student_id, entry.course_id) in open_appeal_pairs
+            or (entry.student_id, None) in open_appeal_pairs
+        )
 
     # Course options for the filter dropdown: every distinct course that has
     # ever produced a completed certificate, alphabetised by title.
@@ -24453,6 +24748,9 @@ def admin_email_recipients_seed():
             ("darryl@professional.aero", "Darryl"),
             ("chantell@professional.za.com", "Chantell"),
             ("adele@professional.za.com", "Adele"),
+        ],
+        'appeals_disputes': [
+            ("chantell@professional.za.com", "Chantell"),
         ],
     }
 
