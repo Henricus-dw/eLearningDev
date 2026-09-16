@@ -2449,6 +2449,11 @@ def enqueue_certificate_from_session(stu_dict, course_key, score):
             func.lower(Course.final_assessment_key) == (course_key or "").lower()
         ).first()
         if not course:
+            app.logger.warning(
+                "enqueue_certificate_from_session: no Course row has "
+                "final_assessment_key=%r — certificate NOT enqueued for "
+                "student %s. Set this course's Final Assessment Key in "
+                "Manage Courses to fix.", course_key, sid)
             return
         enqueue_certificate(student, course, score)
     except Exception as exc:
@@ -16690,11 +16695,16 @@ def run_final(code):
             is_active=True
         ).count()
 
-        # Check if feedback already submitted for this course
-        feedback_already_submitted = CourseFeedback.query.filter_by(
+        # Check if feedback already submitted for THIS passing attempt (not an
+        # older submission for the same course_key from a prior fail/retake).
+        fb_q = CourseFeedback.query.filter_by(
             student_id=student_row.id,
             course_key=runtime_key
-        ).first() is not None
+        )
+        fb_cutoff = sub.submitted_at if sub else None
+        if fb_cutoff is not None:
+            fb_q = fb_q.filter(CourseFeedback.created_at >= fb_cutoff)
+        feedback_already_submitted = fb_q.first() is not None
 
         session.pop(question_order_key, None)
 
@@ -18620,13 +18630,18 @@ def airside_induction():
         student_surname = student_obj.surname if student_obj else (stu["full_name"].split()[-1] if stu.get("full_name") and len(stu["full_name"].split()) > 1 else "N/A")
         student_national_id = student_obj.national_id if student_obj else "N/A"
 
-        # Check if feedback already submitted for this course
+        # Check if feedback already submitted for THIS passing attempt (not an
+        # older submission for the same course_key from a prior fail/retake).
         feedback_already_submitted = False
         if student_obj:
-            feedback_already_submitted = CourseFeedback.query.filter_by(
+            fb_q = CourseFeedback.query.filter_by(
                 student_id=student_obj.id,
                 course_key="airside_induction"
-            ).first() is not None
+            )
+            fb_cutoff = attempt.finished_at or attempt.started_at
+            if fb_cutoff is not None:
+                fb_q = fb_q.filter(CourseFeedback.created_at >= fb_cutoff)
+            feedback_already_submitted = fb_q.first() is not None
 
         return render_template(
             "assessment_result.html",
@@ -18856,13 +18871,18 @@ def airside_result(attempt_id):
             attempts_allowed = _allowed_cap(student.id, airside_course.id)
             attempts_left = max(0, attempts_allowed - attempts_used)
 
-    # Check if feedback already submitted for this course
+    # Check if feedback already submitted for THIS passing attempt (not an
+    # older submission for the same course_key from a prior fail/retake).
     feedback_already_submitted = False
     if student:
-        feedback_already_submitted = CourseFeedback.query.filter_by(
+        fb_q = CourseFeedback.query.filter_by(
             student_id=student.id,
             course_key="airside_induction"
-        ).first() is not None
+        )
+        fb_cutoff = a.finished_at or a.started_at
+        if fb_cutoff is not None:
+            fb_q = fb_q.filter(CourseFeedback.created_at >= fb_cutoff)
+        feedback_already_submitted = fb_q.first() is not None
 
     return render_template(
         "assessment_result.html",
@@ -21748,13 +21768,21 @@ def register_assessment(course_key: str, title: str, pass_mark: int):
             attempts_used = used
             current_attempt = used
 
-        # Check if feedback already submitted for this course
+        # Check if feedback already submitted for THIS passing attempt.
+        # A plain existence check would wrongly say "already submitted" on a
+        # fresh pass if any older feedback row exists for this course_key
+        # (e.g. from a prior fail-then-retake cycle), so only count feedback
+        # created at/after this attempt finished.
         feedback_already_submitted = False
         if student:
-            feedback_already_submitted = CourseFeedback.query.filter_by(
+            fb_q = CourseFeedback.query.filter_by(
                 student_id=student.id,
                 course_key=course_key
-            ).first() is not None
+            )
+            fb_cutoff = a.finished_at or a.created_at
+            if fb_cutoff is not None:
+                fb_q = fb_q.filter(CourseFeedback.created_at >= fb_cutoff)
+            feedback_already_submitted = fb_q.first() is not None
 
         return render_template(
             tpl_result,
@@ -26486,10 +26514,12 @@ def course_submit(course_key):
     attempts_left = max(0, MAX_ATTEMPTS - used)
     can_retake = (not passed) and (attempts_left > 0)
 
-    # Check if feedback already submitted for this course
-    feedback_already_submitted = CourseFeedback.query.filter_by(
-        student_id=stu["id"],
-        course_key=course_key
+    # Check if feedback already submitted for THIS passing attempt (not an
+    # older submission for the same course_key from a prior fail/retake).
+    feedback_already_submitted = CourseFeedback.query.filter(
+        CourseFeedback.student_id == stu["id"],
+        CourseFeedback.course_key == course_key,
+        CourseFeedback.created_at >= faa.submitted_at
     ).first() is not None
 
     return render_template(
