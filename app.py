@@ -5294,6 +5294,31 @@ ACTION REQUIRED
         print(f"❌ Error sending appeal admin notification: {e}")
 
 
+def send_appeal_update_notification(appeal):
+    """Notify the student when an admin changes their appeal's status/notes."""
+    student = appeal.student
+    subject = f"⚖️ Appeal/Dispute Update — Ref #{appeal.appeal_id}"
+    notes_block = f"\n💬 Comments from our team:\n{appeal.resolution_notes}\n" if appeal.resolution_notes else ""
+    body = f"""
+Dear {student.name} {student.surname},
+
+There has been an update on your appeal/dispute.
+
+📌 Reference: {appeal.appeal_id}
+📝 Status: {appeal.status}
+{notes_block}
+You can view this at any time by logging in and going to Support > Appeals & Disputes.
+
+Thank you,
+Professional Training Support
+    """
+    try:
+        msg = Message(subject, recipients=[student.email], body=body)
+        mail.send(msg)
+    except Exception as e:
+        print(f"❌ Error sending appeal update email: {e}")
+
+
 def create_appeal(student, description, source, course=None, course_key=None, feedback_id=None):
     """Create an AppealDispute row and send the paper-trail emails.
 
@@ -11399,6 +11424,9 @@ def admin_appeal_update(appeal_id):
         flash("⚠ Appeal/dispute not found!", "danger")
         return redirect(url_for('admin_appeals'))
 
+    old_status = appeal.status
+    old_notes = appeal.resolution_notes
+
     new_status = (request.form.get('status') or '').strip()
     resolution_notes = (request.form.get('resolution_notes') or '').strip()
 
@@ -11414,6 +11442,10 @@ def admin_appeal_update(appeal_id):
         appeal.resolved_by = None
 
     db.session.commit()
+
+    if appeal.status != old_status or appeal.resolution_notes != old_notes:
+        send_appeal_update_notification(appeal)
+
     flash(f"✅ Appeal #{appeal.appeal_id} updated.", "success")
     return redirect(url_for('admin_appeal_detail', appeal_id=appeal.id))
 
