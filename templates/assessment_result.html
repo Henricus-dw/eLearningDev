@@ -916,6 +916,24 @@
                 placeholder="What worked well? What could we improve?"></textarea>
             </div>
 
+            <div class="mb-4 border border-gray-200 rounded-md p-3 bg-gray-50">
+              <p class="text-xs text-gray-600 mb-2">
+                If you are dissatisfied with the outcome of the assessment, remediation, or
+                moderation process, you may lodge an appeal in accordance with Professional
+                Aviation Services Assessment Appeal Procedure within 5 working days.
+              </p>
+              <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                <input type="checkbox" name="lodge_appeal" value="yes"
+                       onchange="this.closest('form').querySelector('.appeal-details-block').classList.toggle('hidden', !this.checked)">
+                I wish to lodge an appeal/dispute
+              </label>
+              <div class="appeal-details-block hidden mt-2">
+                <textarea name="appeal_description" rows="3"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Please explain the basis of your appeal or dispute..."></textarea>
+              </div>
+            </div>
+
             <div class="text-right">
               <button type="submit"
                 class="bg-blue-800 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none">

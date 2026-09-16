@@ -275,6 +275,10 @@
         <span class="notification-badge">{{ open_ticket_count }}</span>
         {% endif %}
       </a>
+      <a href="{{ url_for('admin_appeals') }}" class="dashboard-card">
+        <i class="fas fa-scale-balanced"></i>
+        <h5>Appeals &amp; Disputes</h5>
+      </a>
       <a href="{{ url_for('admin_retry_requests') }}" class="dashboard-card" id="retry-requests-card">
         <i class="fas fa-redo-alt"></i>
         <h5>Retry Requests</h5>

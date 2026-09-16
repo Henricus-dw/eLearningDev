@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appeal/Dispute #{{ appeal.appeal_id }}</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root { --brand-blue: #17306B; --brand-gold: #C7A434; }
+    body { background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%); min-height: 100vh; }
+    .header-bar { background: var(--brand-blue); padding: 1rem 0; width: 100%; }
+    .header-content { max-width: 48rem; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .back-btn { background: transparent; border: 2px solid #fff; color: #fff; padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .back-btn:hover { background: #fff; color: var(--brand-blue); }
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(23,48,107,0.08); position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--brand-gold) 0%, #e0c04a 100%); }
+    .input, textarea, select { width: 100%; border: 1px solid #cbd5e1; background: #fff; border-radius: 0.5rem; padding: 0.6rem 0.75rem; }
+    .input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(23,48,107,0.15); }
+    .footer-bar { background: var(--brand-blue); padding: 1rem 0; width: 100%; margin-top: auto; }
+    .footer-content { max-width: 48rem; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.7); font-size: 0.875rem; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans text-slate-800">
+
+  <header class="header-bar">
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='images/proftrainingwhite.png') }}" alt="Professional Training" class="h-10">
+      <a href="{{ url_for('admin_appeals') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Appeals</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 space-y-5">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2">
+          {% for cat, msg in messages %}
+            <div class="px-4 py-3 rounded-lg border
+              {{ 'border-green-400 bg-green-50 text-green-700' if cat=='success'
+                 else 'border-red-400 bg-red-50 text-red-700' if cat=='danger'
+                 else 'border-blue-400 bg-blue-50 text-blue-700' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card p-6">
+      <h1 class="text-xl font-bold mb-1" style="color: var(--brand-blue);">
+        <i class="fas fa-scale-balanced text-[var(--brand-gold)]"></i> Appeal/Dispute #{{ appeal.appeal_id }}
+      </h1>
+      <p class="text-sm text-slate-500 mb-4">Submitted {{ appeal.created_at.strftime('%d %b %Y %H:%M') }} via {{ appeal.source }}</p>
+
+      <div class="grid gap-4 sm:grid-cols-2 mb-4">
+        <div>
+          <div class="text-xs font-semibold text-slate-400 uppercase">Student</div>
+          <div class="text-slate-800">{{ appeal.student.name }} {{ appeal.student.surname }}</div>
+          <div class="text-xs text-slate-400">{{ appeal.email }}</div>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-slate-400 uppercase">Course</div>
+          <div class="text-slate-800">{{ appeal.course.title if appeal.course else (appeal.course_key or 'General') }}</div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="text-xs font-semibold text-slate-400 uppercase mb-1">Description</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap">{{ appeal.description }}</div>
+      </div>
+
+      <form method="POST" action="{{ url_for('admin_appeal_update', appeal_id=appeal.id) }}" class="space-y-4 border-t border-slate-100 pt-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+          <select name="status" class="input">
+            <option value="Open" {% if appeal.status == 'Open' %}selected{% endif %}>Open</option>
+            <option value="Under Review" {% if appeal.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+            <option value="Resolved" {% if appeal.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Resolution Notes</label>
+          <textarea name="resolution_notes" rows="4" class="input" placeholder="Record the outcome/resolution here...">{{ appeal.resolution_notes or '' }}</textarea>
+        </div>
+        {% if appeal.resolved_at %}
+          <p class="text-xs text-slate-400">Resolved {{ appeal.resolved_at.strftime('%d %b %Y %H:%M') }} by {{ appeal.resolved_by }}</p>
+        {% endif %}
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-white font-semibold rounded-lg text-sm" style="background: var(--brand-blue);">
+          <i class="fas fa-save"></i> Save
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <footer class="footer-bar">
+    <div class="footer-content">
+      <span>&copy; 2026 Professional Training. All rights reserved.</span>
+    </div>
+  </footer>
+</body>
+</html>
