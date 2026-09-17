@@ -614,7 +614,9 @@
                 {% endif %}
               </div>
               <div class="text-right text-sm text-slate-400 whitespace-nowrap">
-                {{ appeal.created_at.strftime('%d %b %Y') }}
+                <div>Opened {{ appeal.created_at.strftime('%d %b %Y') }}</div>
+                {% if appeal.reviewed_at %}<div>Reviewed {{ appeal.reviewed_at.strftime('%d %b %Y') }}</div>{% endif %}
+                {% if appeal.resolved_at %}<div>Resolved {{ appeal.resolved_at.strftime('%d %b %Y') }}</div>{% endif %}
               </div>
             </div>
           </div>

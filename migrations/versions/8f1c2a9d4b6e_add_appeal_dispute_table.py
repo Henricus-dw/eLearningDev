@@ -30,6 +30,8 @@ def upgrade():
     sa.Column('description', sa.Text(), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('resolution_notes', sa.Text(), nullable=True),
+    sa.Column('reviewed_by', sa.String(length=100), nullable=True),
+    sa.Column('reviewed_at', sa.DateTime(), nullable=True),
     sa.Column('resolved_by', sa.String(length=100), nullable=True),
     sa.Column('resolved_at', sa.DateTime(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
