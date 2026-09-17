@@ -1840,7 +1840,9 @@
                   <div class="ticket-item-preview" style="color:#065F46; margin-top:0.35rem;"><strong>Resolution:</strong> {{ appeal.resolution_notes }}</div>
                   {% endif %}
                   <div class="ticket-item-meta">
-                    <span>{{ appeal.created_at.strftime('%d %b %Y') }}</span>
+                    <span>Opened {{ appeal.created_at.strftime('%d %b %Y') }}</span>
+                    {% if appeal.reviewed_at %}<span>Reviewed {{ appeal.reviewed_at.strftime('%d %b %Y') }}</span>{% endif %}
+                    {% if appeal.resolved_at %}<span>Resolved {{ appeal.resolved_at.strftime('%d %b %Y') }}</span>{% endif %}
                   </div>
                 </div>
                 {% endfor %}

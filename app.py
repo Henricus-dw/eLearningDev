@@ -3903,6 +3903,8 @@ class AppealDispute(db.Model):
     # Open -> Under Review -> Resolved
     status = db.Column(db.String(20), default='Open', nullable=False)
     resolution_notes = db.Column(db.Text, nullable=True)
+    reviewed_by = db.Column(db.String(100), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
     resolved_by = db.Column(db.String(100), nullable=True)
     resolved_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=_now_sast, nullable=False)
@@ -11454,14 +11456,22 @@ def admin_appeal_update(appeal_id):
 
     new_status = (request.form.get('status') or '').strip()
     resolution_notes = (request.form.get('resolution_notes') or '').strip()
+    admin_name = session.get('admin_name', 'Admin')
 
     if new_status in ("Open", "Under Review", "Resolved"):
         appeal.status = new_status
     appeal.resolution_notes = resolution_notes or appeal.resolution_notes
 
+    if appeal.status == "Under Review" and not appeal.reviewed_at:
+        appeal.reviewed_at = _now_sast()
+        appeal.reviewed_by = admin_name
+
     if appeal.status == "Resolved" and not appeal.resolved_at:
         appeal.resolved_at = _now_sast()
-        appeal.resolved_by = session.get('admin_name', 'Admin')
+        appeal.resolved_by = admin_name
+        if not appeal.reviewed_at:
+            appeal.reviewed_at = appeal.resolved_at
+            appeal.reviewed_by = admin_name
     elif appeal.status != "Resolved":
         appeal.resolved_at = None
         appeal.resolved_by = None
@@ -29025,12 +29035,25 @@ _ensure_certificate_pdf_column()
 
 
 def _ensure_appeal_dispute_table():
-    """Create appeal_dispute if missing (new table, no existing rows affected)."""
+    """Create/extend appeal_dispute without touching existing row values."""
     with app.app_context():
         insp = sa_inspect(db.engine)
         if 'appeal_dispute' not in insp.get_table_names():
             AppealDispute.__table__.create(db.engine)
             print("  ✅ Created appeal_dispute table")
+            return
+
+        cols = {c['name'] for c in insp.get_columns('appeal_dispute')}
+        for col_name, ddl_type in (
+            ('reviewed_by', 'VARCHAR(100)'),
+            ('reviewed_at', 'DATETIME'),
+        ):
+            if col_name not in cols:
+                db.session.execute(text(
+                    f"ALTER TABLE appeal_dispute ADD COLUMN {col_name} {ddl_type}"
+                ))
+                print(f"  ✅ Added appeal_dispute.{col_name}")
+        db.session.commit()
 
 _ensure_appeal_dispute_table()
 

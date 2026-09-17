@@ -75,6 +75,8 @@
             <th class="px-4 py-3 text-left">Source</th>
             <th class="px-4 py-3 text-left">Status</th>
             <th class="px-4 py-3 text-left">Submitted</th>
+            <th class="px-4 py-3 text-left">Review</th>
+            <th class="px-4 py-3 text-left">Resolved</th>
             <th class="px-4 py-3 text-right">Action</th>
           </tr>
         </thead>
@@ -98,6 +100,22 @@
               {% endif %}
             </td>
             <td class="px-4 py-3 text-slate-400">{{ appeal.created_at.strftime('%d %b %Y') }}</td>
+            <td class="px-4 py-3 text-xs text-slate-400">
+              {% if appeal.reviewed_at %}
+                <div>{{ appeal.reviewed_at.strftime('%d %b %Y') }}</div>
+                <div>By {{ appeal.reviewed_by or 'Admin' }}</div>
+              {% else %}
+                &ndash;
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-400">
+              {% if appeal.resolved_at %}
+                <div>{{ appeal.resolved_at.strftime('%d %b %Y') }}</div>
+                <div>By {{ appeal.resolved_by or 'Admin' }}</div>
+              {% else %}
+                &ndash;
+              {% endif %}
+            </td>
             <td class="px-4 py-3 text-right">
               <a href="{{ url_for('admin_appeal_detail', appeal_id=appeal.id) }}"
                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
